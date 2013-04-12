@@ -1,10 +1,10 @@
 package com.tngtech.leapdrone.drone;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.net.Socket;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 
 public class DroneCommunicator
 {
@@ -12,21 +12,29 @@ public class DroneCommunicator
 
   private static final int LAND_VALUE = 290717696;
 
-  Socket socket;
+  private final InetAddress address;
 
-  private BufferedReader socketReader;
-
-  private PrintWriter socketWriter;
+  private DatagramSocket socket;
 
   private int sequenceNumber = 0;
+
+  public DroneCommunicator()
+  {
+    try
+    {
+      address = InetAddress.getByName("192.168.1.1");
+    } catch (UnknownHostException e)
+    {
+      throw new IllegalStateException(e);
+    }
+  }
 
   public void connect()
   {
     try
     {
-      socket = new Socket("localhost", 5554);
-      socketReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-      socketWriter = new PrintWriter(socket.getOutputStream(), true);
+      socket = new DatagramSocket();
+
     } catch (IOException e)
     {
       e.printStackTrace();
@@ -45,8 +53,21 @@ public class DroneCommunicator
 
   private void sendFlightModeCommand(int flightModeValue)
   {
-    String command = String.format("AT*REF=%s,%s\r", sequenceNumber, flightModeValue);
-    System.out.println(command);
-    socketWriter.println(command);
+    String command = String.format("AT*REF=%s,%s\r", sequenceNumber++, flightModeValue);
+    send(command);
+  }
+
+  private void send(String command)
+  {
+    try
+    {
+      byte[] sendData = command.getBytes();
+      DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, address, 5556);
+      socket.send(sendPacket);
+    } catch (IOException e)
+    {
+      throw new IllegalStateException(e);
+    }
+
   }
 }
