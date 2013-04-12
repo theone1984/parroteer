@@ -27,20 +27,9 @@ public class DroneController
   {
     droneCommunicator.sendLand();
   }
-  
-  public void left() {
 
-  }
-  
-  public void right() {
-
-  }
-  
-  public void up() {
-
-  }
-  
-  public void down() {
-
+  public void move(float roll, float pitch, float yaw, float gaz)
+  {
+    droneCommunicator.move(roll, pitch, yaw, gaz);
   }
 }

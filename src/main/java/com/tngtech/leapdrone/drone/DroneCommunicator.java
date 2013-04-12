@@ -51,6 +51,26 @@ public class DroneCommunicator
     sendFlightModeCommand(LAND_VALUE);
   }
 
+  public void move(float roll, float pitch, float yaw, float gaz)
+  {
+    String command = String.format("AT*PCMD=%d,%d,%d,%d,%d,%d\r", sequenceNumber, 1, normalizeValue(roll), normalizeValue(pitch), normalizeValue(gaz),
+            normalizeValue(yaw));
+    send(command);
+  }
+
+  protected int normalizeValue(Float value)
+  {
+    if (value < -1.0f)
+    {
+      value = -1.0f;
+    } else if (value > 1.0f)
+    {
+      value = 1.0f;
+    }
+
+    return Float.floatToIntBits(value);
+  }
+
   private void sendFlightModeCommand(int flightModeValue)
   {
     String command = String.format("AT*REF=%s,%s\r", sequenceNumber++, flightModeValue);
