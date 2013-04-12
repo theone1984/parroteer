@@ -16,7 +16,7 @@ public class DroneCommunicator
 
   private DatagramSocket socket;
 
-  private int sequenceNumber = 0;
+  private int sequenceNumber = 1;
 
   public DroneCommunicator()
   {
@@ -53,8 +53,9 @@ public class DroneCommunicator
 
   public void move(float roll, float pitch, float yaw, float gaz)
   {
-    String command = String.format("AT*PCMD=%d,%d,%d,%d,%d,%d\r", sequenceNumber, 1, normalizeValue(roll), normalizeValue(pitch), normalizeValue(gaz),
-            normalizeValue(yaw));
+    String command =
+            String.format("AT*PCMD=%d,%d,%d,%d,%d,%d\r", sequenceNumber++, 1, normalizeValue(roll), normalizeValue(pitch), normalizeValue(gaz),
+                    normalizeValue(yaw));
     send(command);
   }
 
@@ -77,10 +78,17 @@ public class DroneCommunicator
     send(command);
   }
 
+  public void sendWatchDogCommand()
+  {
+    String command = String.format("AT*COMWDG=%s\r", sequenceNumber++);
+    send(command);
+  }
+
   private void send(String command)
   {
     try
     {
+      System.out.println(command);
       byte[] sendData = command.getBytes();
       DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, address, 5556);
       socket.send(sendPacket);
