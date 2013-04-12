@@ -11,24 +11,28 @@
         <spring.version>3.1.4.RELEASE</spring.version>
     </properties>
 
-    <dependencies>
-        <dependency>
-            <groupId>com.google.inject</groupId>
-            <artifactId>guice</artifactId>
-            <version>3.0</version>
-        </dependency>
+	<dependencies>
+		<dependency>
+			<groupId>com.google.inject</groupId>
+			<artifactId>guice</artifactId>
+			<version>3.0</version>
+		</dependency>
+		<dependency>
+			<groupId>com.tngtech.internal</groupId>
+			<artifactId>leap-java</artifactId>
+			<version>0.7</version>
+		</dependency>
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+			<version>14.0.1</version>
+		</dependency>
+	</dependencies>
 
-        <dependency>
-            <groupId>com.tngtech.internal</groupId>
-            <artifactId>leap-java</artifactId>
-            <version>0.7</version>
-        </dependency>
-    </dependencies>
-
-    <repositories>
-        <repository>
-            <id>tng</id>
-            <url>http://development1.int.tngtech.com/nexus/content/repositories/thirdparty</url>
-        </repository>
-    </repositories>
+  <repositories>
+    <repository>
+      <id>tng</id>
+      <url>http://development1.int.tngtech.com/nexus/content/repositories/thirdparty</url>
+   </repository>
+  </repositories>
 </project>

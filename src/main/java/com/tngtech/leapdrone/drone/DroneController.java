@@ -27,4 +27,20 @@ public class DroneController
   {
     droneCommunicator.sendLand();
   }
+  
+  public void left() {
+
+  }
+  
+  public void right() {
+
+  }
+  
+  public void up() {
+
+  }
+  
+  public void down() {
+
+  }
 }
