@@ -42,17 +42,6 @@ class LeapMotionListener extends Listener {
             // Get the first hand
             Hand hand = frame.hands().get(0);
 
-            // Check if the hand has any fingers
-            FingerList fingers = hand.fingers();
-            if (!fingers.empty()) {
-                // Calculate the hand's average finger tip position
-                Vector avgPos = Vector.zero();
-                for (Finger finger : fingers) {
-                    avgPos = avgPos.plus(finger.tipPosition());
-                }
-                avgPos = avgPos.divide(fingers.count());
-            }
-
             // Get the hand's normal vector and direction
             Vector normal = hand.palmNormal();
             Vector direction = hand.direction();
