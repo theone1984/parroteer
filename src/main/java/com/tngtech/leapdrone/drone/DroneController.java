@@ -15,7 +15,7 @@ public class DroneController
 
   public void connect()
   {
-    droneCommunicator.connect();
+    //droneCommunicator.connect();
   }
 
   public void takeOff()
@@ -30,6 +30,7 @@ public class DroneController
 
   public void move(float roll, float pitch, float yaw, float gaz)
   {
-    droneCommunicator.move(roll, pitch, yaw, gaz);
+    System.out.println(String.format("Got values: Roll: %.3f, Pitch: %.3f, Yaw: %.3f, Gaz: %.3f", roll, pitch, yaw, gaz));
+    //droneCommunicator.move(roll, pitch, yaw, gaz);
   }
 }
