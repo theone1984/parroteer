@@ -3,9 +3,15 @@ package com.tngtech.leapdrone.control;
 import com.leapmotion.leap.Controller;
 
 public class LeapMotionController {
-	LeapMotionListener listener;
+	private LeapMotionListener listener;
 
-	Controller controller;
+	private Controller controller;
+	
+	public final int MAX_HEIGHT = 600;
+	
+	public final int MAX_ROLL = 40;
+	
+	public final int MAX_PITCH = 40;
 
 	public LeapMotionController() {
 		this.listener = new LeapMotionListener();
