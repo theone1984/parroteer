@@ -1,37 +1,66 @@
 package com.tngtech.leapdrone.drone;
 
 
+import com.codeminders.ardrone.ARDrone;
 import com.google.inject.Inject;
+
+import java.io.IOException;
 
 public class DroneController
 {
-  private final DroneCommunicator droneCommunicator;
+  private static final long CONNECT_TIMEOUT = 5000;
+
+  private final ARDrone arDrone;
 
   @Inject
-  public DroneController(DroneCommunicator droneCommunicator)
+  public DroneController(ARDrone arDrone)
   {
-    this.droneCommunicator = droneCommunicator;
+    this.arDrone = arDrone;
   }
 
   public void connect()
   {
-    droneCommunicator.connect();
+    try
+    {
+      arDrone.connect();
+      arDrone.clearEmergencySignal();
+      arDrone.waitForReady(CONNECT_TIMEOUT);
+    } catch (IOException e)
+    {
+      throw new IllegalStateException(e);
+    }
   }
 
   public void takeOff()
   {
-    droneCommunicator.sendTakeOff();
+    try
+    {
+      arDrone.takeOff();
+    } catch (IOException e)
+    {
+      System.out.println(e.getMessage());
+    }
   }
 
   public void land()
   {
-    droneCommunicator.sendLand();
+    try
+    {
+      arDrone.land();
+    } catch (IOException e)
+    {
+      System.out.println(e.getMessage());
+    }
   }
 
   public void move(float roll, float pitch, float yaw, float gaz)
   {
-    //System.out.println(String.format("Got values: Roll: %.3f, Pitch: %.3f, Yaw: %.3f, Gaz: %.3f", roll, pitch, yaw, gaz));
-    droneCommunicator.sendWatchDogCommand();
-    droneCommunicator.move(roll, pitch, yaw, gaz);
+    try
+    {
+      arDrone.move(roll, pitch, yaw, gaz);
+    } catch (IOException e)
+    {
+      System.out.println(e.getMessage());
+    }
   }
 }
