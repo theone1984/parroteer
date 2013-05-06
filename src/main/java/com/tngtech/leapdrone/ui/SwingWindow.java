@@ -24,6 +24,22 @@ public class SwingWindow implements ActionListener, KeyListener
     this.droneController = droneController;
   }
 
+  public class HelloThread extends Thread
+  {
+    public void run()
+    {
+      while(true) {
+        try
+        {
+          Thread.sleep(100);
+        } catch (InterruptedException e)
+        {
+        }
+        droneController.move(0.0f, currentPitch, 0.0f, 0.0f);
+      }
+    }
+  }
+
   public void createWindow()
   {
     JFrame frame = new JFrame("Drone control");
@@ -65,6 +81,7 @@ public class SwingWindow implements ActionListener, KeyListener
     {
       case "takeOff":
         droneController.takeOff();
+        new HelloThread().start();
         break;
       case "land":
         droneController.land();
@@ -79,15 +96,26 @@ public class SwingWindow implements ActionListener, KeyListener
   {
   }
 
+  float currentPitch = 0.0f;
+
   @Override
   public void keyPressed(KeyEvent e)
   {
-    System.out.println("Pressed " + e.getKeyChar());
+    if (e.getKeyChar() == 'w')
+    {
+      currentPitch = 1.0f;
+    } else if (e.getKeyChar() == 's')
+    {
+      currentPitch = -1.0f;
+    }
+
+    System.out.println("Pressed" + e.getKeyChar());
   }
 
   @Override
   public void keyReleased(KeyEvent e)
   {
-    System.out.println("Released " + e.getKeyChar());
+    currentPitch = 0.0f;
+    System.out.println("Released" + e.getKeyChar());
   }
 }

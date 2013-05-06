@@ -7,13 +7,15 @@ import com.tngtech.leapdrone.drone.DroneController;
 import com.tngtech.leapdrone.spring.Context;
 import com.tngtech.leapdrone.ui.SwingWindow;
 
+import java.io.IOException;
+
 public class Main
 {
   private final SwingWindow swingWindow;
 
   private final DroneController droneController;
 
-  private final LeapMotionController leapMotion;
+  private final LeapMotionController leapMotionController;
 
   public static void main(String[] args)
   {
@@ -21,32 +23,46 @@ public class Main
   }
 
   @Inject
-  public Main(SwingWindow swingWindow, DroneController droneController, LeapMotionController leapMotion)
+  public Main(SwingWindow swingWindow, DroneController droneController, LeapMotionController leapMotionController)
   {
     this.swingWindow = swingWindow;
     this.droneController = droneController;
-    this.leapMotion = leapMotion;
+    this.leapMotionController = leapMotionController;
   }
 
   private void start()
   {
     droneController.connect();
-    leapMotion.connect();
-    addEventHandler();
-
 
     swingWindow.createWindow();
+
+    leapMotionController.connect();
+    addEventHandler();
+
+    keepProcessBusy();
   }
 
   private void addEventHandler()
   {
-    leapMotion.setDetectionEventHandler(new LeapMotionDetectionEventHandler()
+    leapMotionController.setDetectionEventHandler(new LeapMotionDetectionEventHandler()
     {
       @Override
       public void onEvent(float height, float pitch, float roll)
       {
+        System.out.println(String.format("Detected: gaz = " + height + ", pitch = " + pitch + ", roll = " + roll));
         droneController.move(roll, pitch, 0.0f, height);
       }
     });
+  }
+
+  private void keepProcessBusy()
+  {
+    try
+    {
+      System.in.read();
+    } catch (IOException e)
+    {
+      e.printStackTrace();
+    }
   }
 }

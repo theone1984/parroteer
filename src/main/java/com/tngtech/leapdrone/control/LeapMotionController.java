@@ -8,8 +8,6 @@ public class LeapMotionController
 
   private Controller controller;
 
-
-
   public LeapMotionController()
   {
     this.listener = new LeapMotionListener();
@@ -18,13 +16,11 @@ public class LeapMotionController
 
   public void connect()
   {
-    // Have the sample listener receive events from the controller
     controller.addListener(listener);
   }
 
   public void disconnect()
   {
-    // Have the sample listener receive events from the controller
     controller.removeListener(listener);
   }
 

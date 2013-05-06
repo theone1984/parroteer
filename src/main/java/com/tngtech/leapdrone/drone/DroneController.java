@@ -57,7 +57,7 @@ public class DroneController
   {
     try
     {
-      arDrone.move(roll, pitch, yaw, gaz);
+      arDrone.move(-roll, pitch, 0, 0);
     } catch (IOException e)
     {
       System.out.println(e.getMessage());
