@@ -62,6 +62,16 @@ public class DroneController
     commandSender.sendLandCommand();
   }
 
+  public void emergency()
+  {
+    commandSender.sendEmergencyCommand();
+  }
+
+  public void flatTrim()
+  {
+    commandSender.sendFlatTrimCommand();
+  }
+
   public void move(float roll, float pitch, float yaw, float gaz)
   {
     commandSender.move(roll, pitch, yaw, gaz);

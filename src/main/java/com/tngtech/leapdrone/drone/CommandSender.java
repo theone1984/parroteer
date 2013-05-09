@@ -20,6 +20,8 @@ public class CommandSender implements Runnable
 
   private static final int LAND_VALUE = 290717696;
 
+  private static final int EMERGENCY_VALUE = 290717952;
+
   private final Logger logger = Logger.getLogger(CommandSender.class.getSimpleName());
 
   private final ThreadComponent threadComponent;
@@ -61,6 +63,18 @@ public class CommandSender implements Runnable
   {
     logger.debug("Landing");
     sendFlightModeCommand(LAND_VALUE);
+  }
+
+  public void sendEmergencyCommand()
+  {
+    logger.debug("Setting emergency");
+    sendFlightModeCommand(EMERGENCY_VALUE);
+  }
+
+  public void sendFlatTrimCommand()
+  {
+    logger.debug("Flat trim");
+    queue(String.format("AT*FTRIM=%s", sequenceNumber++));
   }
 
   private void sendFlightModeCommand(int flightModeValue)

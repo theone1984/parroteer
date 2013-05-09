@@ -42,12 +42,17 @@ public class SwingWindow implements ActionListener
     landButton.setActionCommand("land");
     landButton.addActionListener(this);
 
+    final JButton flatTrimButton = new JButton("Flat trim");
+    flatTrimButton.setActionCommand("flattrim");
+    flatTrimButton.addActionListener(this);
+
     final JPanel panel = new JPanel();
     GridLayout experimentLayout = new GridLayout(0, 2);
     panel.setLayout(experimentLayout);
 
     panel.add(takeOffButton);
     panel.add(landButton);
+    panel.add(flatTrimButton);
 
     frame.getContentPane().add(panel);
   }
@@ -61,6 +66,9 @@ public class SwingWindow implements ActionListener
         break;
       case "land":
         droneController.land();
+        break;
+      case "flattrim":
+        droneController.flatTrim();
         break;
       default:
         System.out.println(String.format("Don't know what to do with command '%s'", e.getActionCommand()));
