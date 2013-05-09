@@ -14,11 +14,15 @@ public class LeapDroneController implements NavDataListener, DetectionListener
 
   private static final float HEIGHT_THRESHOLD = 0.25f;
 
+  private static final float MOVE_THRESHOLD = 0.02f;
+
   private final DroneController droneController;
 
   private boolean navDataReceived = false;
 
   private float currentHeight;
+
+  private float lastRoll, lastPitch, lastYaw, lastHeight;
 
   @Inject
   public LeapDroneController(DroneController droneController)
@@ -32,13 +36,27 @@ public class LeapDroneController implements NavDataListener, DetectionListener
     float desiredHeight = data.getHeight() * MAX_HEIGHT;
     float heightDelta = navDataReceived ? calculateHeightDelta(desiredHeight) : 0.0f;
 
-    droneController.move(data.getRoll(), data.getPitch(), data.getYaw(), heightDelta);
+    move(data.getRoll(), data.getPitch(), data.getYaw(), heightDelta);
   }
 
   @Override
   public void onNoDetect()
   {
-    droneController.move(0.0f, 0.0f, 0.0f, 0.0f);
+    move(0.0f, 0.0f, 0.0f, 0.0f);
+  }
+
+  private void move(float roll, float pitch, float yaw, float height)
+  {
+    if (Math.abs(roll - lastRoll) > MOVE_THRESHOLD || Math.abs(pitch - lastPitch) > MOVE_THRESHOLD ||
+            Math.abs(yaw - lastYaw) > MOVE_THRESHOLD || Math.abs(height - lastHeight) > MOVE_THRESHOLD)
+    {
+      lastRoll = roll;
+      lastPitch = pitch;
+      lastYaw = yaw;
+      lastHeight = height;
+
+      droneController.move(roll, pitch, yaw, height);
+    }
   }
 
   private float calculateHeightDelta(float desiredHeight)

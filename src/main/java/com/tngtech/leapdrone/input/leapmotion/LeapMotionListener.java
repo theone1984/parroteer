@@ -14,11 +14,13 @@ import java.util.Set;
 
 public class LeapMotionListener extends Listener
 {
-  public final static int MAX_HEIGHT = 600;
+  public static final float MAX_ROLL = 40.0f;
 
-  public final static int MAX_ROLL = 40;
+  public static final float MAX_PITCH = 40.0f;
 
-  public final static int MAX_PITCH = 40;
+  private static final float MAX_YAW = 40.0f;
+
+  public static final float MAX_HEIGHT = 600.0f;
 
   private Logger logger = Logger.getLogger(LeapMotionListener.class.getSimpleName());
 
@@ -90,15 +92,12 @@ public class LeapMotionListener extends Listener
     Vector normal = hand.palmNormal();
     Vector direction = hand.direction();
 
-    float handHeight = hand.palmPosition().getY();
-    float handPitchInDegrees = ((Double) Math.toDegrees(direction.pitch())).floatValue();
-    float handRollInDegrees = ((Double) Math.toDegrees(normal.roll())).floatValue();
+    float pitch = ((Double) Math.toDegrees(direction.pitch())).floatValue() / MAX_PITCH;
+    float roll = ((Double) Math.toDegrees(normal.roll())).floatValue() / MAX_ROLL;
+    float yaw = ((Double) Math.toDegrees(direction.yaw())).floatValue() / MAX_YAW;
+    float height = hand.palmPosition().getY() / MAX_HEIGHT;
 
-    float roll = handRollInDegrees / MAX_ROLL;
-    float pitch = handPitchInDegrees / MAX_PITCH;
-    float height = handHeight / MAX_HEIGHT;
-
-    return new DetectionData(roll, pitch, 0.0f, height);
+    return new DetectionData(roll, pitch, yaw, height);
   }
 
   public void addDetectionListener(DetectionListener detectionListener)

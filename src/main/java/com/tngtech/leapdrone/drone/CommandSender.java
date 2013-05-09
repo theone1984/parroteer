@@ -84,7 +84,7 @@ public class CommandSender implements Runnable
 
   public void move(float roll, float pitch, float yaw, float gaz)
   {
-    logger.debug(String.format("Moving - roll: %.2f, pitch: %.2f, yaw: %.2f, gaz: %.2f", roll, pitch, yaw, gaz));
+    logger.trace(String.format("Moving - roll: %.2f, pitch: %.2f, yaw: %.2f, gaz: %.2f", roll, pitch, yaw, gaz));
     queue(String.format("AT*PCMD=%d,%d,%d,%d,%d,%d", sequenceNumber++, 1, getNormalizedIntValue(roll), getNormalizedIntValue(pitch),
             getNormalizedIntValue(gaz), getNormalizedIntValue(yaw)));
   }
