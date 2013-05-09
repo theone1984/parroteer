@@ -6,15 +6,12 @@ import com.tngtech.leapdrone.drone.DroneController;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
-import javax.swing.JTextField;
 import javax.swing.WindowConstants;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 
-public class SwingWindow implements ActionListener, KeyListener
+public class SwingWindow implements ActionListener
 {
   private final DroneController droneController;
 
@@ -22,22 +19,6 @@ public class SwingWindow implements ActionListener, KeyListener
   public SwingWindow(DroneController droneController)
   {
     this.droneController = droneController;
-  }
-
-  public class HelloThread extends Thread
-  {
-    public void run()
-    {
-      while(true) {
-        try
-        {
-          Thread.sleep(100);
-        } catch (InterruptedException e)
-        {
-        }
-        droneController.move(0.0f, currentPitch, 0.0f, 0.0f);
-      }
-    }
   }
 
   public void createWindow()
@@ -53,9 +34,6 @@ public class SwingWindow implements ActionListener, KeyListener
 
   private void createUIElements(JFrame frame)
   {
-    JTextField typingArea = new JTextField(20);
-    typingArea.addKeyListener(this);
-
     final JButton takeOffButton = new JButton("Take off");
     takeOffButton.setActionCommand("takeOff");
     takeOffButton.addActionListener(this);
@@ -70,7 +48,6 @@ public class SwingWindow implements ActionListener, KeyListener
 
     panel.add(takeOffButton);
     panel.add(landButton);
-    panel.add(typingArea);
 
     frame.getContentPane().add(panel);
   }
@@ -81,7 +58,6 @@ public class SwingWindow implements ActionListener, KeyListener
     {
       case "takeOff":
         droneController.takeOff();
-        new HelloThread().start();
         break;
       case "land":
         droneController.land();
@@ -89,33 +65,5 @@ public class SwingWindow implements ActionListener, KeyListener
       default:
         System.out.println(String.format("Don't know what to do with command '%s'", e.getActionCommand()));
     }
-  }
-
-  @Override
-  public void keyTyped(KeyEvent e)
-  {
-  }
-
-  float currentPitch = 0.0f;
-
-  @Override
-  public void keyPressed(KeyEvent e)
-  {
-    if (e.getKeyChar() == 'w')
-    {
-      currentPitch = 1.0f;
-    } else if (e.getKeyChar() == 's')
-    {
-      currentPitch = -1.0f;
-    }
-
-    System.out.println("Pressed" + e.getKeyChar());
-  }
-
-  @Override
-  public void keyReleased(KeyEvent e)
-  {
-    currentPitch = 0.0f;
-    System.out.println("Released" + e.getKeyChar());
   }
 }
