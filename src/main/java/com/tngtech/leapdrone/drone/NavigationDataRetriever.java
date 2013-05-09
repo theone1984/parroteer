@@ -1,18 +1,15 @@
 package com.tngtech.leapdrone.drone;
 
+import com.google.inject.Inject;
+import com.tngtech.leapdrone.drone.components.ThreadComponent;
+import com.tngtech.leapdrone.drone.components.UdpComponent;
 import com.tngtech.leapdrone.helpers.BinaryDataHelper;
 
-import java.io.IOException;
 import java.net.DatagramPacket;
-import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.net.SocketException;
-import java.net.UnknownHostException;
 
-@SuppressWarnings("InfiniteLoopStatement")
-public class NavigationDataRetriever
+public class NavigationDataRetriever implements Runnable
 {
-
   private static final int NAVDATA_PORT = 5554;
 
   private static final byte[] KEEP_ALIVE_BYTES = new byte[]{0x01, 0x00, 0x00, 0x00};
@@ -25,116 +22,71 @@ public class NavigationDataRetriever
 
   private static final int DATA_LENGTH = 4;
 
-  private final DroneCommandSender commandSender;
+  private final ThreadComponent threadComponent;
 
-  private InetAddress address;
+  private final UdpComponent udpComponent;
+
+  private byte[] receivingBuffer;
+
+  private DatagramPacket incomingDataPacket;
 
   private DatagramPacket keepAlivePacket;
 
-  private DatagramSocket navigationDataSocket;
-
-  public static void main(String[] args)
+  @Inject
+  public NavigationDataRetriever(ThreadComponent threadComponent, UdpComponent udpComponent)
   {
-    DroneCommandSender commandSender = new DroneCommandSender();
-    NavigationDataRetriever navigationDataRetriever = new NavigationDataRetriever(commandSender);
+    super();
+    this.threadComponent = threadComponent;
+    this.udpComponent = udpComponent;
 
-    commandSender.connect();
-    navigationDataRetriever.connect();
-
-    navigationDataRetriever.run();
+    determineDatagramPackets();
   }
 
-  public NavigationDataRetriever(DroneCommandSender commandSender)
+  public void start()
   {
-    this.commandSender = commandSender;
-
-    determineDroneAddress();
-    determineKeepAlivePacket();
+    threadComponent.start(this);
   }
 
-  private void determineDroneAddress()
+  public void stop()
   {
-    try
-    {
-      address = InetAddress.getByName(DroneController.DRONE_IP_ADDRESS);
-
-    } catch (UnknownHostException e)
-    {
-      throw new IllegalStateException(e);
-    }
+    threadComponent.stop();
   }
 
-  private void determineKeepAlivePacket()
+  private void determineDatagramPackets()
   {
+    InetAddress address = udpComponent.getInetAddress(DroneController.DRONE_IP_ADDRESS);
+
+    receivingBuffer = new byte[RECEIVING_BUFFER_SIZE];
+    incomingDataPacket = new DatagramPacket(receivingBuffer, receivingBuffer.length);
     keepAlivePacket = new DatagramPacket(KEEP_ALIVE_BYTES, KEEP_ALIVE_BYTES.length, address, NAVDATA_PORT);
   }
 
-  private void connect()
-  {
-    try
-    {
-      navigationDataSocket = new DatagramSocket(NAVDATA_PORT);
-      navigationDataSocket.setSoTimeout(3000);
-    } catch (SocketException e)
-    {
-      throw new IllegalStateException(e);
-    }
-  }
-
+  @Override
   public void run()
   {
-    byte[] receivingBuffer = new byte[RECEIVING_BUFFER_SIZE];
-    DatagramPacket incomingDataPacket = new DatagramPacket(receivingBuffer, receivingBuffer.length);
+    udpComponent.connect(NAVDATA_PORT);
+    udpComponent.send(keepAlivePacket);
 
-    sendNavDataReceivingStartCommands();
-
-    while (true)
+    while (!threadComponent.isStopped())
     {
       try
       {
-        receiveData(incomingDataPacket);
-        processData(incomingDataPacket, receivingBuffer);
+        udpComponent.receive(incomingDataPacket);
+        processData();
 
-        sendKeepAliveSignal();
+        udpComponent.send(keepAlivePacket);
       } catch (RuntimeException e)
       {
         e.printStackTrace();
       }
     }
+    udpComponent.disconnect();
   }
 
-  private void sendNavDataReceivingStartCommands()
+  private void processData()
   {
-    sendKeepAliveSignal();
-    commandSender.sendEnableNavDataCommand();
-  }
-
-  private void processData(DatagramPacket incomingDataPacket, byte[] receivingBuffer)
-  {
-    System.out.println("NavData Received: " + incomingDataPacket.getLength() + " bytes");
+    //System.out.println("NavData Received: " + incomingDataPacket.getLength() + " bytes");
     System.out.println("Battery: " + BinaryDataHelper.getInt(receivingBuffer, NAVDATA_BATTERY_INDEX, DATA_LENGTH) + "%, Altitude: " +
             ((float) BinaryDataHelper.getInt(receivingBuffer, NAVDATA_ALTITUDE_INDEX, DATA_LENGTH) / 1000) + "m");
-  }
-
-  private void sendKeepAliveSignal()
-  {
-    try
-    {
-      navigationDataSocket.send(keepAlivePacket);
-    } catch (IOException e)
-    {
-      throw new IllegalStateException(e);
-    }
-  }
-
-  private void receiveData(DatagramPacket incomingDataPacket)
-  {
-    try
-    {
-      navigationDataSocket.receive(incomingDataPacket);
-    } catch (IOException e)
-    {
-      throw new IllegalStateException(e);
-    }
   }
 }

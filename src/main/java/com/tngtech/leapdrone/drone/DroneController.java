@@ -2,38 +2,54 @@ package com.tngtech.leapdrone.drone;
 
 
 import com.google.inject.Inject;
+import com.tngtech.leapdrone.injection.Context;
 
 public class DroneController
 {
   public static final String DRONE_IP_ADDRESS = "192.168.1.1";
 
-  private final DroneCommandSender droneCommandSender;
+  private final CommandSender commandSender;
 
-  @Inject
-  public DroneController(DroneCommandSender droneCommandSender, NavigationDataRetriever navigationDataRetriever)
+  private final NavigationDataRetriever navigationDataRetriever;
+
+  public static void main(String[] args)
   {
-    this.droneCommandSender = droneCommandSender;
+    DroneController droneController = Context.getBean(DroneController.class);
+    droneController.start();
   }
 
-  public void connect()
+  @Inject
+  public DroneController(CommandSender commandSender, NavigationDataRetriever navigationDataRetriever)
   {
-    droneCommandSender.connect();
+    this.commandSender = commandSender;
+    this.navigationDataRetriever = navigationDataRetriever;
+  }
+
+  public void start()
+  {
+    commandSender.start();
+    navigationDataRetriever.start();
+  }
+
+  public void stop()
+  {
+    commandSender.stop();
+    navigationDataRetriever.stop();
   }
 
   public void takeOff()
   {
-    droneCommandSender.sendTakeOff();
+    commandSender.sendTakeOffCommand();
   }
 
   public void land()
   {
-    droneCommandSender.sendLand();
+    commandSender.sendLandCommand();
   }
 
   public void move(float roll, float pitch, float yaw, float gaz)
   {
     //System.out.println(String.format("Got values: Roll: %.3f, Pitch: %.3f, Yaw: %.3f, Gaz: %.3f", roll, pitch, yaw, gaz));
-    droneCommandSender.sendWatchDogCommand();
-    droneCommandSender.move(roll, pitch, yaw, gaz);
+    commandSender.move(roll, pitch, yaw, gaz);
   }
 }

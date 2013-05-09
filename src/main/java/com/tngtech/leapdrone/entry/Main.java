@@ -32,7 +32,7 @@ public class Main
 
   private void start()
   {
-    droneController.connect();
+    droneController.start();
 
     swingWindow.createWindow();
 
@@ -55,6 +55,7 @@ public class Main
     });
   }
 
+  @SuppressWarnings("ResultOfMethodCallIgnored")
   private void keepProcessBusy()
   {
     try
