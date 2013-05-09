@@ -2,6 +2,7 @@ package com.tngtech.leapdrone.drone;
 
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
+import com.tngtech.leapdrone.drone.components.AddressComponent;
 import com.tngtech.leapdrone.drone.components.ThreadComponent;
 import com.tngtech.leapdrone.drone.components.UdpComponent;
 import com.tngtech.leapdrone.drone.config.DroneConfig;
@@ -26,6 +27,8 @@ public class CommandSender implements Runnable
 
   private final ThreadComponent threadComponent;
 
+  private final AddressComponent addressComponent;
+
   private final UdpComponent udpComponent;
 
   private List<String> commandsToSend;
@@ -33,9 +36,10 @@ public class CommandSender implements Runnable
   private int sequenceNumber = 1;
 
   @Inject
-  public CommandSender(ThreadComponent threadComponent, UdpComponent udpComponent)
+  public CommandSender(ThreadComponent threadComponent, AddressComponent addressComponent, UdpComponent udpComponent)
   {
     this.threadComponent = threadComponent;
+    this.addressComponent = addressComponent;
     this.udpComponent = udpComponent;
 
     commandsToSend = Lists.newArrayList();
@@ -145,7 +149,7 @@ public class CommandSender implements Runnable
     command += "\r";
     byte[] sendData = command.getBytes();
 
-    InetAddress address = udpComponent.getInetAddress(DroneConfig.DRONE_IP_ADDRESS);
+    InetAddress address = addressComponent.getInetAddress(DroneConfig.DRONE_IP_ADDRESS);
 
     DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, address, DroneConfig.COMMAND_PORT);
     udpComponent.send(sendPacket);

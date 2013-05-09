@@ -2,6 +2,7 @@ package com.tngtech.leapdrone.drone;
 
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
+import com.tngtech.leapdrone.drone.components.AddressComponent;
 import com.tngtech.leapdrone.drone.components.ThreadComponent;
 import com.tngtech.leapdrone.drone.components.UdpComponent;
 import com.tngtech.leapdrone.drone.config.DroneConfig;
@@ -32,6 +33,8 @@ public class NavigationDataRetriever implements Runnable
 
   private final ThreadComponent threadComponent;
 
+  private final AddressComponent addressComponent;
+
   private final UdpComponent udpComponent;
 
   private final Set<NavDataListener> navDataListeners;
@@ -43,10 +46,11 @@ public class NavigationDataRetriever implements Runnable
   private DatagramPacket keepAlivePacket;
 
   @Inject
-  public NavigationDataRetriever(ThreadComponent threadComponent, UdpComponent udpComponent)
+  public NavigationDataRetriever(ThreadComponent threadComponent, AddressComponent addressComponent, UdpComponent udpComponent)
   {
     super();
     this.threadComponent = threadComponent;
+    this.addressComponent = addressComponent;
     this.udpComponent = udpComponent;
     navDataListeners = Sets.newLinkedHashSet();
 
@@ -83,7 +87,7 @@ public class NavigationDataRetriever implements Runnable
 
   private void determineDatagramPackets()
   {
-    InetAddress address = udpComponent.getInetAddress(DroneConfig.DRONE_IP_ADDRESS);
+    InetAddress address = addressComponent.getInetAddress(DroneConfig.DRONE_IP_ADDRESS);
 
     receivingBuffer = new byte[RECEIVING_BUFFER_SIZE];
     incomingDataPacket = new DatagramPacket(receivingBuffer, receivingBuffer.length);
