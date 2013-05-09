@@ -117,8 +117,8 @@ public class NavigationDataRetriever implements Runnable
 
   public NavData getNavData()
   {
-    int batteryLevel = BinaryDataHelper.getInt(receivingBuffer, NAVDATA_BATTERY_INDEX, DATA_LENGTH);
-    float altitude = (float) BinaryDataHelper.getInt(receivingBuffer, NAVDATA_ALTITUDE_INDEX, DATA_LENGTH) / 1000;
+    int batteryLevel = BinaryDataHelper.getIntValue(receivingBuffer, NAVDATA_BATTERY_INDEX, DATA_LENGTH);
+    float altitude = (float) BinaryDataHelper.getIntValue(receivingBuffer, NAVDATA_ALTITUDE_INDEX, DATA_LENGTH) / 1000;
 
     return new NavData(batteryLevel, altitude);
   }

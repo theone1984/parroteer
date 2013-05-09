@@ -29,9 +29,9 @@
         </dependency>
 
         <dependency>
-            <groupId>com.codeminders</groupId>
-            <artifactId>javadrone-api</artifactId>
-            <version>1.3</version>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+            <version>1.2.17</version>
         </dependency>
 
         <dependency>

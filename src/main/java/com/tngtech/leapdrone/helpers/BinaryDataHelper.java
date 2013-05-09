@@ -2,7 +2,7 @@ package com.tngtech.leapdrone.helpers;
 
 public class BinaryDataHelper
 {
-  public static int getInt(byte[] data, int offset, int length)
+  public static int getIntValue(byte[] data, int offset, int length)
   {
     int tempValue;
     int integerValue = 0;
@@ -15,5 +15,18 @@ public class BinaryDataHelper
     }
 
     return integerValue;
+  }
+
+  public static int getNormalizedIntValue(Float value)
+  {
+    if (value < -1.0f)
+    {
+      value = -1.0f;
+    } else if (value > 1.0f)
+    {
+      value = 1.0f;
+    }
+
+    return Float.floatToIntBits(value);
   }
 }

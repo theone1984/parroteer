@@ -4,6 +4,8 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Singleton;
+import com.tngtech.leapdrone.control.leapmotion.LeapMotionController;
+import com.tngtech.leapdrone.control.leapmotion.LeapMotionListener;
 import com.tngtech.leapdrone.drone.CommandSender;
 import com.tngtech.leapdrone.drone.DroneController;
 import com.tngtech.leapdrone.drone.NavigationDataRetriever;
@@ -32,6 +34,9 @@ public class Context extends AbstractModule
   @Override
   protected void configure()
   {
+    bind(LeapMotionController.class).in(Singleton.class);
+    bind(LeapMotionListener.class).in(Singleton.class);
+
     bind(DroneController.class).in(Singleton.class);
     bind(CommandSender.class).in(Singleton.class);
     bind(NavigationDataRetriever.class).in(Singleton.class);

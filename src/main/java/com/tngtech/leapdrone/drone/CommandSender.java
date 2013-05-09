@@ -10,6 +10,7 @@ import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.util.List;
 
+import static com.tngtech.leapdrone.helpers.BinaryDataHelper.getNormalizedIntValue;
 import static com.tngtech.leapdrone.helpers.ThreadHelper.sleep;
 
 public class CommandSender implements Runnable
@@ -62,21 +63,8 @@ public class CommandSender implements Runnable
 
   public void move(float roll, float pitch, float yaw, float gaz)
   {
-    queue(String.format("AT*PCMD=%d,%d,%d,%d,%d,%d", sequenceNumber++, 1, normalizeValue(roll), normalizeValue(pitch), normalizeValue(gaz),
-            normalizeValue(yaw)));
-  }
-
-  protected int normalizeValue(Float value)
-  {
-    if (value < -1.0f)
-    {
-      value = -1.0f;
-    } else if (value > 1.0f)
-    {
-      value = 1.0f;
-    }
-
-    return Float.floatToIntBits(value);
+    queue(String.format("AT*PCMD=%d,%d,%d,%d,%d,%d", sequenceNumber++, 1, getNormalizedIntValue(roll), getNormalizedIntValue(pitch),
+            getNormalizedIntValue(gaz), getNormalizedIntValue(yaw)));
   }
 
   private void queue(String command)

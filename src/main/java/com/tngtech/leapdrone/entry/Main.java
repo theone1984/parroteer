@@ -1,8 +1,9 @@
 package com.tngtech.leapdrone.entry;
 
 import com.google.inject.Inject;
-import com.tngtech.leapdrone.control.LeapMotionController;
-import com.tngtech.leapdrone.control.LeapMotionDetectionEventHandler;
+import com.tngtech.leapdrone.control.leapmotion.LeapMotionController;
+import com.tngtech.leapdrone.control.leapmotion.data.DetectionData;
+import com.tngtech.leapdrone.control.leapmotion.listeners.DetectionListener;
 import com.tngtech.leapdrone.drone.DroneController;
 import com.tngtech.leapdrone.drone.data.NavData;
 import com.tngtech.leapdrone.drone.listeners.NavDataListener;
@@ -45,13 +46,14 @@ public class Main
 
   private void addEventHandlers()
   {
-    leapMotionController.setDetectionEventHandler(new LeapMotionDetectionEventHandler()
+    leapMotionController.addDetectionListener(new DetectionListener()
     {
       @Override
-      public void onEvent(float height, float pitch, float roll)
+      public void onDetect(DetectionData detectionData)
       {
-        System.out.println(String.format("Detected: gaz = " + height + ", pitch = " + pitch + ", roll = " + roll));
-        droneController.move(roll, pitch, 0.0f, height);
+        System.out.println(String.format("Detected: gaz = " + detectionData.getHeight() + ", pitch = " + detectionData.getPitch() +
+                ", roll = " + detectionData.getRoll()));
+        droneController.move(detectionData.getRoll(), detectionData.getPitch(), 0.0f, detectionData.getHeight());
       }
     });
 
