@@ -1,13 +1,10 @@
 package com.tngtech.leapdrone.entry;
 
 import com.google.inject.Inject;
-import com.tngtech.leapdrone.control.leapmotion.LeapMotionController;
-import com.tngtech.leapdrone.control.leapmotion.data.DetectionData;
-import com.tngtech.leapdrone.control.leapmotion.listeners.DetectionListener;
+import com.tngtech.leapdrone.control.LeapDroneController;
 import com.tngtech.leapdrone.drone.DroneController;
-import com.tngtech.leapdrone.drone.data.NavData;
-import com.tngtech.leapdrone.drone.listeners.NavDataListener;
 import com.tngtech.leapdrone.injection.Context;
+import com.tngtech.leapdrone.input.leapmotion.LeapMotionController;
 import com.tngtech.leapdrone.ui.SwingWindow;
 
 import java.io.IOException;
@@ -20,48 +17,33 @@ public class Main
 
   private final LeapMotionController leapMotionController;
 
+  private final LeapDroneController leapDroneController;
+
   public static void main(String[] args)
   {
     Context.getBean(Main.class).start();
   }
 
   @Inject
-  public Main(SwingWindow swingWindow, DroneController droneController, LeapMotionController leapMotionController)
+  public Main(SwingWindow swingWindow, DroneController droneController, LeapMotionController leapMotionController,
+              LeapDroneController leapDroneController)
   {
     this.swingWindow = swingWindow;
     this.droneController = droneController;
     this.leapMotionController = leapMotionController;
+    this.leapDroneController = leapDroneController;
   }
 
   private void start()
   {
-    addEventHandlers();
+    droneController.addNavDataListener(leapDroneController);
+    leapMotionController.addDetectionListener(leapDroneController);
 
     droneController.start();
     swingWindow.createWindow();
     leapMotionController.connect();
 
     keepProcessBusy();
-  }
-
-  private void addEventHandlers()
-  {
-    leapMotionController.addDetectionListener(new DetectionListener()
-    {
-      @Override
-      public void onDetect(DetectionData detectionData)
-      {
-        droneController.move(detectionData.getRoll(), detectionData.getPitch(), 0.0f, detectionData.getHeight());
-      }
-    });
-
-    droneController.addNavDataListener(new NavDataListener()
-    {
-      @Override
-      public void onNavData(NavData navData)
-      {
-      }
-    });
   }
 
   @SuppressWarnings("ResultOfMethodCallIgnored")

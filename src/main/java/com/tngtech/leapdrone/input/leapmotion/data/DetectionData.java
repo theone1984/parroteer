@@ -1,4 +1,4 @@
-package com.tngtech.leapdrone.control.leapmotion.data;
+package com.tngtech.leapdrone.input.leapmotion.data;
 
 public class DetectionData
 {

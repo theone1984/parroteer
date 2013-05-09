@@ -1,4 +1,4 @@
-package com.tngtech.leapdrone.control.leapmotion;
+package com.tngtech.leapdrone.input.leapmotion;
 
 import com.google.common.collect.Sets;
 import com.leapmotion.leap.Controller;
@@ -6,8 +6,8 @@ import com.leapmotion.leap.Frame;
 import com.leapmotion.leap.Hand;
 import com.leapmotion.leap.Listener;
 import com.leapmotion.leap.Vector;
-import com.tngtech.leapdrone.control.leapmotion.data.DetectionData;
-import com.tngtech.leapdrone.control.leapmotion.listeners.DetectionListener;
+import com.tngtech.leapdrone.input.leapmotion.data.DetectionData;
+import com.tngtech.leapdrone.input.leapmotion.listeners.DetectionListener;
 import org.apache.log4j.Logger;
 
 import java.util.Set;
@@ -53,10 +53,22 @@ public class LeapMotionListener extends Listener
   {
     Frame frame = controller.frame();
 
-    if (!frame.hands().empty())
+    if (frame.hands().empty())
+    {
+      processNoDetectionEvent();
+    } else
     {
       Hand hand = frame.hands().get(0);
       processDetectionEvent(hand);
+    }
+  }
+
+  private void processNoDetectionEvent()
+  {
+    logger.trace("No hand detected");
+    for (DetectionListener listener : detectionListeners)
+    {
+      listener.onNoDetect();
     }
   }
 

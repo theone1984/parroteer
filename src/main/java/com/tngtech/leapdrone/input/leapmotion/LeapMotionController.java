@@ -1,10 +1,9 @@
-package com.tngtech.leapdrone.control.leapmotion;
+package com.tngtech.leapdrone.input.leapmotion;
 
 import com.google.inject.Inject;
 import com.leapmotion.leap.Controller;
-import com.tngtech.leapdrone.control.leapmotion.listeners.DetectionListener;
+import com.tngtech.leapdrone.input.leapmotion.listeners.DetectionListener;
 import org.apache.log4j.Logger;
-
 
 public class LeapMotionController
 {
