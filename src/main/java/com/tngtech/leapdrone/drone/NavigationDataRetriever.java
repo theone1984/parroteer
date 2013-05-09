@@ -14,6 +14,8 @@ import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.util.Set;
 
+import static com.tngtech.leapdrone.helpers.ThreadHelper.sleep;
+
 public class NavigationDataRetriever implements Runnable
 {
   private static final byte[] KEEP_ALIVE_BYTES = new byte[]{0x01, 0x00, 0x00, 0x00};
@@ -91,9 +93,8 @@ public class NavigationDataRetriever implements Runnable
   @Override
   public void run()
   {
-    logger.info(String.format("Connecting to nav data port %d", DroneConfig.NAVDATA_PORT));
-    udpComponent.connect(DroneConfig.NAVDATA_PORT);
-    udpComponent.send(keepAlivePacket);
+    connectToNavDataPort();
+    initializeCommunication();
 
     while (!threadComponent.isStopped())
     {
@@ -105,12 +106,24 @@ public class NavigationDataRetriever implements Runnable
         udpComponent.send(keepAlivePacket);
       } catch (RuntimeException e)
       {
+        udpComponent.send(keepAlivePacket);
         logger.error(e.getMessage(), e);
       }
     }
 
-    logger.info(String.format("Disconnecting from nav data port %d", DroneConfig.NAVDATA_PORT));
-    udpComponent.disconnect();
+    disconnectFromNavDataPort();
+  }
+
+  private void connectToNavDataPort()
+  {
+    logger.info(String.format("Connecting to nav data port %d", DroneConfig.NAVDATA_PORT));
+    udpComponent.connect(DroneConfig.NAVDATA_PORT);
+  }
+
+  private void initializeCommunication()
+  {
+    sleep(100);
+    udpComponent.send(keepAlivePacket);
   }
 
   private void processData()
@@ -130,5 +143,11 @@ public class NavigationDataRetriever implements Runnable
     float altitude = (float) BinaryDataHelper.getIntValue(receivingBuffer, NAVDATA_ALTITUDE_INDEX, DATA_LENGTH) / 1000;
 
     return new NavData(batteryLevel, altitude);
+  }
+
+  private void disconnectFromNavDataPort()
+  {
+    logger.info(String.format("Disconnecting from nav data port %d", DroneConfig.NAVDATA_PORT));
+    udpComponent.disconnect();
   }
 }
