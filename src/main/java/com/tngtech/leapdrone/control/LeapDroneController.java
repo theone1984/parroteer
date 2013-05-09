@@ -55,7 +55,7 @@ public class LeapDroneController implements NavDataListener, DetectionListener
       lastYaw = yaw;
       lastHeight = height;
 
-      droneController.move(roll, pitch, yaw, height);
+      droneController.move(-roll, pitch, yaw, height);
     }
   }
 
