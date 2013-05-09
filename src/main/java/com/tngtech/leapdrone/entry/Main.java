@@ -4,6 +4,8 @@ import com.google.inject.Inject;
 import com.tngtech.leapdrone.control.LeapMotionController;
 import com.tngtech.leapdrone.control.LeapMotionDetectionEventHandler;
 import com.tngtech.leapdrone.drone.DroneController;
+import com.tngtech.leapdrone.drone.data.NavData;
+import com.tngtech.leapdrone.drone.listeners.NavDataListener;
 import com.tngtech.leapdrone.injection.Context;
 import com.tngtech.leapdrone.ui.SwingWindow;
 
@@ -32,17 +34,16 @@ public class Main
 
   private void start()
   {
+    addEventHandlers();
+
     droneController.start();
-
     swingWindow.createWindow();
-
     leapMotionController.connect();
-    addEventHandler();
 
     keepProcessBusy();
   }
 
-  private void addEventHandler()
+  private void addEventHandlers()
   {
     leapMotionController.setDetectionEventHandler(new LeapMotionDetectionEventHandler()
     {
@@ -51,6 +52,15 @@ public class Main
       {
         System.out.println(String.format("Detected: gaz = " + height + ", pitch = " + pitch + ", roll = " + roll));
         droneController.move(roll, pitch, 0.0f, height);
+      }
+    });
+
+    droneController.addNavDataListener(new NavDataListener()
+    {
+      @Override
+      public void onNavData(NavData navData)
+      {
+        System.out.println("Battery level: " + navData.getBatteryLevel() + "%, altitude: " + navData.getAltitude() + "m");
       }
     });
   }

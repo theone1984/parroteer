@@ -2,12 +2,11 @@ package com.tngtech.leapdrone.drone;
 
 
 import com.google.inject.Inject;
+import com.tngtech.leapdrone.drone.listeners.NavDataListener;
 import com.tngtech.leapdrone.injection.Context;
 
 public class DroneController
 {
-  public static final String DRONE_IP_ADDRESS = "192.168.1.1";
-
   private final CommandSender commandSender;
 
   private final NavigationDataRetriever navigationDataRetriever;
@@ -37,6 +36,16 @@ public class DroneController
     navigationDataRetriever.stop();
   }
 
+  public void addNavDataListener(NavDataListener navDataListener)
+  {
+    navigationDataRetriever.addNavDataListener(navDataListener);
+  }
+
+  public void removeNavDataListener(NavDataListener navDataListener)
+  {
+    navigationDataRetriever.removeNavDataListener(navDataListener);
+  }
+
   public void takeOff()
   {
     commandSender.sendTakeOffCommand();
@@ -49,7 +58,6 @@ public class DroneController
 
   public void move(float roll, float pitch, float yaw, float gaz)
   {
-    //System.out.println(String.format("Got values: Roll: %.3f, Pitch: %.3f, Yaw: %.3f, Gaz: %.3f", roll, pitch, yaw, gaz));
     commandSender.move(roll, pitch, yaw, gaz);
   }
 }

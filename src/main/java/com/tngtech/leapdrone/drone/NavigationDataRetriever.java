@@ -1,17 +1,20 @@
 package com.tngtech.leapdrone.drone;
 
+import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 import com.tngtech.leapdrone.drone.components.ThreadComponent;
 import com.tngtech.leapdrone.drone.components.UdpComponent;
+import com.tngtech.leapdrone.drone.config.DroneConfig;
+import com.tngtech.leapdrone.drone.data.NavData;
+import com.tngtech.leapdrone.drone.listeners.NavDataListener;
 import com.tngtech.leapdrone.helpers.BinaryDataHelper;
 
 import java.net.DatagramPacket;
 import java.net.InetAddress;
+import java.util.Set;
 
 public class NavigationDataRetriever implements Runnable
 {
-  private static final int NAVDATA_PORT = 5554;
-
   private static final byte[] KEEP_ALIVE_BYTES = new byte[]{0x01, 0x00, 0x00, 0x00};
 
   public static final int RECEIVING_BUFFER_SIZE = 10240;
@@ -26,6 +29,8 @@ public class NavigationDataRetriever implements Runnable
 
   private final UdpComponent udpComponent;
 
+  private final Set<NavDataListener> navDataListeners;
+
   private byte[] receivingBuffer;
 
   private DatagramPacket incomingDataPacket;
@@ -38,6 +43,7 @@ public class NavigationDataRetriever implements Runnable
     super();
     this.threadComponent = threadComponent;
     this.udpComponent = udpComponent;
+    navDataListeners = Sets.newLinkedHashSet();
 
     determineDatagramPackets();
   }
@@ -52,19 +58,35 @@ public class NavigationDataRetriever implements Runnable
     threadComponent.stop();
   }
 
+  public void addNavDataListener(NavDataListener navDataListener)
+  {
+    if (!navDataListeners.contains(navDataListener))
+    {
+      navDataListeners.add(navDataListener);
+    }
+  }
+
+  public void removeNavDataListener(NavDataListener navDataListener)
+  {
+    if (navDataListeners.contains(navDataListener))
+    {
+      navDataListeners.remove(navDataListener);
+    }
+  }
+
   private void determineDatagramPackets()
   {
-    InetAddress address = udpComponent.getInetAddress(DroneController.DRONE_IP_ADDRESS);
+    InetAddress address = udpComponent.getInetAddress(DroneConfig.DRONE_IP_ADDRESS);
 
     receivingBuffer = new byte[RECEIVING_BUFFER_SIZE];
     incomingDataPacket = new DatagramPacket(receivingBuffer, receivingBuffer.length);
-    keepAlivePacket = new DatagramPacket(KEEP_ALIVE_BYTES, KEEP_ALIVE_BYTES.length, address, NAVDATA_PORT);
+    keepAlivePacket = new DatagramPacket(KEEP_ALIVE_BYTES, KEEP_ALIVE_BYTES.length, address, DroneConfig.NAVDATA_PORT);
   }
 
   @Override
   public void run()
   {
-    udpComponent.connect(NAVDATA_PORT);
+    udpComponent.connect(DroneConfig.NAVDATA_PORT);
     udpComponent.send(keepAlivePacket);
 
     while (!threadComponent.isStopped())
@@ -85,8 +107,19 @@ public class NavigationDataRetriever implements Runnable
 
   private void processData()
   {
-    //System.out.println("NavData Received: " + incomingDataPacket.getLength() + " bytes");
-    System.out.println("Battery: " + BinaryDataHelper.getInt(receivingBuffer, NAVDATA_BATTERY_INDEX, DATA_LENGTH) + "%, Altitude: " +
-            ((float) BinaryDataHelper.getInt(receivingBuffer, NAVDATA_ALTITUDE_INDEX, DATA_LENGTH) / 1000) + "m");
+    NavData navData = getNavData();
+
+    for (NavDataListener listener : navDataListeners)
+    {
+      listener.onNavData(navData);
+    }
+  }
+
+  public NavData getNavData()
+  {
+    int batteryLevel = BinaryDataHelper.getInt(receivingBuffer, NAVDATA_BATTERY_INDEX, DATA_LENGTH);
+    float altitude = (float) BinaryDataHelper.getInt(receivingBuffer, NAVDATA_ALTITUDE_INDEX, DATA_LENGTH) / 1000;
+
+    return new NavData(batteryLevel, altitude);
   }
 }

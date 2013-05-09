@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import com.tngtech.leapdrone.drone.components.ThreadComponent;
 import com.tngtech.leapdrone.drone.components.UdpComponent;
+import com.tngtech.leapdrone.drone.config.DroneConfig;
 
 import java.net.DatagramPacket;
 import java.net.InetAddress;
@@ -13,8 +14,6 @@ import static com.tngtech.leapdrone.helpers.ThreadHelper.sleep;
 
 public class CommandSender implements Runnable
 {
-  public static final int COMMAND_PORT = 5556;
-
   private static final int TAKE_OFF_VALUE = 290718208;
 
   private static final int LAND_VALUE = 290717696;
@@ -89,7 +88,7 @@ public class CommandSender implements Runnable
   public void run()
   {
     int count = 1;
-    udpComponent.connect(COMMAND_PORT);
+    udpComponent.connect(DroneConfig.COMMAND_PORT);
     sendEnableNavDataCommand();
 
     while (!threadComponent.isStopped())
@@ -132,9 +131,9 @@ public class CommandSender implements Runnable
     command += "\r";
     byte[] sendData = command.getBytes();
 
-    InetAddress address = udpComponent.getInetAddress(DroneController.DRONE_IP_ADDRESS);
+    InetAddress address = udpComponent.getInetAddress(DroneConfig.DRONE_IP_ADDRESS);
 
-    DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, address, COMMAND_PORT);
+    DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, address, DroneConfig.COMMAND_PORT);
     udpComponent.send(sendPacket);
   }
 }
