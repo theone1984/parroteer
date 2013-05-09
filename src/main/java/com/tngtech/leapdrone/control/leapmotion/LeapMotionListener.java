@@ -8,9 +8,9 @@ import com.leapmotion.leap.Listener;
 import com.leapmotion.leap.Vector;
 import com.tngtech.leapdrone.control.leapmotion.data.DetectionData;
 import com.tngtech.leapdrone.control.leapmotion.listeners.DetectionListener;
+import org.apache.log4j.Logger;
 
 import java.util.Set;
-import java.util.logging.Logger;
 
 public class LeapMotionListener extends Listener
 {
@@ -63,7 +63,8 @@ public class LeapMotionListener extends Listener
   public void processDetectionEvent(Hand hand)
   {
     DetectionData detectionData = getDetectionData(hand);
-    logger.fine("Detected a hand");
+    logger.trace(String.format("Detected a hand - roll: %.2f, pitch: %.2f, yaw: %.2f, height: %.2f", detectionData.getRoll(),
+            detectionData.getPitch(), detectionData.getYaw(), detectionData.getHeight()));
 
     for (DetectionListener listener : detectionListeners)
     {

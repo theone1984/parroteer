@@ -4,9 +4,13 @@ package com.tngtech.leapdrone.drone;
 import com.google.inject.Inject;
 import com.tngtech.leapdrone.drone.listeners.NavDataListener;
 import com.tngtech.leapdrone.injection.Context;
+import org.apache.log4j.Logger;
+
 
 public class DroneController
 {
+  private final Logger logger = Logger.getLogger(DroneController.class.getSimpleName());
+
   private final CommandSender commandSender;
 
   private final NavigationDataRetriever navigationDataRetriever;
@@ -26,12 +30,14 @@ public class DroneController
 
   public void start()
   {
+    logger.info("Starting dronce controller");
     commandSender.start();
     navigationDataRetriever.start();
   }
 
   public void stop()
   {
+    logger.info("Stopping dronce controller");
     commandSender.stop();
     navigationDataRetriever.stop();
   }

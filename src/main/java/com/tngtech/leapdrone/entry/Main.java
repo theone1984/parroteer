@@ -51,8 +51,6 @@ public class Main
       @Override
       public void onDetect(DetectionData detectionData)
       {
-        System.out.println(String.format("Detected: gaz = " + detectionData.getHeight() + ", pitch = " + detectionData.getPitch() +
-                ", roll = " + detectionData.getRoll()));
         droneController.move(detectionData.getRoll(), detectionData.getPitch(), 0.0f, detectionData.getHeight());
       }
     });
@@ -62,7 +60,6 @@ public class Main
       @Override
       public void onNavData(NavData navData)
       {
-        System.out.println("Battery level: " + navData.getBatteryLevel() + "%, altitude: " + navData.getAltitude() + "m");
       }
     });
   }
