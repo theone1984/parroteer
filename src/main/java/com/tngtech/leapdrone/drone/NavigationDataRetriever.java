@@ -1,130 +1,140 @@
 package com.tngtech.leapdrone.drone;
 
+import com.tngtech.leapdrone.helpers.BinaryDataHelper;
+
+import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
-import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 
+@SuppressWarnings("InfiniteLoopStatement")
 public class NavigationDataRetriever
 {
-  DatagramSocket socket_nav;
 
-  InetAddress inet_addr;
+  private static final int NAVDATA_PORT = 5554;
 
-  DatagramSocket socket_at;
+  private static final byte[] KEEP_ALIVE_BYTES = new byte[]{0x01, 0x00, 0x00, 0x00};
 
-  static final int AT_PORT = 5556;
+  public static final int RECEIVING_BUFFER_SIZE = 10240;
 
-  static final int NAVDATA_PORT = 5554;
+  private static final int NAVDATA_BATTERY_INDEX = 24;
 
-  static final int NAVDATA_BATTERY = 24;
+  private static final int NAVDATA_ALTITUDE_INDEX = 40;
 
-  static final int NAVDATA_ALTITUDE = 40;
+  private static final int DATA_LENGTH = 4;
+
+  private final DroneCommandSender commandSender;
+
+  private InetAddress address;
+
+  private DatagramPacket keepAlivePacket;
+
+  private DatagramSocket navigationDataSocket;
 
   public static void main(String[] args)
   {
+    DroneCommandSender commandSender = new DroneCommandSender();
+    NavigationDataRetriever navigationDataRetriever = new NavigationDataRetriever(commandSender);
+
+    commandSender.connect();
+    navigationDataRetriever.connect();
+
+    navigationDataRetriever.run();
+  }
+
+  public NavigationDataRetriever(DroneCommandSender commandSender)
+  {
+    this.commandSender = commandSender;
+
+    determineDroneAddress();
+    determineKeepAlivePacket();
+  }
+
+  private void determineDroneAddress()
+  {
     try
     {
-      new NavigationDataRetriever().run();
-    } catch (SocketException e)
-    {
-      e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+      address = InetAddress.getByName(DroneController.DRONE_IP_ADDRESS);
+
     } catch (UnknownHostException e)
     {
-      e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+      throw new IllegalStateException(e);
     }
   }
 
-  public void run() throws SocketException, UnknownHostException
+  private void determineKeepAlivePacket()
   {
-    socket_at = new DatagramSocket(AT_PORT);
-    socket_at.setSoTimeout(3000);
+    keepAlivePacket = new DatagramPacket(KEEP_ALIVE_BYTES, KEEP_ALIVE_BYTES.length, address, NAVDATA_PORT);
+  }
 
-    inet_addr = InetAddress.getByName("192.168.1.1");
-    socket_nav = new DatagramSocket(NAVDATA_PORT);
-    socket_nav.setSoTimeout(3000);
-
-    int cnt = 0;
-
+  private void connect()
+  {
     try
     {
-      byte[] buf_snd = {0x01, 0x00, 0x00, 0x00};
-      DatagramPacket packet_snd = new DatagramPacket(buf_snd, buf_snd.length, inet_addr, NAVDATA_PORT);
-      socket_nav.send(packet_snd);
+      navigationDataSocket = new DatagramSocket(NAVDATA_PORT);
+      navigationDataSocket.setSoTimeout(3000);
+    } catch (SocketException e)
+    {
+      throw new IllegalStateException(e);
+    }
+  }
 
-      send_at_cmd("AT*CONFIG=1,\"general:navdata_demo\",\"TRUE\"");
+  public void run()
+  {
+    byte[] receivingBuffer = new byte[RECEIVING_BUFFER_SIZE];
+    DatagramPacket incomingDataPacket = new DatagramPacket(receivingBuffer, receivingBuffer.length);
 
-      byte[] buf_rcv = new byte[10240];
-      DatagramPacket packet_rcv = new DatagramPacket(buf_rcv, buf_rcv.length);
+    sendNavDataReceivingStartCommands();
 
-      while (true)
+    while (true)
+    {
+      try
       {
-        try
-        {
-          socket_nav.receive(packet_rcv);
+        receiveData(incomingDataPacket);
+        processData(incomingDataPacket, receivingBuffer);
 
-          cnt++;
-          if (cnt >= 5)
-          {
-            cnt = 0;
-            System.out.println("NavData Received: " + packet_rcv.getLength() + " bytes");
-            System.out.println("Battery: " + get_int(buf_rcv, NAVDATA_BATTERY)
-                    + "%, Altitude: " + ((float) get_int(buf_rcv, NAVDATA_ALTITUDE) / 1000) + "m");
-
-            socket_nav.send(packet_snd);
-          }
-        } catch (SocketTimeoutException ex3)
-        {
-          System.out.println("socket_nav.receive(): Timeout");
-        } catch (Exception ex1)
-        {
-          ex1.printStackTrace();
-        }
-      }
-    } catch (Exception ex2)
-    {
-      ex2.printStackTrace();
-    }
-  }
-
-
-  public synchronized void send_at_cmd(String at_cmd) throws Exception
-  {
-    byte[] buf_snd = (at_cmd + "\r").getBytes();
-    DatagramPacket packet_snd = new DatagramPacket(buf_snd, buf_snd.length, inet_addr, AT_PORT);
-    socket_at.send(packet_snd);
-  }
-
-  public int get_int(byte[] data, int offset)
-  {
-    int tmp = 0, n = 0;
-
-    System.out.println("get_int(): data = " + byte2hex(data, offset, 4));
-    for (int i = 3; i >= 0; i--)
-    {
-      n <<= 8;
-      tmp = data[offset + i] & 0xFF;
-      n |= tmp;
-    }
-
-    return n;
-  }
-
-  public String byte2hex(byte[] data, int offset, int len)
-  {
-    StringBuffer sb = new StringBuffer();
-    for (int i = 0; i < len; i++)
-    {
-      String tmp = Integer.toHexString(((int) data[offset + i]) & 0xFF);
-      for (int t = tmp.length(); t < 2; t++)
+        sendKeepAliveSignal();
+      } catch (RuntimeException e)
       {
-        sb.append("0");
+        e.printStackTrace();
       }
-      sb.append(tmp);
-      sb.append(" ");
     }
-    return sb.toString();
+  }
+
+  private void sendNavDataReceivingStartCommands()
+  {
+    sendKeepAliveSignal();
+    commandSender.sendEnableNavDataCommand();
+  }
+
+  private void processData(DatagramPacket incomingDataPacket, byte[] receivingBuffer)
+  {
+    System.out.println("NavData Received: " + incomingDataPacket.getLength() + " bytes");
+    System.out.println("Battery: " + BinaryDataHelper.getInt(receivingBuffer, NAVDATA_BATTERY_INDEX, DATA_LENGTH) + "%, Altitude: " +
+            ((float) BinaryDataHelper.getInt(receivingBuffer, NAVDATA_ALTITUDE_INDEX, DATA_LENGTH) / 1000) + "m");
+  }
+
+  private void sendKeepAliveSignal()
+  {
+    try
+    {
+      navigationDataSocket.send(keepAlivePacket);
+    } catch (IOException e)
+    {
+      throw new IllegalStateException(e);
+    }
+  }
+
+  private void receiveData(DatagramPacket incomingDataPacket)
+  {
+    try
+    {
+      navigationDataSocket.receive(incomingDataPacket);
+    } catch (IOException e)
+    {
+      throw new IllegalStateException(e);
+    }
   }
 }

@@ -8,7 +8,7 @@ import java.net.UnknownHostException;
 
 public class DroneCommandSender
 {
-  private static final int DRONE_COMMAND_PORT = 5556;
+  public static final int DRONE_COMMAND_PORT = 5556;
 
   private static final int TAKE_OFF_VALUE = 290718208;
 
@@ -16,7 +16,7 @@ public class DroneCommandSender
 
   private final InetAddress address;
 
-  private DatagramSocket socket;
+  private DatagramSocket commandSenderSocket;
 
   private int sequenceNumber = 1;
 
@@ -35,8 +35,8 @@ public class DroneCommandSender
   {
     try
     {
-      socket = new DatagramSocket();
-
+      commandSenderSocket = new DatagramSocket();
+      commandSenderSocket.setSoTimeout(3000);
     } catch (IOException e)
     {
       e.printStackTrace();
@@ -51,7 +51,7 @@ public class DroneCommandSender
 
   public void sendWatchDogCommand()
   {
-    String command = String.format("AT*COMWDG=%s\r", sequenceNumber++);
+    String command = String.format("AT*COMWDG=%s", sequenceNumber++);
     send(command);
   }
 
@@ -67,14 +67,14 @@ public class DroneCommandSender
 
   private void sendFlightModeCommand(int flightModeValue)
   {
-    String command = String.format("AT*REF=%s,%s\r", sequenceNumber++, flightModeValue);
+    String command = String.format("AT*REF=%s,%s", sequenceNumber++, flightModeValue);
     send(command);
   }
 
   public void move(float roll, float pitch, float yaw, float gaz)
   {
     String command =
-            String.format("AT*PCMD=%d,%d,%d,%d,%d,%d\r", sequenceNumber++, 1, normalizeValue(roll), normalizeValue(pitch), normalizeValue(gaz),
+            String.format("AT*PCMD=%d,%d,%d,%d,%d,%d", sequenceNumber++, 1, normalizeValue(roll), normalizeValue(pitch), normalizeValue(gaz),
                     normalizeValue(yaw));
     send(command);
   }
@@ -96,9 +96,10 @@ public class DroneCommandSender
   {
     try
     {
+      command += "\r";
       byte[] sendData = command.getBytes();
       DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, address, DRONE_COMMAND_PORT);
-      socket.send(sendPacket);
+      commandSenderSocket.send(sendPacket);
     } catch (IOException e)
     {
       throw new IllegalStateException(e);
