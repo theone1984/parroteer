@@ -4,7 +4,7 @@ import com.google.inject.Inject;
 import com.tngtech.leapdrone.control.LeapMotionController;
 import com.tngtech.leapdrone.control.LeapMotionDetectionEventHandler;
 import com.tngtech.leapdrone.drone.DroneController;
-import com.tngtech.leapdrone.spring.Context;
+import com.tngtech.leapdrone.injection.Context;
 import com.tngtech.leapdrone.ui.SwingWindow;
 
 import java.io.IOException;

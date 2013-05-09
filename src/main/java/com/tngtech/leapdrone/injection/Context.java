@@ -1,11 +1,12 @@
-package com.tngtech.leapdrone.spring;
+package com.tngtech.leapdrone.injection;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Singleton;
-import com.tngtech.leapdrone.drone.DroneCommunicator;
+import com.tngtech.leapdrone.drone.DroneCommandSender;
 import com.tngtech.leapdrone.drone.DroneController;
+import com.tngtech.leapdrone.drone.NavigationDataRetriever;
 import com.tngtech.leapdrone.ui.SwingWindow;
 
 public class Context extends AbstractModule
@@ -31,7 +32,8 @@ public class Context extends AbstractModule
   protected void configure()
   {
     bind(DroneController.class).in(Singleton.class);
-    bind(DroneCommunicator.class).in(Singleton.class);
+    bind(DroneCommandSender.class).in(Singleton.class);
+    bind(NavigationDataRetriever.class).in(Singleton.class);
     bind(SwingWindow.class).in(Singleton.class);
   }
 }

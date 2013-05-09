@@ -6,9 +6,11 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
-public class DroneCommunicator
+public class DroneCommandSender
 {
-  private final static int TAKE_OFF_VALUE = 290718208;
+  private static final int DRONE_COMMAND_PORT = 5556;
+
+  private static final int TAKE_OFF_VALUE = 290718208;
 
   private static final int LAND_VALUE = 290717696;
 
@@ -18,11 +20,11 @@ public class DroneCommunicator
 
   private int sequenceNumber = 1;
 
-  public DroneCommunicator()
+  public DroneCommandSender()
   {
     try
     {
-      address = InetAddress.getByName("192.168.1.1");
+      address = InetAddress.getByName(DroneController.DRONE_IP_ADDRESS);
     } catch (UnknownHostException e)
     {
       throw new IllegalStateException(e);
@@ -41,6 +43,18 @@ public class DroneCommunicator
     }
   }
 
+  public void sendEnableNavDataCommand()
+  {
+    String command = String.format("AT*CONFIG=%s,\"general:navdata_demo\",\"TRUE\"", sequenceNumber++);
+    send(command);
+  }
+
+  public void sendWatchDogCommand()
+  {
+    String command = String.format("AT*COMWDG=%s\r", sequenceNumber++);
+    send(command);
+  }
+
   public void sendTakeOff()
   {
     sendFlightModeCommand(TAKE_OFF_VALUE);
@@ -49,6 +63,12 @@ public class DroneCommunicator
   public void sendLand()
   {
     sendFlightModeCommand(LAND_VALUE);
+  }
+
+  private void sendFlightModeCommand(int flightModeValue)
+  {
+    String command = String.format("AT*REF=%s,%s\r", sequenceNumber++, flightModeValue);
+    send(command);
   }
 
   public void move(float roll, float pitch, float yaw, float gaz)
@@ -72,30 +92,16 @@ public class DroneCommunicator
     return Float.floatToIntBits(value);
   }
 
-  private void sendFlightModeCommand(int flightModeValue)
-  {
-    String command = String.format("AT*REF=%s,%s\r", sequenceNumber++, flightModeValue);
-    send(command);
-  }
-
-  public void sendWatchDogCommand()
-  {
-    String command = String.format("AT*COMWDG=%s\r", sequenceNumber++);
-    send(command);
-  }
-
   private void send(String command)
   {
     try
     {
-      System.out.println(command);
       byte[] sendData = command.getBytes();
-      DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, address, 5556);
+      DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, address, DRONE_COMMAND_PORT);
       socket.send(sendPacket);
     } catch (IOException e)
     {
       throw new IllegalStateException(e);
     }
-
   }
 }

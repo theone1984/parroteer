@@ -6,20 +6,20 @@ import org.junit.Test;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 
-public class DroneCommunicatorTest
+public class DroneCommandSenderTest
 {
-  private DroneCommunicator droneCommunicator;
+  private DroneCommandSender droneCommandSender;
 
   @Before
   public void setUp()
   {
-    droneCommunicator = new DroneCommunicator();
+    droneCommandSender = new DroneCommandSender();
   }
 
   @Test
   public void testConversion()
   {
-    int intValue = droneCommunicator.normalizeValue(-0.8f);
+    int intValue = droneCommandSender.normalizeValue(-0.8f);
     assertThat(intValue, is(-1085485875));
   }
 }
