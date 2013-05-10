@@ -45,8 +45,8 @@ public class DroneController
     checkIfDroneIsReachable();
 
     logger.info("Starting dronce controller");
-    //commandSender.start();
-    //navigationDataRetriever.start();
+    commandSender.start();
+    navigationDataRetriever.start();
     videoRetriever.start();
   }
 
@@ -58,8 +58,8 @@ public class DroneController
   public void stop()
   {
     logger.info("Stopping dronce controller");
-    //commandSender.stop();
-    //navigationDataRetriever.stop();
+    commandSender.stop();
+    navigationDataRetriever.stop();
     videoRetriever.stop();
   }
 

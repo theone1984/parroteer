@@ -49,13 +49,19 @@ public class SwingWindow implements ActionListener
     final VideoPanel videoPanel = new VideoPanel();
     droneController.addVideoDataListener(videoPanel);
 
-    final JPanel panel = new JPanel();
-    GridLayout experimentLayout = new GridLayout(0, 2);
-    panel.setLayout(experimentLayout);
+    final JPanel buttonPanel = new JPanel();
+    GridLayout horizontalLayout = new GridLayout(0, 3);
+    buttonPanel.setLayout(horizontalLayout);
 
-    panel.add(takeOffButton);
-    panel.add(landButton);
-    panel.add(flatTrimButton);
+    final JPanel panel = new JPanel();
+    GridLayout verticalLayout = new GridLayout(2, 0);
+    panel.setLayout(verticalLayout);
+
+    buttonPanel.add(takeOffButton);
+    buttonPanel.add(landButton);
+    buttonPanel.add(flatTrimButton);
+
+    panel.add(buttonPanel);
     panel.add(videoPanel);
 
     frame.getContentPane().add(panel);
