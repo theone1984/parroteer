@@ -5,6 +5,7 @@ import com.google.inject.Inject;
 import com.tngtech.leapdrone.drone.components.AddressComponent;
 import com.tngtech.leapdrone.drone.config.DroneConfig;
 import com.tngtech.leapdrone.drone.listeners.NavDataListener;
+import com.tngtech.leapdrone.drone.listeners.VideoDataListener;
 import com.tngtech.leapdrone.injection.Context;
 import org.apache.log4j.Logger;
 
@@ -19,6 +20,8 @@ public class DroneController
 
   private final NavigationDataRetriever navigationDataRetriever;
 
+  private final VideoRetriever videoRetriever;
+
   private final AddressComponent addressComponent;
 
   public static void main(String[] args)
@@ -28,10 +31,12 @@ public class DroneController
   }
 
   @Inject
-  public DroneController(CommandSender commandSender, NavigationDataRetriever navigationDataRetriever, AddressComponent addressComponent)
+  public DroneController(CommandSender commandSender, NavigationDataRetriever navigationDataRetriever, VideoRetriever videoRetriever,
+                         AddressComponent addressComponent)
   {
     this.commandSender = commandSender;
     this.navigationDataRetriever = navigationDataRetriever;
+    this.videoRetriever = videoRetriever;
     this.addressComponent = addressComponent;
   }
 
@@ -40,8 +45,9 @@ public class DroneController
     checkIfDroneIsReachable();
 
     logger.info("Starting dronce controller");
-    commandSender.start();
-    navigationDataRetriever.start();
+    //commandSender.start();
+    //navigationDataRetriever.start();
+    videoRetriever.start();
   }
 
   private void checkIfDroneIsReachable()
@@ -52,8 +58,9 @@ public class DroneController
   public void stop()
   {
     logger.info("Stopping dronce controller");
-    commandSender.stop();
-    navigationDataRetriever.stop();
+    //commandSender.stop();
+    //navigationDataRetriever.stop();
+    videoRetriever.stop();
   }
 
   public void addNavDataListener(NavDataListener navDataListener)
@@ -64,6 +71,16 @@ public class DroneController
   public void removeNavDataListener(NavDataListener navDataListener)
   {
     navigationDataRetriever.removeNavDataListener(navDataListener);
+  }
+
+  public void addVideoDataListener(VideoDataListener videoDataListener)
+  {
+    videoRetriever.addVideoDataListener(videoDataListener);
+  }
+
+  public void removeVideoDataListener(VideoDataListener videoDataListener)
+  {
+    videoRetriever.removeVideoDataListener(videoDataListener);
   }
 
   public void takeOff()

@@ -46,6 +46,9 @@ public class SwingWindow implements ActionListener
     flatTrimButton.setActionCommand("flattrim");
     flatTrimButton.addActionListener(this);
 
+    final VideoPanel videoPanel = new VideoPanel();
+    droneController.addVideoDataListener(videoPanel);
+
     final JPanel panel = new JPanel();
     GridLayout experimentLayout = new GridLayout(0, 2);
     panel.setLayout(experimentLayout);
@@ -53,6 +56,7 @@ public class SwingWindow implements ActionListener
     panel.add(takeOffButton);
     panel.add(landButton);
     panel.add(flatTrimButton);
+    panel.add(videoPanel);
 
     frame.getContentPane().add(panel);
   }

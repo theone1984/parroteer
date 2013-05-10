@@ -41,7 +41,7 @@ public class Main
 
     droneController.start();
     swingWindow.createWindow();
-    leapMotionController.connect();
+    //leapMotionController.connect();
 
     keepProcessBusy();
   }
