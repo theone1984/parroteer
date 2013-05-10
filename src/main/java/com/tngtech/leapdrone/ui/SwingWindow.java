@@ -46,11 +46,15 @@ public class SwingWindow implements ActionListener
     flatTrimButton.setActionCommand("flattrim");
     flatTrimButton.addActionListener(this);
 
+    final JButton emergencyButton = new JButton("Emergency");
+    flatTrimButton.setActionCommand("emergency");
+    flatTrimButton.addActionListener(this);
+
     final VideoPanel videoPanel = new VideoPanel();
     droneController.addVideoDataListener(videoPanel);
 
     final JPanel buttonPanel = new JPanel();
-    GridLayout horizontalLayout = new GridLayout(0, 3);
+    GridLayout horizontalLayout = new GridLayout(2, 2);
     buttonPanel.setLayout(horizontalLayout);
 
     final JPanel panel = new JPanel();
@@ -60,6 +64,7 @@ public class SwingWindow implements ActionListener
     buttonPanel.add(takeOffButton);
     buttonPanel.add(landButton);
     buttonPanel.add(flatTrimButton);
+    buttonPanel.add(emergencyButton);
 
     panel.add(buttonPanel);
     panel.add(videoPanel);
@@ -79,6 +84,9 @@ public class SwingWindow implements ActionListener
         break;
       case "flattrim":
         droneController.flatTrim();
+        break;
+      case "emergency":
+        droneController.emergency();
         break;
       default:
         System.out.println(String.format("Don't know what to do with command '%s'", e.getActionCommand()));
