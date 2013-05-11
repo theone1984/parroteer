@@ -3,14 +3,21 @@ package com.tngtech.leapdrone.drone.components;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.net.SocketException;
 
 public class UdpComponent
 {
+  private static final byte[] KEEP_ALIVE_BYTES = new byte[]{0x01, 0x00, 0x00, 0x00};
+
+  private DatagramPacket keepAlivePacket;
+
   private DatagramSocket socket;
 
-  public void connect(int port)
+  public void connect(InetAddress address, int port)
   {
+    determineKeepAlivePacket(address, port);
+
     try
     {
       socket = new DatagramSocket(port);
@@ -19,6 +26,16 @@ public class UdpComponent
     {
       throw new IllegalStateException(e);
     }
+  }
+
+  private void determineKeepAlivePacket(InetAddress address, int port)
+  {
+    keepAlivePacket = new DatagramPacket(KEEP_ALIVE_BYTES, KEEP_ALIVE_BYTES.length, address, port);
+  }
+
+  public void sendKeepAlivePacket()
+  {
+    send(keepAlivePacket);
   }
 
   public void send(DatagramPacket packet)

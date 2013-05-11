@@ -19,8 +19,6 @@ import static com.tngtech.leapdrone.helpers.ThreadHelper.sleep;
 
 public class VideoRetriever implements Runnable
 {
-  private static final byte[] KEEP_ALIVE_BYTES = new byte[]{0x01, 0x00, 0x00, 0x00};
-
   public static final int RECEIVING_BUFFER_SIZE = 1024000;
 
   private final Logger logger = Logger.getLogger(VideoRetriever.class.getSimpleName());
@@ -39,13 +37,12 @@ public class VideoRetriever implements Runnable
 
   private DatagramPacket incomingDataPacket;
 
-  private DatagramPacket keepAlivePacket;
-
   @Inject
   public VideoRetriever(ThreadComponent threadComponent, AddressComponent addressComponent, UdpComponent udpComponent,
                         BufferedVideoImage bufferedVideoImage)
   {
     super();
+
     this.threadComponent = threadComponent;
     this.addressComponent = addressComponent;
     this.udpComponent = udpComponent;
@@ -89,7 +86,6 @@ public class VideoRetriever implements Runnable
 
     receivingBuffer = new byte[RECEIVING_BUFFER_SIZE];
     incomingDataPacket = new DatagramPacket(receivingBuffer, receivingBuffer.length, address, DroneConfig.VIDEO_DATA_PORT);
-    keepAlivePacket = new DatagramPacket(KEEP_ALIVE_BYTES, KEEP_ALIVE_BYTES.length, address, DroneConfig.VIDEO_DATA_PORT);
   }
 
   @Override
@@ -105,12 +101,10 @@ public class VideoRetriever implements Runnable
         udpComponent.receive(incomingDataPacket);
         processData();
 
-        udpComponent.send(keepAlivePacket);
+        udpComponent.sendKeepAlivePacket();
       } catch (RuntimeException e)
       {
-        //throw e;
-        //logger.error(e.getMessage(), e);
-        //udpComponent.send(keepAlivePacket);
+        // This happens sometimes, but does not hinder the video data from being displayed
       }
     }
 
@@ -119,13 +113,15 @@ public class VideoRetriever implements Runnable
 
   private void connectToVideoDataPort()
   {
+    InetAddress address = addressComponent.getInetAddress(DroneConfig.DRONE_IP_ADDRESS);
+
     logger.info(String.format("Connecting to video data port %d", DroneConfig.VIDEO_DATA_PORT));
-    udpComponent.connect(DroneConfig.VIDEO_DATA_PORT);
+    udpComponent.connect(address, DroneConfig.VIDEO_DATA_PORT);
   }
 
   private void initializeCommunication()
   {
-    udpComponent.send(keepAlivePacket);
+    udpComponent.sendKeepAlivePacket();
     sleep(1000);
   }
 

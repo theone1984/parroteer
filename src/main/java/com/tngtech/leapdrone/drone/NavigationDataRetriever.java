@@ -19,8 +19,6 @@ import static com.tngtech.leapdrone.helpers.ThreadHelper.sleep;
 
 public class NavigationDataRetriever implements Runnable
 {
-  private static final byte[] KEEP_ALIVE_BYTES = new byte[]{0x01, 0x00, 0x00, 0x00};
-
   public static final int RECEIVING_BUFFER_SIZE = 10240;
 
   private static final int NAVDATA_BATTERY_INDEX = 24;
@@ -42,8 +40,6 @@ public class NavigationDataRetriever implements Runnable
   private byte[] receivingBuffer;
 
   private DatagramPacket incomingDataPacket;
-
-  private DatagramPacket keepAlivePacket;
 
   @Inject
   public NavigationDataRetriever(ThreadComponent threadComponent, AddressComponent addressComponent, UdpComponent udpComponent)
@@ -87,11 +83,8 @@ public class NavigationDataRetriever implements Runnable
 
   private void determineDatagramPackets()
   {
-    InetAddress address = addressComponent.getInetAddress(DroneConfig.DRONE_IP_ADDRESS);
-
     receivingBuffer = new byte[RECEIVING_BUFFER_SIZE];
     incomingDataPacket = new DatagramPacket(receivingBuffer, receivingBuffer.length);
-    keepAlivePacket = new DatagramPacket(KEEP_ALIVE_BYTES, KEEP_ALIVE_BYTES.length, address, DroneConfig.NAVDATA_PORT);
   }
 
   @Override
@@ -107,10 +100,10 @@ public class NavigationDataRetriever implements Runnable
         udpComponent.receive(incomingDataPacket);
         processData();
 
-        udpComponent.send(keepAlivePacket);
+        udpComponent.sendKeepAlivePacket();
       } catch (RuntimeException e)
       {
-        udpComponent.send(keepAlivePacket);
+        udpComponent.sendKeepAlivePacket();
         logger.error(e.getMessage(), e);
       }
     }
@@ -120,14 +113,16 @@ public class NavigationDataRetriever implements Runnable
 
   private void connectToNavDataPort()
   {
+    InetAddress address = addressComponent.getInetAddress(DroneConfig.DRONE_IP_ADDRESS);
+
     logger.info(String.format("Connecting to nav data port %d", DroneConfig.NAVDATA_PORT));
-    udpComponent.connect(DroneConfig.NAVDATA_PORT);
+    udpComponent.connect(address, DroneConfig.NAVDATA_PORT);
   }
 
   private void initializeCommunication()
   {
     sleep(100);
-    udpComponent.send(keepAlivePacket);
+    udpComponent.sendKeepAlivePacket();
   }
 
   private void processData()

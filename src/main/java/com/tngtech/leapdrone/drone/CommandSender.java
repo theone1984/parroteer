@@ -103,23 +103,23 @@ public class CommandSender implements Runnable
   {
     int count = 1;
 
-    logger.info(String.format("Connecting to command send port %d", DroneConfig.COMMAND_PORT));
-    udpComponent.connect(DroneConfig.COMMAND_PORT);
+    connectToCommandSenderPort();
     sendEnableNavDataCommand();
 
     while (!threadComponent.isStopped())
     {
-      List<String> commands = getCommands();
-      for (String command : commands)
-      {
-        send(command);
-      }
-      sendWatchDogCommand(count++);
-      sleep(15);
+      count = sendPendingCommands(count);
     }
 
-    logger.info(String.format("Disconnecting from command send port %d", DroneConfig.COMMAND_PORT));
-    udpComponent.disconnect();
+    disconnectFromCommandSenderPort();
+  }
+
+  private void connectToCommandSenderPort()
+  {
+    InetAddress address = addressComponent.getInetAddress(DroneConfig.DRONE_IP_ADDRESS);
+
+    logger.info(String.format("Connecting to command send port %d", DroneConfig.COMMAND_PORT));
+    udpComponent.connect(address, DroneConfig.COMMAND_PORT);
   }
 
   private List<String> getCommands()
@@ -133,6 +133,18 @@ public class CommandSender implements Runnable
   {
     logger.debug("Enabling nav data");
     send(String.format("AT*CONFIG=%s,\"general:navdata_demo\",\"TRUE\"", sequenceNumber++));
+  }
+
+  private int sendPendingCommands(int count)
+  {
+    List<String> commands = getCommands();
+    for (String command : commands)
+    {
+      send(command);
+    }
+    sendWatchDogCommand(count++);
+    sleep(15);
+    return count;
   }
 
   private void sendWatchDogCommand(int count)
@@ -153,5 +165,11 @@ public class CommandSender implements Runnable
 
     DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, address, DroneConfig.COMMAND_PORT);
     udpComponent.send(sendPacket);
+  }
+
+  private void disconnectFromCommandSenderPort()
+  {
+    logger.info(String.format("Disconnecting from command send port %d", DroneConfig.COMMAND_PORT));
+    udpComponent.disconnect();
   }
 }
