@@ -1,6 +1,8 @@
 package com.tngtech.leapdrone.ui;
 
+import com.tngtech.leapdrone.drone.data.NavData;
 import com.tngtech.leapdrone.drone.data.VideoData;
+import com.tngtech.leapdrone.drone.listeners.NavDataListener;
 import com.tngtech.leapdrone.drone.listeners.VideoDataListener;
 
 import java.awt.Color;
@@ -14,13 +16,15 @@ import java.awt.image.BufferedImage;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
-public class VideoPanel extends javax.swing.JPanel implements VideoDataListener
+public class VideoPanel extends javax.swing.JPanel implements VideoDataListener, NavDataListener
 {
   public static final int DEFAULT_WIDTH = 320;
 
   public static final int DEFAULT_HEIGHT = 240;
 
-  private AtomicReference<BufferedImage> image;
+  private AtomicReference<BufferedImage> currentImage;
+
+  private int currentBatteryLevel = -1;
 
   private AtomicBoolean preserveAspect;
 
@@ -28,7 +32,7 @@ public class VideoPanel extends javax.swing.JPanel implements VideoDataListener
 
   public VideoPanel()
   {
-    image = new AtomicReference<>();
+    currentImage = new AtomicReference<>();
     preserveAspect = new AtomicBoolean(true);
     noConnectionImage = new BufferedImage(DEFAULT_WIDTH, DEFAULT_HEIGHT, BufferedImage.TYPE_INT_RGB);
 
@@ -43,7 +47,7 @@ public class VideoPanel extends javax.swing.JPanel implements VideoDataListener
     graphics.setFont(font);
     graphics.drawString("No video connection", 40, 110);
 
-    image.set(noConnectionImage);
+    currentImage.set(noConnectionImage);
   }
 
   @Override
@@ -58,8 +62,14 @@ public class VideoPanel extends javax.swing.JPanel implements VideoDataListener
     BufferedImage droneImage = new BufferedImage(videoData.getWidth(), videoData.getHeight(), BufferedImage.TYPE_INT_RGB);
     droneImage.setRGB(0, 0, videoData.getWidth(), videoData.getHeight(), videoData.getPixelData(), 0, videoData.getWidth());
 
-    image.set(droneImage);
+    currentImage.set(droneImage);
     repaint();
+  }
+
+  @Override
+  public void onNavData(NavData navData)
+  {
+    currentBatteryLevel = navData.getBatteryLevel();
   }
 
   @Override
@@ -71,12 +81,14 @@ public class VideoPanel extends javax.swing.JPanel implements VideoDataListener
 
     int width = getWidth();
     int height = getHeight();
+
     drawDroneImage(graphics2D, width, height);
+    drawBatteryLevel(graphics2D);
   }
 
   private void drawDroneImage(Graphics2D graphics2D, int width, int height)
   {
-    BufferedImage droneImage = image.get();
+    BufferedImage droneImage = currentImage.get();
     if (droneImage == null)
     {
       return;
@@ -87,6 +99,20 @@ public class VideoPanel extends javax.swing.JPanel implements VideoDataListener
 
     Rectangle rectangle = getImageDimensions(width, height);
     graphics2D.drawImage(droneImage, rectangle.x, rectangle.y, rectangle.width, rectangle.height, null);
+  }
+
+  private void drawBatteryLevel(Graphics2D graphics2D)
+  {
+    if (currentBatteryLevel == -1)
+    {
+      return;
+    }
+
+    String batteryLevelText = "Battery: " + currentBatteryLevel + "%";
+
+    Font font = graphics2D.getFont().deriveFont(12.0f);
+    graphics2D.setFont(font);
+    graphics2D.drawString(batteryLevelText, 10, 20);
   }
 
   private Rectangle getImageDimensions(int width, int height)
@@ -119,4 +145,6 @@ public class VideoPanel extends javax.swing.JPanel implements VideoDataListener
   {
     setLayout(new java.awt.GridLayout(4, 6));
   }
+
+
 }
