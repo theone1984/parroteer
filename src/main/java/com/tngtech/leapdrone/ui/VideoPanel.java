@@ -4,9 +4,11 @@ import com.tngtech.leapdrone.drone.data.VideoData;
 import com.tngtech.leapdrone.drone.listeners.VideoDataListener;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -14,66 +16,86 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public class VideoPanel extends javax.swing.JPanel implements VideoDataListener
 {
+  public static final int DEFAULT_WIDTH = 320;
 
-  private AtomicReference<BufferedImage> image = new AtomicReference<BufferedImage>();
+  public static final int DEFAULT_HEIGHT = 240;
 
-  private AtomicBoolean preserveAspect = new AtomicBoolean(true);
+  private AtomicReference<BufferedImage> image;
 
-  private BufferedImage noConnection = new BufferedImage(320, 240, BufferedImage.TYPE_INT_RGB);
+  private AtomicBoolean preserveAspect;
+
+  private BufferedImage noConnectionImage;
 
   public VideoPanel()
   {
+    image = new AtomicReference<>();
+    preserveAspect = new AtomicBoolean(true);
+    noConnectionImage = new BufferedImage(DEFAULT_WIDTH, DEFAULT_HEIGHT, BufferedImage.TYPE_INT_RGB);
+
     initComponents();
-    Graphics2D g2d = (Graphics2D) noConnection.getGraphics();
-    Font f = g2d.getFont().deriveFont(24.0f);
-    g2d.setFont(f);
-    g2d.drawString("No video connection", 40, 110);
-    image.set(noConnection);
+    initializeImage();
   }
 
-  public void setPreserveAspect(boolean preserve)
+  private void initializeImage()
   {
-    preserveAspect.set(preserve);
+    Graphics2D graphics = (Graphics2D) noConnectionImage.getGraphics();
+    Font font = graphics.getFont().deriveFont(24.0f);
+    graphics.setFont(font);
+    graphics.drawString("No video connection", 40, 110);
+
+    image.set(noConnectionImage);
+  }
+
+  @Override
+  public Dimension getPreferredSize()
+  {
+    return new Dimension(DEFAULT_WIDTH, DEFAULT_HEIGHT);
   }
 
   @Override
   public void onVideoData(VideoData videoData)
   {
-    setImage(videoData.getWidth(), videoData.getHeight(), videoData.getPixelData(), videoData.getWidth());
-  }
+    BufferedImage droneImage = new BufferedImage(videoData.getWidth(), videoData.getHeight(), BufferedImage.TYPE_INT_RGB);
+    droneImage.setRGB(0, 0, videoData.getWidth(), videoData.getHeight(), videoData.getPixelData(), 0, videoData.getWidth());
 
-  public void setImage(int w, int h, int[] rgbArray, int scansize)
-  {
-    BufferedImage im = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
-    im.setRGB(0, 0, w, h, rgbArray, 0, scansize);
-    image.set(im);
+    image.set(droneImage);
     repaint();
   }
 
   @Override
-  public void paintComponent(Graphics g)
+  public void paintComponent(Graphics graphics)
   {
-    Graphics2D g2d = (Graphics2D) g;
-    g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-    g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+    Graphics2D graphics2D = (Graphics2D) graphics;
+    graphics2D.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+    graphics2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
     int width = getWidth();
     int height = getHeight();
-    drawDroneImage(g2d, width, height);
+    drawDroneImage(graphics2D, width, height);
   }
 
-  private void drawDroneImage(Graphics2D g2d, int width, int height)
+  private void drawDroneImage(Graphics2D graphics2D, int width, int height)
   {
-    BufferedImage im = image.get();
-    if (im == null)
+    BufferedImage droneImage = image.get();
+    if (droneImage == null)
     {
       return;
     }
-    int xPos = 0;
-    int yPos = 0;
+
+    graphics2D.setColor(Color.BLACK);
+    graphics2D.fill3DRect(0, 0, width, height, false);
+
+    Rectangle rectangle = getImageDimensions(width, height);
+    graphics2D.drawImage(droneImage, rectangle.x, rectangle.y, rectangle.width, rectangle.height, null);
+  }
+
+  private Rectangle getImageDimensions(int width, int height)
+  {
+    int x = 0;
+    int y = 0;
+
     if (preserveAspect.get())
     {
-      g2d.setColor(Color.BLACK);
-      g2d.fill3DRect(0, 0, width, height, false);
       float widthUnit = ((float) width / 4.0f);
       float heightAspect = (float) height / widthUnit;
       float heightUnit = ((float) height / 3.0f);
@@ -81,24 +103,20 @@ public class VideoPanel extends javax.swing.JPanel implements VideoDataListener
 
       if (widthAspect > 4)
       {
-        xPos = (int) (width - (heightUnit * 4)) / 2;
+        x = (int) (width - (heightUnit * 4)) / 2;
         width = (int) (heightUnit * 4);
       } else if (heightAspect > 3)
       {
-        yPos = (int) (height - (widthUnit * 3)) / 2;
+        y = (int) (height - (widthUnit * 3)) / 2;
         height = (int) (widthUnit * 3);
       }
     }
-    if (im != null)
-    {
-      g2d.drawImage(im, xPos, yPos, width, height, null);
-    }
+
+    return new Rectangle(x, y, width, height);
   }
 
   private void initComponents()
   {
     setLayout(new java.awt.GridLayout(4, 6));
   }
-
-
 }
