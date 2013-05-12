@@ -2,10 +2,10 @@ package com.tngtech.leapdrone.drone;
 
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
-import com.tngtech.leapdrone.drone.components.AddressComponent;
-import com.tngtech.leapdrone.drone.components.ThreadComponent;
-import com.tngtech.leapdrone.drone.components.UdpComponent;
 import com.tngtech.leapdrone.drone.config.DroneConfig;
+import com.tngtech.leapdrone.helpers.components.AddressComponent;
+import com.tngtech.leapdrone.helpers.components.ThreadComponent;
+import com.tngtech.leapdrone.helpers.components.UdpComponent;
 import org.apache.log4j.Logger;
 
 import java.net.DatagramPacket;

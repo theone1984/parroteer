@@ -18,14 +18,31 @@
             <version>3.0</version>
         </dependency>
         <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>14.0.1</version>
+        </dependency>
+
+        <dependency>
             <groupId>com.tngtech.internal</groupId>
             <artifactId>leap-java</artifactId>
             <version>0.7.9</version>
         </dependency>
+
         <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-            <version>14.0.1</version>
+            <groupId>net.cmusphinx</groupId>
+            <artifactId>jsapi</artifactId>
+            <version>1.0</version>
+        </dependency>
+        <dependency>
+            <groupId>net.cmusphinx</groupId>
+            <artifactId>sphinx4</artifactId>
+            <version>1.0</version>
+        </dependency>
+        <dependency>
+            <groupId>net.cmusphinx</groupId>
+            <artifactId>wsj-6800hz</artifactId>
+            <version>1.0</version>
         </dependency>
 
         <dependency>

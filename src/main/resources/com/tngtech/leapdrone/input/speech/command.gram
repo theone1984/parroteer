@@ -1,0 +1,3 @@
+#JSGF V1.0;
+grammar command;
+public <command>= Drone (take off | land | emergency | flat trim);

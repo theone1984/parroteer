@@ -1,4 +1,4 @@
-package com.tngtech.leapdrone.drone.components;
+package com.tngtech.leapdrone.helpers.components;
 
 import static com.google.common.base.Preconditions.checkState;
 

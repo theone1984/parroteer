@@ -1,10 +1,11 @@
 package com.tngtech.leapdrone.entry;
 
 import com.google.inject.Inject;
-import com.tngtech.leapdrone.control.LeapDroneController;
+import com.tngtech.leapdrone.control.DroneInputController;
 import com.tngtech.leapdrone.drone.DroneController;
 import com.tngtech.leapdrone.injection.Context;
 import com.tngtech.leapdrone.input.leapmotion.LeapMotionController;
+import com.tngtech.leapdrone.input.speech.SpeechDetector;
 import com.tngtech.leapdrone.ui.SwingWindow;
 
 import java.io.IOException;
@@ -15,9 +16,11 @@ public class Main
 
   private final DroneController droneController;
 
+  private final SpeechDetector speechDetector;
+
   private final LeapMotionController leapMotionController;
 
-  private final LeapDroneController leapDroneController;
+  private final DroneInputController droneInputController;
 
   public static void main(String[] args)
   {
@@ -25,25 +28,38 @@ public class Main
   }
 
   @Inject
-  public Main(SwingWindow swingWindow, DroneController droneController, LeapMotionController leapMotionController,
-              LeapDroneController leapDroneController)
+  public Main(SwingWindow swingWindow, DroneController droneController,
+              SpeechDetector speechDetector, LeapMotionController leapMotionController, DroneInputController droneInputController)
   {
     this.swingWindow = swingWindow;
     this.droneController = droneController;
+    this.speechDetector = speechDetector;
     this.leapMotionController = leapMotionController;
-    this.leapDroneController = leapDroneController;
+    this.droneInputController = droneInputController;
   }
 
   private void start()
   {
-    droneController.addNavDataListener(leapDroneController);
-    leapMotionController.addDetectionListener(leapDroneController);
-
-    droneController.start();
-    swingWindow.createWindow();
-    leapMotionController.connect();
+    addEventListeners();
+    startComponents();
 
     keepProcessBusy();
+  }
+
+  private void addEventListeners()
+  {
+    droneController.addNavDataListener(droneInputController);
+    leapMotionController.addDetectionListener(droneInputController);
+    speechDetector.addSpeechListener(droneInputController);
+  }
+
+  private void startComponents()
+  {
+    droneController.start();
+    swingWindow.createWindow();
+
+    leapMotionController.connect();
+    speechDetector.start();
   }
 
   @SuppressWarnings("ResultOfMethodCallIgnored")

@@ -2,7 +2,7 @@ package com.tngtech.leapdrone.drone;
 
 
 import com.google.inject.Inject;
-import com.tngtech.leapdrone.drone.components.AddressComponent;
+import com.tngtech.leapdrone.helpers.components.AddressComponent;
 import com.tngtech.leapdrone.drone.config.DroneConfig;
 import com.tngtech.leapdrone.drone.listeners.NavDataListener;
 import com.tngtech.leapdrone.drone.listeners.VideoDataListener;

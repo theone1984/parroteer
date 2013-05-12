@@ -6,8 +6,10 @@ import com.tngtech.leapdrone.drone.data.NavData;
 import com.tngtech.leapdrone.drone.listeners.NavDataListener;
 import com.tngtech.leapdrone.input.leapmotion.data.DetectionData;
 import com.tngtech.leapdrone.input.leapmotion.listeners.DetectionListener;
+import com.tngtech.leapdrone.input.speech.data.SpeechData;
+import com.tngtech.leapdrone.input.speech.listeners.SpeechListener;
 
-public class LeapDroneController implements NavDataListener, DetectionListener
+public class DroneInputController implements NavDataListener, DetectionListener, SpeechListener
 {
   // Max height in meters
   private static final float MAX_HEIGHT = 2.0f;
@@ -25,9 +27,28 @@ public class LeapDroneController implements NavDataListener, DetectionListener
   private float lastRoll, lastPitch, lastYaw, lastHeight;
 
   @Inject
-  public LeapDroneController(DroneController droneController)
+  public DroneInputController(DroneController droneController)
   {
     this.droneController = droneController;
+  }
+
+  @Override
+  public void onSpeech(SpeechData speechData)
+  {
+    String sentence = speechData.getSentence();
+    if (sentence.endsWith("take off"))
+    {
+      droneController.takeOff();
+    } else if (sentence.endsWith("land"))
+    {
+      droneController.land();
+    } else if (sentence.endsWith("emergency"))
+    {
+      droneController.emergency();
+    } else if (sentence.endsWith("flat trim"))
+    {
+      droneController.flatTrim();
+    }
   }
 
   @Override

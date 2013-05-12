@@ -1,4 +1,4 @@
-package com.tngtech.leapdrone.drone.components;
+package com.tngtech.leapdrone.helpers.components;
 
 import com.google.common.collect.Maps;
 
