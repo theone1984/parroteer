@@ -3,6 +3,7 @@ package com.tngtech.leapdrone.input.speech;
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 import com.tngtech.leapdrone.helpers.components.ThreadComponent;
+import com.tngtech.leapdrone.injection.Context;
 import com.tngtech.leapdrone.input.speech.data.SpeechData;
 import com.tngtech.leapdrone.input.speech.listeners.SpeechListener;
 import edu.cmu.sphinx.frontend.util.Microphone;
@@ -30,6 +31,12 @@ public class SpeechDetector implements Runnable
   private Recognizer recognizer;
 
   private Microphone microphone;
+
+  public static void main(String[] args)
+  {
+    SpeechDetector speechDetector = Context.getBean(SpeechDetector.class);
+    speechDetector.start();
+  }
 
   @Inject
   public SpeechDetector(ThreadComponent threadComponent)
@@ -103,8 +110,13 @@ public class SpeechDetector implements Runnable
   private void processResult(Result result)
   {
     SpeechData speechData = getSpeechData(result);
-    logger.debug(String.format("Recognized speech input '%s'", speechData.getSentence()));
 
+    if (speechData == null)
+    {
+      return;
+    }
+
+    logger.debug(String.format("Recognized speech input '%s'", speechData.getSentence()));
     for (SpeechListener listener : speechListeners)
     {
       listener.onSpeech(speechData);
@@ -114,6 +126,11 @@ public class SpeechDetector implements Runnable
   private SpeechData getSpeechData(Result result)
   {
     String resultText = result.getBestFinalResultNoFiller();
+
+    if ("".equals(resultText))
+    {
+      return null;
+    }
     return new SpeechData(resultText);
   }
 
