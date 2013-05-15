@@ -2,14 +2,12 @@ package com.tngtech.leapdrone.drone;
 
 
 import com.google.inject.Inject;
-import com.tngtech.leapdrone.helpers.components.AddressComponent;
-import com.tngtech.leapdrone.drone.config.DroneConfig;
 import com.tngtech.leapdrone.drone.listeners.NavDataListener;
 import com.tngtech.leapdrone.drone.listeners.VideoDataListener;
+import com.tngtech.leapdrone.drone.video.ArDrone2VideoDecoder;
+import com.tngtech.leapdrone.helpers.components.AddressComponent;
 import com.tngtech.leapdrone.injection.Context;
 import org.apache.log4j.Logger;
-
-import static com.google.common.base.Preconditions.checkState;
 
 
 public class DroneController
@@ -20,7 +18,7 @@ public class DroneController
 
   private final NavigationDataRetriever navigationDataRetriever;
 
-  private final VideoRetriever videoRetriever;
+  private final ArDrone2VideoDecoder videoRetriever;
 
   private final AddressComponent addressComponent;
 
@@ -31,7 +29,7 @@ public class DroneController
   }
 
   @Inject
-  public DroneController(CommandSender commandSender, NavigationDataRetriever navigationDataRetriever, VideoRetriever videoRetriever,
+  public DroneController(CommandSender commandSender, NavigationDataRetriever navigationDataRetriever, ArDrone2VideoDecoder videoRetriever,
                          AddressComponent addressComponent)
   {
     this.commandSender = commandSender;
@@ -60,7 +58,7 @@ public class DroneController
     logger.info("Stopping dronce controller");
     commandSender.stop();
     navigationDataRetriever.stop();
-    videoRetriever.stop();
+    //videoRetriever.stop();
   }
 
   public void addNavDataListener(NavDataListener navDataListener)

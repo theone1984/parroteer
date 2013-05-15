@@ -67,6 +67,13 @@ public class VideoPanel extends javax.swing.JPanel implements VideoDataListener,
   }
 
   @Override
+  public void onVideoData(BufferedImage droneImage)
+  {
+    currentImage.set(droneImage);
+    repaint();
+  }
+
+  @Override
   public void onNavData(NavData navData)
   {
     currentBatteryLevel = navData.getBatteryLevel();
