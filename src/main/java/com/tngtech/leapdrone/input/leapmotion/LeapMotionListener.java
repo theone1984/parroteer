@@ -3,116 +3,142 @@ package com.tngtech.leapdrone.input.leapmotion;
 import com.google.common.collect.Sets;
 import com.leapmotion.leap.Controller;
 import com.leapmotion.leap.Frame;
+import com.leapmotion.leap.Gesture;
+import com.leapmotion.leap.GestureList;
 import com.leapmotion.leap.Hand;
 import com.leapmotion.leap.Listener;
 import com.leapmotion.leap.Vector;
 import com.tngtech.leapdrone.input.leapmotion.data.DetectionData;
+import com.tngtech.leapdrone.input.leapmotion.data.GestureData;
 import com.tngtech.leapdrone.input.leapmotion.listeners.DetectionListener;
+import com.tngtech.leapdrone.input.leapmotion.listeners.GestureListener;
+
 import org.apache.log4j.Logger;
 
 import java.util.Set;
 
-public class LeapMotionListener extends Listener
-{
-  public static final float MAX_ROLL = 40.0f;
+public class LeapMotionListener extends Listener {
+	public static final float MAX_ROLL = 40.0f;
 
-  public static final float MAX_PITCH = 40.0f;
+	public static final float MAX_PITCH = 40.0f;
 
-  private static final float MAX_YAW = 40.0f;
+	private static final float MAX_YAW = 40.0f;
 
-  public static final float MAX_HEIGHT = 600.0f;
+	public static final float MAX_HEIGHT = 600.0f;
 
-  private Logger logger = Logger.getLogger(LeapMotionListener.class.getSimpleName());
+	private static int currentGestureId = 0;
 
-  private final Set<DetectionListener> detectionListeners;
+	private Logger logger = Logger.getLogger(LeapMotionListener.class
+			.getSimpleName());
 
-  public LeapMotionListener()
-  {
-    detectionListeners = Sets.newHashSet();
-  }
+	private final Set<DetectionListener> detectionListeners;
 
-  public void onInit(Controller controller)
-  {
-    logger.info("Leap motion listener initialized");
-  }
+	private final Set<GestureListener> gestureListeners;
 
-  public void onConnect(Controller controller)
-  {
-    logger.info("Leap motion listener connected");
-  }
+	public LeapMotionListener() {
+		detectionListeners = Sets.newHashSet();
+		gestureListeners = Sets.newHashSet();
+	}
 
-  public void onDisconnect(Controller controller)
-  {
-    logger.info("Leap motion listener disconnected");
-  }
+	public void onInit(Controller controller) {
+		logger.info("Leap motion listener initialized");
+	}
 
-  public void onExit(Controller controller)
-  {
-    logger.info("Leap motion listener exited");
-  }
+	public void onConnect(Controller controller) {
+		logger.info("Leap motion listener connected");
+	}
 
-  public void onFrame(Controller controller)
-  {
-    Frame frame = controller.frame();
+	public void onDisconnect(Controller controller) {
+		logger.info("Leap motion listener disconnected");
+	}
 
-    if (frame.hands().empty())
-    {
-      processNoDetectionEvent();
-    } else
-    {
-      Hand hand = frame.hands().get(0);
-      processDetectionEvent(hand);
-    }
-  }
+	public void onExit(Controller controller) {
+		logger.info("Leap motion listener exited");
+	}
 
-  private void processNoDetectionEvent()
-  {
-    logger.trace("No hand detected");
-    for (DetectionListener listener : detectionListeners)
-    {
-      listener.onNoDetect();
-    }
-  }
+	public void onFrame(Controller controller) {
+		Frame frame = controller.frame();
 
-  public void processDetectionEvent(Hand hand)
-  {
-    DetectionData detectionData = getDetectionData(hand);
-    logger.trace(String.format("Detected a hand - roll: %.2f, pitch: %.2f, yaw: %.2f, height: %.2f", detectionData.getRoll(),
-            detectionData.getPitch(), detectionData.getYaw(), detectionData.getHeight()));
+		GestureList gestures = frame.gestures();
 
-    for (DetectionListener listener : detectionListeners)
-    {
-      listener.onDetect(detectionData);
-    }
-  }
+		for (Gesture gesture : gestures) {
+			processGestureEvent(gesture);
+		}
 
-  public DetectionData getDetectionData(Hand hand)
-  {
-    // Get the hand's normal vector and direction
-    Vector normal = hand.palmNormal();
-    Vector direction = hand.direction();
+		if (frame.hands().empty()) {
+			processNoDetectionEvent();
+		} else {
+			Hand hand = frame.hands().get(0);
+			processDetectionEvent(hand);
+		}
+	}
 
-    float pitch = ((Double) Math.toDegrees(direction.pitch())).floatValue() / MAX_PITCH;
-    float roll = ((Double) Math.toDegrees(normal.roll())).floatValue() / MAX_ROLL;
-    float yaw = ((Double) Math.toDegrees(direction.yaw())).floatValue() / MAX_YAW;
-    float height = hand.palmPosition().getY() / MAX_HEIGHT;
+	private void processGestureEvent(Gesture gesture) {
+		if (gesture.type().equals(Gesture.Type.TYPE_CIRCLE) && gesture.id() > currentGestureId) {
+			currentGestureId = gesture.id();
+			logger.info(String.format("Circle Gesture detected with id [%s].", gesture.id()));
+			for (GestureListener listener : gestureListeners) {
+				listener.onCircle(new GestureData(gesture.id()));
+			}
+		}
+	}
 
-    return new DetectionData(roll, pitch, yaw, height);
-  }
+	private void processNoDetectionEvent() {
+		logger.trace("No hand detected");
+		for (DetectionListener listener : detectionListeners) {
+			listener.onNoDetect();
+		}
+	}
 
-  public void addDetectionListener(DetectionListener detectionListener)
-  {
-    if (!detectionListeners.contains(detectionListener))
-    {
-      detectionListeners.add(detectionListener);
-    }
-  }
+	public void processDetectionEvent(Hand hand) {
+		DetectionData detectionData = getDetectionData(hand);
+		logger.trace(String
+				.format("Detected a hand - roll: %.2f, pitch: %.2f, yaw: %.2f, height: %.2f",
+						detectionData.getRoll(), detectionData.getPitch(),
+						detectionData.getYaw(), detectionData.getHeight()));
 
-  public void removeDetectionListener(DetectionListener detectionListener)
-  {
-    if (detectionListeners.contains(detectionListener))
-    {
-      detectionListeners.remove(detectionListener);
-    }
-  }
+		for (DetectionListener listener : detectionListeners) {
+			listener.onDetect(detectionData);
+		}
+	}
+
+	public DetectionData getDetectionData(Hand hand) {
+		// Get the hand's normal vector and direction
+		Vector normal = hand.palmNormal();
+		Vector direction = hand.direction();
+
+		float pitch = ((Double) Math.toDegrees(direction.pitch())).floatValue()
+				/ MAX_PITCH;
+		float roll = ((Double) Math.toDegrees(normal.roll())).floatValue()
+				/ MAX_ROLL;
+		float yaw = ((Double) Math.toDegrees(direction.yaw())).floatValue()
+				/ MAX_YAW;
+		float height = hand.palmPosition().getY() / MAX_HEIGHT;
+
+		return new DetectionData(roll, pitch, yaw, height);
+	}
+
+	public void addDetectionListener(DetectionListener detectionListener) {
+		if (!detectionListeners.contains(detectionListener)) {
+			detectionListeners.add(detectionListener);
+		}
+	}
+
+	public void removeDetectionListener(DetectionListener detectionListener) {
+		if (detectionListeners.contains(detectionListener)) {
+			detectionListeners.remove(detectionListener);
+		}
+	}
+
+	public void addGestureListener(GestureListener gestureListener) {
+		if (!gestureListeners.contains(gestureListener)) {
+			gestureListeners.add(gestureListener);
+		}
+	}
+
+	public void removeGestureListener(GestureListener gestureListener) {
+		if (detectionListeners.contains(gestureListener)) {
+			detectionListeners.remove(gestureListener);
+		}
+	}
 }

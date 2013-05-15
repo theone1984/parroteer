@@ -50,7 +50,8 @@ public class Main
   {
     droneController.addNavDataListener(droneInputController);
     leapMotionController.addDetectionListener(droneInputController);
-    speechDetector.addSpeechListener(droneInputController);
+    leapMotionController.addGestureListener(droneInputController);
+    //speechDetector.addSpeechListener(droneInputController);
   }
 
   private void startComponents()

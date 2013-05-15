@@ -52,7 +52,7 @@ public class DroneController
 
   private void checkIfDroneIsReachable()
   {
-    checkState(addressComponent.isReachable(DroneConfig.DRONE_IP_ADDRESS, DroneConfig.REACHABLE_TIMEOUT), "The drone could not be pinged");
+    //checkState(addressComponent.isReachable(DroneConfig.DRONE_IP_ADDRESS, DroneConfig.REACHABLE_TIMEOUT), "The drone could not be pinged");
   }
 
   public void stop()
