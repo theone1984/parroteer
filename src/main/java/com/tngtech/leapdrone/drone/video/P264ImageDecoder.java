@@ -31,7 +31,7 @@ package com.tngtech.leapdrone.drone.video;
 // may be used to endorse or promote products derived from this software without
 // specific prior written permission.
 
-public class BufferedVideoImage
+public class P264ImageDecoder
 {
   private static final int BLOCK_WIDTH = 8;
 
@@ -172,7 +172,7 @@ public class BufferedVideoImage
    * @param ByteBuffer stream
    *      A ByteBuffer full of the bytes that represent the image to be decoded.
    */
-  public void addImageStream(byte[] imageStreamByteArray, int actualDatalength)
+  public void determineImageFromStream(byte[] imageStreamByteArray, int actualDatalength)
   {
     this.imageStreamByteArray = imageStreamByteArray;
     imageStreamCapacity = actualDatalength;

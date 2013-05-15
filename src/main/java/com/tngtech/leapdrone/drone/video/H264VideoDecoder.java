@@ -1,9 +1,6 @@
 package com.tngtech.leapdrone.drone.video;
 
-import com.google.common.collect.Sets;
-import com.google.inject.Inject;
-import com.tngtech.leapdrone.drone.listeners.VideoDataListener;
-import com.tngtech.leapdrone.helpers.components.ThreadComponent;
+import com.tngtech.leapdrone.drone.listeners.ImageListener;
 import com.xuggle.xuggler.Global;
 import com.xuggle.xuggler.ICodec;
 import com.xuggle.xuggler.IContainer;
@@ -16,68 +13,33 @@ import com.xuggle.xuggler.IVideoResampler;
 import com.xuggle.xuggler.Utils;
 
 import java.awt.image.BufferedImage;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.Set;
+import java.io.InputStream;
 
-public class ArDrone2VideoDecoder extends AbstractTCPManager implements Runnable
+public class H264VideoDecoder
 {
-  private final Set<VideoDataListener> videoDataListeners;
+  private boolean stopped;
 
-  private final ThreadComponent threadComponent;
+  private InputStream inputStream;
 
-  @Inject
-  public ArDrone2VideoDecoder(ThreadComponent threadComponent)
+  private ImageListener imageListener;
+
+  public void startDecoding(InputStream inputStream, ImageListener imageListener)
   {
-    this.threadComponent = threadComponent;
-    videoDataListeners = Sets.newHashSet();
-  }
-
-  public void addVideoDataListener(VideoDataListener videoDataListener)
-  {
-    if (!videoDataListeners.contains(videoDataListener))
-    {
-      videoDataListeners.add(videoDataListener);
-    }
-  }
-
-  public void removeVideoDataListener(VideoDataListener videoDataListener)
-  {
-    if (videoDataListeners.contains(videoDataListener))
-    {
-      videoDataListeners.remove(videoDataListener);
-    }
-  }
-
-  public static void main(String[] args)
-  {
-    ArDrone2VideoDecoder arDrone2VideoDecoder = new ArDrone2VideoDecoder(new ThreadComponent());
-    arDrone2VideoDecoder.start();
-    arDrone2VideoDecoder.ticklePort(5555);
-  }
-
-  public void start()
-  {
-    threadComponent.start(this);
-  }
-
-  @Override
-  public void run()
-  {
-    try
-    {
-      connect(InetAddress.getByName("192.168.1.1"), 5555);
-    } catch (UnknownHostException e)
-    {
-    }
+    this.inputStream = inputStream;
+    this.imageListener = imageListener;
+    stopped = false;
 
     decode();
-    ticklePort(5555);
   }
 
+  public void stopDecoding()
+  {
+    stopped = true;
+  }
+
+  @SuppressWarnings({"deprecation", "ConstantConditions"})
   private void decode()
   {
-    int ijk = 0;
     // Let's make sure that we can actually convert video pixel formats.
     if (!IVideoResampler.isSupported(IVideoResampler.Feature.FEATURE_COLORSPACECONVERSION))
     {
@@ -88,7 +50,7 @@ public class ArDrone2VideoDecoder extends AbstractTCPManager implements Runnable
     IContainer container = IContainer.make();
 
     // Open up the container
-    if (container.open(getInputStream(), null) < 0)
+    if (container.open(inputStream, null) < 0)
     {
       throw new IllegalArgumentException("could not open inpustream");
     }
@@ -118,10 +80,10 @@ public class ArDrone2VideoDecoder extends AbstractTCPManager implements Runnable
       throw new RuntimeException("could not find video stream");
     }
 
-  /*
-   * Now we have found the video stream in this file. Let's open up our
-   * decoder so it can do work.
-   */
+    /*
+     * Now we have found the video stream in this file. Let's open up our
+     * decoder so it can do work.
+     */
     if (videoCoder.open() < 0)
     {
       throw new RuntimeException("could not open video decoder for container");
@@ -141,33 +103,33 @@ public class ArDrone2VideoDecoder extends AbstractTCPManager implements Runnable
       }
     }
 
-  /*
-   * Now, we start walking through the container looking at each packet.
-   */
+    /*
+     * Now, we start walking through the container looking at each packet.
+     */
     IPacket packet = IPacket.make();
     long firstTimestampInStream = Global.NO_PTS;
     long systemClockStartTime = 0;
-    while (container.readNextPacket(packet) >= 0)
+    while (container.readNextPacket(packet) >= 0 && !stopped)
     {
-    /*
-     * Now we have a packet, let's see if it belongs to our video stream
-     */
+      /*
+       * Now we have a packet, let's see if it belongs to our video stream
+       */
       if (packet.getStreamIndex() == videoStreamId)
       {
-      /*
-       * We allocate a new picture to get the data out of Xuggler
-       */
+        /*
+         * We allocate a new picture to get the data out of Xuggler
+         */
         IVideoPicture picture = IVideoPicture.make(videoCoder.getPixelType(), videoCoder.getWidth(), videoCoder.getHeight());
 
         try
         {
           int offset = 0;
           while (offset < packet.getSize())
-          {
-            System.out.println("VideoManager.decode(): decode one image");
-          /*
-           * Now, we decode the video, checking for any errors.
-           */
+          {        
+            /*
+             * Now, we decode the video, checking for any errors.
+             */
+
             int bytesDecoded = videoCoder.decodeVideo(picture, packet, offset);
             if (bytesDecoded < 0)
             {
@@ -175,21 +137,22 @@ public class ArDrone2VideoDecoder extends AbstractTCPManager implements Runnable
             }
             offset += bytesDecoded;
 
-          /*
-           * Some decoders will consume data in a packet, but will not
-           * be able to construct a full video picture yet. Therefore
-           * you should always check if you got a complete picture
-           * from the decoder
-           */
+            /*
+             * Some decoders will consume data in a packet, but will not
+             * be able to construct a full video picture yet. Therefore
+             * you should always check if you got a complete picture
+             * from the decoder
+             */
             if (picture.isComplete())
             {
-              System.out.println("VideoManager.decode(): image complete");
               IVideoPicture newPic = picture;
-            /*
-             * If the resampler is not null, that means we didn't 
-             * get the video in BGR24 format and need to convert it
-             * into BGR24 format.
-             */
+              
+              /*
+               * If the resampler is not null, that means we didn't 
+               * get the video in BGR24 format and need to convert it
+               * into BGR24 format.
+               */
+
               if (resampler != null)
               {
                 // we must resample
@@ -204,23 +167,6 @@ public class ArDrone2VideoDecoder extends AbstractTCPManager implements Runnable
                 throw new RuntimeException("could not decode video as BGR 24 bit data");
               }
 
-              /**
-               * We could just display the images as quickly as we
-               * decode them, but it turns out we can decode a lot
-               * faster than you think.
-               *
-               * So instead, the following code does a poor-man's
-               * version of trying to match up the frame-rate
-               * requested for each IVideoPicture with the system
-               * clock time on your computer.
-               *
-               * Remember that all Xuggler IAudioSamples and
-               * IVideoPicture objects always give timestamps in
-               * Microseconds, relative to the first decoded item. If
-               * instead you used the packet timestamps, they can be
-               * in different units depending on your IContainer, and
-               * IStream and things can get hairy quickly.
-               */
               if (firstTimestampInStream == Global.NO_PTS)
               {
                 // This is our first time through
@@ -255,12 +201,10 @@ public class ArDrone2VideoDecoder extends AbstractTCPManager implements Runnable
               // And finally, convert the BGR24 to an Java buffered image
               BufferedImage javaImage = Utils.videoPictureToImage(newPic);
 
-              System.out.println(ijk++);
-
               // and display it on the Java Swing window
-              for (VideoDataListener listener : videoDataListeners)
+              if (imageListener != null)
               {
-                listener.onVideoData(javaImage);
+                imageListener.onImage(javaImage);
               }
             }
           } // end of while
@@ -268,32 +212,16 @@ public class ArDrone2VideoDecoder extends AbstractTCPManager implements Runnable
         {
           exc.printStackTrace();
         }
-      } else
-      {
-      /*
-       * This packet isn't part of our video stream, so we just
-       * silently drop it.
-       */
-        do
-        {
-        } while (false);
       }
-
     }
-  /*
-   * Technically since we're exiting anyway, these will be cleaned up by
-   * the garbage collector... but because we're nice people and want to be
-   * invited places for Christmas, we're going to show how to clean up.
-   */
+
     if (videoCoder != null)
     {
       videoCoder.close();
-      videoCoder = null;
     }
     if (container != null)
     {
       container.close();
-      container = null;
     }
   }
 }
