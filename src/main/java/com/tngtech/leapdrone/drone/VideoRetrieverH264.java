@@ -13,17 +13,17 @@ import org.apache.log4j.Logger;
 
 import java.awt.image.BufferedImage;
 
-public class ArDroneTwoVideoRetriever extends VideoRetrieverAbstract implements ImageListener
+public class VideoRetrieverH264 extends VideoRetrieverAbstract implements ImageListener
 {
-  private final Logger logger = Logger.getLogger(ArDroneOneVideoRetriever.class.getSimpleName());
+  private final Logger logger = Logger.getLogger(VideoRetrieverP264.class.getSimpleName());
 
   private final TcpComponent tcpComponent;
 
   private final H264VideoDecoder videoDecoder;
 
   @Inject
-  public ArDroneTwoVideoRetriever(ThreadComponent threadComponent, AddressComponent addressComponent, TcpComponent tcpComponent,
-                                  ReadyStateComponent readyStateComponent, H264VideoDecoder videoDecoder)
+  public VideoRetrieverH264(ThreadComponent threadComponent, AddressComponent addressComponent, TcpComponent tcpComponent,
+                            ReadyStateComponent readyStateComponent, H264VideoDecoder videoDecoder)
   {
     super(threadComponent, addressComponent, readyStateComponent);
     this.tcpComponent = tcpComponent;

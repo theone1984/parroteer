@@ -15,9 +15,9 @@ import java.net.DatagramPacket;
 
 import static com.tngtech.leapdrone.helpers.ThreadHelper.sleep;
 
-public class ArDroneOneVideoRetriever extends VideoRetrieverAbstract
+public class VideoRetrieverP264 extends VideoRetrieverAbstract
 {
-  private final Logger logger = Logger.getLogger(ArDroneOneVideoRetriever.class.getSimpleName());
+  private final Logger logger = Logger.getLogger(VideoRetrieverP264.class.getSimpleName());
 
   public static final int RECEIVING_BUFFER_SIZE = 1024000;
 
@@ -30,8 +30,8 @@ public class ArDroneOneVideoRetriever extends VideoRetrieverAbstract
   private DatagramPacket incomingDataPacket;
 
   @Inject
-  public ArDroneOneVideoRetriever(ThreadComponent threadComponent, AddressComponent addressComponent, UdpComponent udpComponent,
-                                  ReadyStateComponent readyStateComponent, P264ImageDecoder imageDecoder)
+  public VideoRetrieverP264(ThreadComponent threadComponent, AddressComponent addressComponent, UdpComponent udpComponent,
+                            ReadyStateComponent readyStateComponent, P264ImageDecoder imageDecoder)
   {
     super(threadComponent, addressComponent, readyStateComponent);
     this.udpComponent = udpComponent;

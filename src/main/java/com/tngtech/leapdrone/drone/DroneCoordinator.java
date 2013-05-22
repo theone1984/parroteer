@@ -10,8 +10,11 @@ import com.tngtech.leapdrone.drone.data.NavData;
 import com.tngtech.leapdrone.drone.listeners.DroneConfigurationListener;
 import com.tngtech.leapdrone.drone.listeners.NavDataListener;
 import com.tngtech.leapdrone.drone.listeners.ReadyStateChangeListener;
+import com.tngtech.leapdrone.helpers.components.AddressComponent;
+import com.tngtech.leapdrone.helpers.components.ReadyStateComponent;
 import org.apache.log4j.Logger;
 
+import static com.google.common.base.Preconditions.checkState;
 import static com.tngtech.leapdrone.helpers.ThreadHelper.sleep;
 
 public class DroneCoordinator
@@ -19,17 +22,21 @@ public class DroneCoordinator
 
   public static final int WAIT_PERIOD = 15;
 
-
-  private enum State
+  public enum State
   {
     STARTED,
     COMMAND_ONE_RETRIEVER_READY,
     COMMAND_TWO_RETRIEVERS_READY,
     WORKERS_READY,
-    READY
+    READY,
+    STOPPED
   }
 
   private final Logger logger = Logger.getLogger(DroneCoordinator.class.getSimpleName());
+
+  private final AddressComponent addressComponent;
+
+  private final ReadyStateComponent readyStateComponent;
 
   private final CommandSender commandSender;
 
@@ -46,15 +53,18 @@ public class DroneCoordinator
   private NavData currentNavData;
 
   @Inject
-  public DroneCoordinator(CommandSender commandSender, NavigationDataRetriever navigationDataRetriever,
-                          ArDroneOneVideoRetriever arDroneOnevideoRetriever, ArDroneTwoVideoRetriever arDroneTwoVideoRetriever,
+  public DroneCoordinator(AddressComponent addressComponent, ReadyStateComponent readyStateComponent, CommandSender commandSender,
+                          NavigationDataRetriever navigationDataRetriever,
+                          VideoRetrieverP264 videoRetrieverP264, VideoRetrieverH264 videoRetrieverH264,
                           ConfigurationDataRetriever configurationDataRetriever)
   {
+    this.addressComponent = addressComponent;
+    this.readyStateComponent = readyStateComponent;
     this.commandSender = commandSender;
     this.navigationDataRetriever = navigationDataRetriever;
     this.configurationDataRetriever = configurationDataRetriever;
     this.videoRetriever =
-            DroneControllerConfig.DRONE_VERSION == DroneControllerConfig.DroneVersion.ARDRONE_1 ? arDroneOnevideoRetriever : arDroneTwoVideoRetriever;
+            DroneControllerConfig.DRONE_VERSION == DroneControllerConfig.DroneVersion.ARDRONE_1 ? videoRetrieverP264 : videoRetrieverH264;
 
     addListeners(commandSender);
     currentState = State.STARTED;
@@ -130,22 +140,33 @@ public class DroneCoordinator
     }
   }
 
-  private void navDataReceived(NavData navData)
-  {
-    currentNavData = navData;
-  }
-
   private void droneConfigurationReceived(DroneConfiguration config)
   {
     droneConfiguration = config;
   }
 
+  private void navDataReceived(NavData navData)
+  {
+    currentNavData = navData;
+  }
+
+  public void addReadyStateChangeListener(ReadyStateChangeListener readyStateChangeListener)
+  {
+    readyStateComponent.addReadyStateChangeListener(readyStateChangeListener);
+  }
+
+  public void removeReadyStateChangeListener(ReadyStateChangeListener readyStateChangeListener)
+  {
+    readyStateComponent.addReadyStateChangeListener(readyStateChangeListener);
+  }
+
   public void start()
   {
+    checkIfDroneIsReachable();
+
     commandSender.start();
     configurationDataRetriever.start();
     navigationDataRetriever.start();
-
     waitForState(State.WORKERS_READY);
     logger.info("Workers are ready to be used");
 
@@ -153,9 +174,17 @@ public class DroneCoordinator
     logger.info("Got configuration data");
 
     videoRetriever.start();
-
     waitForState(State.READY);
     logger.info("Drone setup complete");
+
+    readyStateComponent.emitReadyStateChange(ReadyStateChangeListener.ReadyState.READY);
+  }
+
+  private void checkIfDroneIsReachable()
+  {
+    checkState(addressComponent.isReachable(DroneControllerConfig.DRONE_IP_ADDRESS, DroneControllerConfig.REACHABLE_TIMEOUT),
+            "The drone could not be pinged");
+    logger.info("The drone could be pinged");
   }
 
   private void loginAndDetermineConfiguration()
@@ -168,13 +197,10 @@ public class DroneCoordinator
 
     sendConfigCommandToBeAcknowledged(new ControlDataCommand(ControlDataCommand.ControlDataMode.GET_CONTROL_DATA));
     waitForConfigurationData();
-
-
   }
 
   private void sendConfigCommandToBeAcknowledged(Command configCommand)
   {
-    waitForCommandAcknowledgeFlagToBe(true);
     sendResetControlDataAcknowledgementFlagCommand();
     waitForCommandAcknowledgeFlagToBe(false);
 
@@ -213,9 +239,36 @@ public class DroneCoordinator
 
   public void stop()
   {
+    currentState = State.STOPPED;
+
     commandSender.stop();
     navigationDataRetriever.stop();
     configurationDataRetriever.stop();
     videoRetriever.stop();
+  }
+
+  public State getState()
+  {
+    return currentState;
+  }
+
+  public NavigationDataRetriever getNavigationDataRetriever()
+  {
+    return navigationDataRetriever;
+  }
+
+  public CommandSender getCommandSender()
+  {
+    return commandSender;
+  }
+
+  public VideoRetrieverAbstract getVideoRetriever()
+  {
+    return videoRetriever;
+  }
+
+  public DroneConfiguration getDroneConfiguration()
+  {
+    return droneConfiguration;
   }
 }
