@@ -1,8 +1,12 @@
 package com.tngtech.leapdrone.drone;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 import com.tngtech.leapdrone.drone.config.DroneConfig;
+import com.tngtech.leapdrone.drone.data.DroneConfiguration;
+import com.tngtech.leapdrone.drone.listeners.DroneConfigurationListener;
 import com.tngtech.leapdrone.drone.listeners.ReadyStateChangeListener;
 import com.tngtech.leapdrone.helpers.components.AddressComponent;
 import com.tngtech.leapdrone.helpers.components.ReadyStateComponent;
@@ -13,10 +17,14 @@ import org.apache.log4j.Logger;
 import java.io.IOException;
 import java.net.SocketTimeoutException;
 import java.util.Collection;
+import java.util.Map;
+import java.util.Set;
 
-public class ConfigDataRetriever implements Runnable
+public class ConfigurationDataRetriever implements Runnable
 {
-  private final Logger logger = Logger.getLogger(ConfigDataRetriever.class.getSimpleName());
+  public static final String SEPARATOR = " = ";
+
+  private final Logger logger = Logger.getLogger(ConfigurationDataRetriever.class.getSimpleName());
 
   private final ThreadComponent threadComponent;
 
@@ -26,14 +34,18 @@ public class ConfigDataRetriever implements Runnable
 
   private final ReadyStateComponent readyStateComponent;
 
+  private final Set<DroneConfigurationListener> droneConfigurationListeners;
+
   @Inject
-  public ConfigDataRetriever(ThreadComponent threadComponent, AddressComponent addressComponent, TcpComponent tcpComponent,
-                             ReadyStateComponent readyStateComponent)
+  public ConfigurationDataRetriever(ThreadComponent threadComponent, AddressComponent addressComponent, TcpComponent tcpComponent,
+                                    ReadyStateComponent readyStateComponent)
   {
     this.threadComponent = threadComponent;
     this.addressComponent = addressComponent;
     this.tcpComponent = tcpComponent;
     this.readyStateComponent = readyStateComponent;
+
+    droneConfigurationListeners = Sets.newHashSet();
   }
 
   public void start()
@@ -56,6 +68,22 @@ public class ConfigDataRetriever implements Runnable
   public void removeReadyStateChangeListener(ReadyStateChangeListener readyStateChangeListener)
   {
     readyStateComponent.addReadyStateChangeListener(readyStateChangeListener);
+  }
+
+  public void addDroneConfigurationListener(DroneConfigurationListener droneConfigurationListener)
+  {
+    if (!droneConfigurationListeners.contains(droneConfigurationListener))
+    {
+      droneConfigurationListeners.add(droneConfigurationListener);
+    }
+  }
+
+  public void removeDroneConfigurationListener(DroneConfigurationListener droneConfigurationListener)
+  {
+    if (droneConfigurationListeners.contains(droneConfigurationListener))
+    {
+      droneConfigurationListeners.remove(droneConfigurationListener);
+    }
   }
 
   @Override
@@ -122,8 +150,31 @@ public class ConfigDataRetriever implements Runnable
       return;
     }
 
-    logger.info("Got data");
-    System.out.println(lines);
+    logger.info("Drone configuration data received");
+    DroneConfiguration droneConfiguration = getDroneConfiguration(lines);
+
+    for (DroneConfigurationListener listener : droneConfigurationListeners)
+    {
+      listener.onDroneConfiguration(droneConfiguration);
+    }
+  }
+
+  private DroneConfiguration getDroneConfiguration(Collection<String> lines)
+  {
+    Map<String, String> configMap = Maps.newHashMap();
+
+    for (String line : lines)
+    {
+      String[] configOption = line.split(SEPARATOR);
+      if (configOption.length != 2)
+      {
+        continue;
+      }
+
+      configMap.put(configOption[0], configOption[1]);
+    }
+
+    return new DroneConfiguration(configMap);
   }
 
   private void disconnectFromConfigDataPort()
