@@ -2,13 +2,6 @@ package com.tngtech.leapdrone.drone.config;
 
 public final class DroneControllerConfig
 {
-  public enum DroneVersion
-  {
-    ARDRONE_1, ARDRONE_2
-  }
-
-  public static final DroneVersion DRONE_VERSION = DroneVersion.ARDRONE_2;
-
   // Must be an 8-character hex field
   public static final String SESSION_ID = "affeaffe";
 

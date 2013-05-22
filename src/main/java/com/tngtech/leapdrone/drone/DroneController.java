@@ -6,6 +6,7 @@ import com.tngtech.leapdrone.drone.commands.FlatTrimCommand;
 import com.tngtech.leapdrone.drone.commands.FlightModeCommand;
 import com.tngtech.leapdrone.drone.commands.FlightMoveCommand;
 import com.tngtech.leapdrone.drone.data.DroneConfiguration;
+import com.tngtech.leapdrone.drone.data.DroneControllerState;
 import com.tngtech.leapdrone.drone.data.DroneVersion;
 import com.tngtech.leapdrone.drone.listeners.NavDataListener;
 import com.tngtech.leapdrone.drone.listeners.ReadyStateChangeListener;
@@ -51,7 +52,7 @@ public class DroneController
 
   public boolean isInitialized()
   {
-    return droneCoordinator.getState() == DroneCoordinator.State.READY;
+    return droneCoordinator.getState() == DroneControllerState.READY;
   }
 
   public void addReadyStateChangeListener(ReadyStateChangeListener readyStateChangeListener)
@@ -76,12 +77,14 @@ public class DroneController
 
   public void addVideoDataListener(VideoDataListener videoDataListener)
   {
-    droneCoordinator.getVideoRetriever().addVideoDataListener(videoDataListener);
+    droneCoordinator.getVideoRetrieverH264().addVideoDataListener(videoDataListener);
+    droneCoordinator.getVideoRetrieverP264().addVideoDataListener(videoDataListener);
   }
 
   public void removeVideoDataListener(VideoDataListener videoDataListener)
   {
-    droneCoordinator.getVideoRetriever().removeVideoDataListener(videoDataListener);
+    droneCoordinator.getVideoRetrieverH264().removeVideoDataListener(videoDataListener);
+    droneCoordinator.getVideoRetrieverP264().removeVideoDataListener(videoDataListener);
   }
 
   public DroneVersion getDroneVersion()
@@ -143,6 +146,6 @@ public class DroneController
 
   private void checkInitializationStateStarted()
   {
-    checkState(droneCoordinator.getState() == DroneCoordinator.State.STARTED, "The drone controller has already been initialized");
+    checkState(droneCoordinator.getState() == DroneControllerState.STARTED, "The drone controller has already been initialized");
   }
 }
