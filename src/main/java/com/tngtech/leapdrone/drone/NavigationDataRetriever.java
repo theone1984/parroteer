@@ -2,13 +2,13 @@ package com.tngtech.leapdrone.drone;
 
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
-import com.tngtech.leapdrone.helpers.components.AddressComponent;
-import com.tngtech.leapdrone.helpers.components.ThreadComponent;
-import com.tngtech.leapdrone.helpers.components.UdpComponent;
 import com.tngtech.leapdrone.drone.config.DroneConfig;
 import com.tngtech.leapdrone.drone.data.NavData;
 import com.tngtech.leapdrone.drone.listeners.NavDataListener;
-import com.tngtech.leapdrone.helpers.BinaryDataHelper;
+import com.tngtech.leapdrone.drone.navdata.NavigationDataDecoder;
+import com.tngtech.leapdrone.helpers.components.AddressComponent;
+import com.tngtech.leapdrone.helpers.components.ThreadComponent;
+import com.tngtech.leapdrone.helpers.components.UdpComponent;
 import org.apache.log4j.Logger;
 
 import java.net.DatagramPacket;
@@ -21,12 +21,6 @@ public class NavigationDataRetriever implements Runnable
 {
   public static final int RECEIVING_BUFFER_SIZE = 10240;
 
-  private static final int NAVDATA_BATTERY_INDEX = 24;
-
-  private static final int NAVDATA_ALTITUDE_INDEX = 40;
-
-  private static final int DATA_LENGTH = 4;
-
   private final Logger logger = Logger.getLogger(NavigationDataRetriever.class.getSimpleName());
 
   private final ThreadComponent threadComponent;
@@ -35,6 +29,8 @@ public class NavigationDataRetriever implements Runnable
 
   private final UdpComponent udpComponent;
 
+  private final NavigationDataDecoder decoder;
+
   private final Set<NavDataListener> navDataListeners;
 
   private byte[] receivingBuffer;
@@ -42,12 +38,14 @@ public class NavigationDataRetriever implements Runnable
   private DatagramPacket incomingDataPacket;
 
   @Inject
-  public NavigationDataRetriever(ThreadComponent threadComponent, AddressComponent addressComponent, UdpComponent udpComponent)
+  public NavigationDataRetriever(ThreadComponent threadComponent, AddressComponent addressComponent, UdpComponent udpComponent,
+                                 NavigationDataDecoder decoder)
   {
     super();
     this.threadComponent = threadComponent;
     this.addressComponent = addressComponent;
     this.udpComponent = udpComponent;
+    this.decoder = decoder;
     navDataListeners = Sets.newLinkedHashSet();
 
     determineDatagramPackets();
@@ -128,20 +126,28 @@ public class NavigationDataRetriever implements Runnable
   private void processData()
   {
     NavData navData = getNavData();
+    if (navData == null)
+    {
+      return;
+    }
+    logger.info(navData.getAltitude());
     logger.trace(String.format("Received nav data - battery level: %d percent, altitude: %.2f", navData.getBatteryLevel(), navData.getAltitude()));
-
     for (NavDataListener listener : navDataListeners)
     {
       listener.onNavData(navData);
     }
   }
 
-  public NavData getNavData()
+  private NavData getNavData()
   {
-    int batteryLevel = BinaryDataHelper.getIntValue(receivingBuffer, NAVDATA_BATTERY_INDEX, DATA_LENGTH);
-    float altitude = (float) BinaryDataHelper.getIntValue(receivingBuffer, NAVDATA_ALTITUDE_INDEX, DATA_LENGTH) / 1000;
-
-    return new NavData(batteryLevel, altitude);
+    try
+    {
+      return decoder.getNavDataFrom(receivingBuffer, incomingDataPacket.getLength());
+    } catch (RuntimeException e)
+    {
+      logger.error("Error processing the navigation data", e);
+      return null;
+    }
   }
 
   private void disconnectFromNavDataPort()
