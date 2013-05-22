@@ -1,11 +1,12 @@
 package com.tngtech.leapdrone.drone;
 
 import com.google.inject.Inject;
-import com.tngtech.leapdrone.drone.config.DroneConfig;
+import com.tngtech.leapdrone.drone.config.DroneControllerConfig;
 import com.tngtech.leapdrone.drone.listeners.ImageListener;
 import com.tngtech.leapdrone.drone.listeners.VideoDataListener;
 import com.tngtech.leapdrone.drone.video.H264VideoDecoder;
 import com.tngtech.leapdrone.helpers.components.AddressComponent;
+import com.tngtech.leapdrone.helpers.components.ReadyStateComponent;
 import com.tngtech.leapdrone.helpers.components.TcpComponent;
 import com.tngtech.leapdrone.helpers.components.ThreadComponent;
 import org.apache.log4j.Logger;
@@ -22,9 +23,9 @@ public class ArDroneTwoVideoRetriever extends VideoRetrieverAbstract implements 
 
   @Inject
   public ArDroneTwoVideoRetriever(ThreadComponent threadComponent, AddressComponent addressComponent, TcpComponent tcpComponent,
-                                  H264VideoDecoder videoDecoder)
+                                  ReadyStateComponent readyStateComponent, H264VideoDecoder videoDecoder)
   {
-    super(threadComponent, addressComponent);
+    super(threadComponent, addressComponent, readyStateComponent);
     this.tcpComponent = tcpComponent;
     this.videoDecoder = videoDecoder;
   }
@@ -41,6 +42,7 @@ public class ArDroneTwoVideoRetriever extends VideoRetrieverAbstract implements 
   {
     connectToVideoDataPort();
     initializeCommunication();
+    setReady();
 
     videoDecoder.startDecoding(tcpComponent.getInputStream(), this);
 
@@ -49,8 +51,8 @@ public class ArDroneTwoVideoRetriever extends VideoRetrieverAbstract implements 
 
   private void connectToVideoDataPort()
   {
-    logger.info(String.format("Connecting to video data port %d", DroneConfig.VIDEO_DATA_PORT));
-    tcpComponent.connect(getDroneAddress(), DroneConfig.VIDEO_DATA_PORT);
+    logger.info(String.format("Connecting to video data port %d", DroneControllerConfig.VIDEO_DATA_PORT));
+    tcpComponent.connect(getDroneAddress(), DroneControllerConfig.VIDEO_DATA_PORT);
   }
 
   private void initializeCommunication()
@@ -60,7 +62,7 @@ public class ArDroneTwoVideoRetriever extends VideoRetrieverAbstract implements 
 
   private void disconnectFromVideoDataPort()
   {
-    logger.info(String.format("Disconnecting from video data port %d", DroneConfig.VIDEO_DATA_PORT));
+    logger.info(String.format("Disconnecting from video data port %d", DroneControllerConfig.VIDEO_DATA_PORT));
     tcpComponent.disconnect();
   }
 

@@ -3,7 +3,8 @@ package com.tngtech.leapdrone.drone;
 import com.google.inject.Inject;
 import com.tngtech.leapdrone.drone.commands.Command;
 import com.tngtech.leapdrone.drone.commands.ControlDataCommand;
-import com.tngtech.leapdrone.drone.config.DroneConfig;
+import com.tngtech.leapdrone.drone.commands.SetConfigValueCommand;
+import com.tngtech.leapdrone.drone.config.DroneControllerConfig;
 import com.tngtech.leapdrone.drone.data.DroneConfiguration;
 import com.tngtech.leapdrone.drone.data.NavData;
 import com.tngtech.leapdrone.drone.listeners.DroneConfigurationListener;
@@ -24,6 +25,7 @@ public class DroneCoordinator
     STARTED,
     COMMAND_ONE_RETRIEVER_READY,
     COMMAND_TWO_RETRIEVERS_READY,
+    WORKERS_READY,
     READY
   }
 
@@ -51,7 +53,8 @@ public class DroneCoordinator
     this.commandSender = commandSender;
     this.navigationDataRetriever = navigationDataRetriever;
     this.configurationDataRetriever = configurationDataRetriever;
-    this.videoRetriever = DroneConfig.DRONE_VERSION == DroneConfig.DroneVersion.ARDRONE_1 ? arDroneOnevideoRetriever : arDroneTwoVideoRetriever;
+    this.videoRetriever =
+            DroneControllerConfig.DRONE_VERSION == DroneControllerConfig.DroneVersion.ARDRONE_1 ? arDroneOnevideoRetriever : arDroneTwoVideoRetriever;
 
     addListeners(commandSender);
     currentState = State.STARTED;
@@ -83,6 +86,14 @@ public class DroneCoordinator
         workerReady(readyState);
       }
     });
+    videoRetriever.addReadyStateChangeListener(new ReadyStateChangeListener()
+    {
+      @Override
+      public void onReadyStateChange(ReadyState readyState)
+      {
+        videoRetrieverReady(readyState);
+      }
+    });
 
     navigationDataRetriever.addNavDataListener(new NavDataListener()
     {
@@ -107,7 +118,15 @@ public class DroneCoordinator
     if (readyState == ReadyStateChangeListener.ReadyState.READY)
     {
       currentState = currentState == State.STARTED ? State.COMMAND_ONE_RETRIEVER_READY :
-              currentState == State.COMMAND_ONE_RETRIEVER_READY ? State.COMMAND_TWO_RETRIEVERS_READY : State.READY;
+              currentState == State.COMMAND_ONE_RETRIEVER_READY ? State.COMMAND_TWO_RETRIEVERS_READY : State.WORKERS_READY;
+    }
+  }
+
+  private void videoRetrieverReady(ReadyStateChangeListener.ReadyState readyState)
+  {
+    if (readyState == ReadyStateChangeListener.ReadyState.READY)
+    {
+      currentState = State.READY;
     }
   }
 
@@ -127,14 +146,30 @@ public class DroneCoordinator
     configurationDataRetriever.start();
     navigationDataRetriever.start();
 
+    waitForState(State.WORKERS_READY);
+    logger.info("Workers are ready to be used");
+
+    loginAndDetermineConfiguration();
+    logger.info("Got configuration data");
+
+    videoRetriever.start();
+
     waitForState(State.READY);
-    logger.info("Command sender, control and nav data retriever are ready to be used");
+    logger.info("Drone setup complete");
+  }
+
+  private void loginAndDetermineConfiguration()
+  {
+    sendConfigCommandToBeAcknowledged(new SetConfigValueCommand(DroneConfiguration.SESSION_ID_KEY, DroneControllerConfig.SESSION_ID));
+    sendConfigCommandToBeAcknowledged(new SetConfigValueCommand(DroneConfiguration.PROFILE_ID_KEY, DroneControllerConfig.PROFILE_ID));
+    sendConfigCommandToBeAcknowledged(new SetConfigValueCommand(DroneConfiguration.APPLICATION_ID_KEY, DroneControllerConfig.APPLICATION_ID));
+
+    sendConfigCommandToBeAcknowledged(new SetConfigValueCommand("general:navdata_demo", "TRUE"));
 
     sendConfigCommandToBeAcknowledged(new ControlDataCommand(ControlDataCommand.ControlDataMode.GET_CONTROL_DATA));
-
     waitForConfigurationData();
 
-    System.out.println("One step further");
+
   }
 
   private void sendConfigCommandToBeAcknowledged(Command configCommand)

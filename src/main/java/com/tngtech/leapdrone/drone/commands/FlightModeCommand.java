@@ -25,6 +25,7 @@ public class FlightModeCommand extends CommandAbstract
 
   public FlightModeCommand(FlightMode flightMode)
   {
+    super(false);
     this.flightMode = flightMode;
   }
 

@@ -5,7 +5,7 @@ import com.google.inject.Inject;
 import com.tngtech.leapdrone.drone.commands.FlatTrimCommand;
 import com.tngtech.leapdrone.drone.commands.FlightModeCommand;
 import com.tngtech.leapdrone.drone.commands.FlightMoveCommand;
-import com.tngtech.leapdrone.drone.config.DroneConfig;
+import com.tngtech.leapdrone.drone.config.DroneControllerConfig;
 import com.tngtech.leapdrone.drone.listeners.NavDataListener;
 import com.tngtech.leapdrone.drone.listeners.VideoDataListener;
 import com.tngtech.leapdrone.helpers.components.AddressComponent;
@@ -44,7 +44,7 @@ public class DroneController
     this.commandSender = commandSender;
     this.navigationDataRetriever = navigationDataRetriever;
     this.droneCoordinator = droneCoordinator;
-    this.videoRetriever = DroneConfig.DRONE_VERSION == DroneConfig.DroneVersion.ARDRONE_1 ? arDroneOnevideoRetriever : arDroneTwoVideoRetriever;
+    this.videoRetriever = DroneControllerConfig.DRONE_VERSION == DroneControllerConfig.DroneVersion.ARDRONE_1 ? arDroneOnevideoRetriever : arDroneTwoVideoRetriever;
     this.addressComponent = addressComponent;
   }
 
@@ -52,18 +52,19 @@ public class DroneController
   {
     checkIfDroneIsReachable();
 
-    logger.info("Starting dronce controller");
+    logger.info("Starting drone controller");
     droneCoordinator.start();
   }
 
   private void checkIfDroneIsReachable()
   {
-    checkState(addressComponent.isReachable(DroneConfig.DRONE_IP_ADDRESS, DroneConfig.REACHABLE_TIMEOUT), "The drone could not be pinged");
+    checkState(addressComponent.isReachable(DroneControllerConfig.DRONE_IP_ADDRESS, DroneControllerConfig.REACHABLE_TIMEOUT), "The drone could not be pinged");
+    logger.info("The drone could be pinged");
   }
 
   public void stop()
   {
-    logger.info("Stopping dronce controller");
+    logger.info("Stopping drone controller");
     droneCoordinator.stop();
   }
 

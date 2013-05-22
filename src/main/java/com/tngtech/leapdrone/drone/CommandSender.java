@@ -3,9 +3,8 @@ package com.tngtech.leapdrone.drone;
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import com.tngtech.leapdrone.drone.commands.Command;
-import com.tngtech.leapdrone.drone.commands.SetConfigValueCommand;
 import com.tngtech.leapdrone.drone.commands.WatchDogCommand;
-import com.tngtech.leapdrone.drone.config.DroneConfig;
+import com.tngtech.leapdrone.drone.config.DroneControllerConfig;
 import com.tngtech.leapdrone.drone.listeners.ReadyStateChangeListener;
 import com.tngtech.leapdrone.helpers.components.AddressComponent;
 import com.tngtech.leapdrone.helpers.components.ReadyStateComponent;
@@ -90,7 +89,6 @@ public class CommandSender implements Runnable
     int count = 1;
 
     connectToCommandSenderPort();
-    sendEnableNavDataCommand();
 
     while (!threadComponent.isStopped())
     {
@@ -103,16 +101,10 @@ public class CommandSender implements Runnable
 
   private void connectToCommandSenderPort()
   {
-    InetAddress address = addressComponent.getInetAddress(DroneConfig.DRONE_IP_ADDRESS);
+    InetAddress address = addressComponent.getInetAddress(DroneControllerConfig.DRONE_IP_ADDRESS);
 
-    logger.info(String.format("Connecting to command send port %d", DroneConfig.COMMAND_PORT));
-    udpComponent.connect(address, DroneConfig.COMMAND_PORT);
-  }
-
-  private void sendEnableNavDataCommand()
-  {
-    logger.debug("Enabling nav data");
-    send(new SetConfigValueCommand("general:navdata_demo", "TRUE"));
+    logger.info(String.format("Connecting to command send port %d", DroneControllerConfig.COMMAND_PORT));
+    udpComponent.connect(address, DroneControllerConfig.COMMAND_PORT);
   }
 
   private int sendPendingCommands(int count)
@@ -123,13 +115,13 @@ public class CommandSender implements Runnable
       send(command);
     }
     sleep(15);
-    return count;
+    return count + 1;
   }
 
   private List<Command> getCommands(int count)
   {
     List<Command> commands = commandsToSend;
-    if (count % 20 == 25)
+    if (count % 10 == 1)
     {
       commands.add(new WatchDogCommand());
     }
@@ -140,10 +132,23 @@ public class CommandSender implements Runnable
 
   private void send(Command command)
   {
+    if (command.isPreparationCommandNeeded())
+    {
+      sequenceNumberSent = getSequenceNumber();
+      sendCommandText(command.getPreparationCommandText(sequenceNumberSent));
+    }
+
     sequenceNumberSent = getSequenceNumber();
-    byte[] sendData = command.getCommandText(sequenceNumberSent).getBytes();
-    InetAddress address = addressComponent.getInetAddress(DroneConfig.DRONE_IP_ADDRESS);
-    DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, address, DroneConfig.COMMAND_PORT);
+    sendCommandText(command.getCommandText(sequenceNumberSent));
+  }
+
+  private void sendCommandText(String commandText)
+  {
+    byte[] sendData = commandText.getBytes();
+    InetAddress address = addressComponent.getInetAddress(DroneControllerConfig.DRONE_IP_ADDRESS);
+    DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, address, DroneControllerConfig.COMMAND_PORT);
+
+    System.out.println(commandText);
 
     udpComponent.send(sendPacket);
   }
@@ -164,7 +169,7 @@ public class CommandSender implements Runnable
 
   private void disconnectFromCommandSenderPort()
   {
-    logger.info(String.format("Disconnecting from command send port %d", DroneConfig.COMMAND_PORT));
+    logger.info(String.format("Disconnecting from command send port %d", DroneControllerConfig.COMMAND_PORT));
     udpComponent.disconnect();
   }
 

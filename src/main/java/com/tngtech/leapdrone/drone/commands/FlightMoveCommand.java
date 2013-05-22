@@ -14,6 +14,7 @@ public class FlightMoveCommand extends CommandAbstract
 
   public FlightMoveCommand(float roll, float pitch, float yaw, float gaz)
   {
+    super(false);
     this.roll = roll;
     this.pitch = pitch;
     this.yaw = yaw;

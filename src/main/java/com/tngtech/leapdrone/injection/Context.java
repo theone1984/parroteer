@@ -5,7 +5,10 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Singleton;
 import com.tngtech.leapdrone.control.DroneInputController;
+import com.tngtech.leapdrone.drone.ArDroneOneVideoRetriever;
+import com.tngtech.leapdrone.drone.ArDroneTwoVideoRetriever;
 import com.tngtech.leapdrone.drone.CommandSender;
+import com.tngtech.leapdrone.drone.ConfigurationDataRetriever;
 import com.tngtech.leapdrone.drone.DroneController;
 import com.tngtech.leapdrone.drone.NavigationDataRetriever;
 import com.tngtech.leapdrone.input.leapmotion.LeapMotionController;
@@ -44,6 +47,9 @@ public class Context extends AbstractModule
     bind(DroneController.class).in(Singleton.class);
     bind(CommandSender.class).in(Singleton.class);
     bind(NavigationDataRetriever.class).in(Singleton.class);
+    bind(ArDroneTwoVideoRetriever.class).in(Singleton.class);
+    bind(ArDroneOneVideoRetriever.class).in(Singleton.class);
+    bind(ConfigurationDataRetriever.class).in(Singleton.class);
     bind(SwingWindow.class).in(Singleton.class);
 
     bind(DroneInputController.class).in(Singleton.class);

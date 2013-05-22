@@ -25,6 +25,7 @@ public class ControlDataCommand extends CommandAbstract
 
   public ControlDataCommand(ControlDataMode controlDataMode)
   {
+    super(false);
     this.controlDataMode = controlDataMode;
   }
 

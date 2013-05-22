@@ -1,6 +1,6 @@
 package com.tngtech.leapdrone.drone.config;
 
-public final class DroneConfig
+public final class DroneControllerConfig
 {
   public enum DroneVersion
   {
@@ -8,6 +8,15 @@ public final class DroneConfig
   }
 
   public static final DroneVersion DRONE_VERSION = DroneVersion.ARDRONE_2;
+
+  // Must be an 8-character hex field
+  public static final String SESSION_ID = "affeaffe";
+
+  // Must be an 8-character hex field
+  public static final String APPLICATION_ID = "afafafaf";
+
+  // Must be an 8-character hex field
+  public static final String PROFILE_ID = "faeffaef";
 
   public static final String DRONE_IP_ADDRESS = "192.168.1.1";
 
@@ -21,7 +30,7 @@ public final class DroneConfig
 
   public static final int REACHABLE_TIMEOUT = 1000;
 
-  private DroneConfig()
+  private DroneControllerConfig()
   {
   }
 }

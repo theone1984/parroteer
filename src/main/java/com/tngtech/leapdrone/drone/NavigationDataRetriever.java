@@ -2,7 +2,7 @@ package com.tngtech.leapdrone.drone;
 
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
-import com.tngtech.leapdrone.drone.config.DroneConfig;
+import com.tngtech.leapdrone.drone.config.DroneControllerConfig;
 import com.tngtech.leapdrone.drone.data.NavData;
 import com.tngtech.leapdrone.drone.listeners.NavDataListener;
 import com.tngtech.leapdrone.drone.listeners.ReadyStateChangeListener;
@@ -127,10 +127,10 @@ public class NavigationDataRetriever implements Runnable
 
   private void connectToNavDataPort()
   {
-    InetAddress address = addressComponent.getInetAddress(DroneConfig.DRONE_IP_ADDRESS);
+    InetAddress address = addressComponent.getInetAddress(DroneControllerConfig.DRONE_IP_ADDRESS);
 
-    logger.info(String.format("Connecting to nav data port %d", DroneConfig.NAV_DATA_PORT));
-    udpComponent.connect(address, DroneConfig.NAV_DATA_PORT);
+    logger.info(String.format("Connecting to nav data port %d", DroneControllerConfig.NAV_DATA_PORT));
+    udpComponent.connect(address, DroneControllerConfig.NAV_DATA_PORT);
   }
 
   private void initializeCommunication()
@@ -167,7 +167,7 @@ public class NavigationDataRetriever implements Runnable
 
   private void disconnectFromNavDataPort()
   {
-    logger.info(String.format("Disconnecting from nav data port %d", DroneConfig.NAV_DATA_PORT));
+    logger.info(String.format("Disconnecting from nav data port %d", DroneControllerConfig.NAV_DATA_PORT));
     udpComponent.disconnect();
   }
 }
