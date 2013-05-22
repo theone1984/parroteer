@@ -201,7 +201,7 @@ public class DroneCoordinator
     sendConfigCommandToBeAcknowledged(new SetConfigValueCommand(DroneConfiguration.PROFILE_ID_KEY, DroneControllerConfig.PROFILE_ID));
     sendConfigCommandToBeAcknowledged(new SetConfigValueCommand(DroneConfiguration.APPLICATION_ID_KEY, DroneControllerConfig.APPLICATION_ID));
 
-    sendConfigCommandToBeAcknowledged(new SetConfigValueCommand("general:navdata_demo", "TRUE"));
+    sendConfigCommandToBeAcknowledged(new SetConfigValueCommand(DroneConfiguration.ENABLE_NAV_DATA_KEY, "TRUE"));
 
     sendConfigCommandToBeAcknowledged(new ControlDataCommand(ControlDataCommand.ControlDataMode.GET_CONTROL_DATA));
     waitForConfigurationData();
