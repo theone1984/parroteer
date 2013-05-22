@@ -21,19 +21,7 @@ import static com.tngtech.leapdrone.helpers.ThreadHelper.sleep;
 
 public class DroneCoordinator
 {
-
   public static final int WAIT_PERIOD = 15;
-
-  public VideoRetrieverP264 getVideoRetrieverP264()
-  {
-    return videoRetrieverP264;
-  }
-
-  public VideoRetrieverH264 getVideoRetrieverH264()
-  {
-    return videoRetrieverH264;
-  }
-
 
   private final Logger logger = Logger.getLogger(DroneCoordinator.class.getSimpleName());
 
@@ -297,6 +285,16 @@ public class DroneCoordinator
   public NavigationDataRetriever getNavigationDataRetriever()
   {
     return navigationDataRetriever;
+  }
+
+  public VideoRetrieverP264 getVideoRetrieverP264()
+  {
+    return videoRetrieverP264;
+  }
+
+  public VideoRetrieverH264 getVideoRetrieverH264()
+  {
+    return videoRetrieverH264;
   }
 
   public CommandSender getCommandSender()
