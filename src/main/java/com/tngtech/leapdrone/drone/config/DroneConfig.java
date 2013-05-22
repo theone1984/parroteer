@@ -11,11 +11,13 @@ public final class DroneConfig
 
   public static final String DRONE_IP_ADDRESS = "192.168.1.1";
 
-  public static final int NAVDATA_PORT = 5554;
+  public static final int NAV_DATA_PORT = 5554;
 
   public static final int VIDEO_DATA_PORT = 5555;
 
   public static final int COMMAND_PORT = 5556;
+
+  public static final int CONTROL_DATA_PORT = 5559;
 
   public static final int REACHABLE_TIMEOUT = 1000;
 

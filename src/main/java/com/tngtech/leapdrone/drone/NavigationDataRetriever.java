@@ -5,8 +5,10 @@ import com.google.inject.Inject;
 import com.tngtech.leapdrone.drone.config.DroneConfig;
 import com.tngtech.leapdrone.drone.data.NavData;
 import com.tngtech.leapdrone.drone.listeners.NavDataListener;
+import com.tngtech.leapdrone.drone.listeners.ReadyStateChangeListener;
 import com.tngtech.leapdrone.drone.navdata.NavigationDataDecoder;
 import com.tngtech.leapdrone.helpers.components.AddressComponent;
+import com.tngtech.leapdrone.helpers.components.ReadyStateComponent;
 import com.tngtech.leapdrone.helpers.components.ThreadComponent;
 import com.tngtech.leapdrone.helpers.components.UdpComponent;
 import org.apache.log4j.Logger;
@@ -29,6 +31,8 @@ public class NavigationDataRetriever implements Runnable
 
   private final UdpComponent udpComponent;
 
+  private final ReadyStateComponent readyStateComponent;
+
   private final NavigationDataDecoder decoder;
 
   private final Set<NavDataListener> navDataListeners;
@@ -39,12 +43,13 @@ public class NavigationDataRetriever implements Runnable
 
   @Inject
   public NavigationDataRetriever(ThreadComponent threadComponent, AddressComponent addressComponent, UdpComponent udpComponent,
-                                 NavigationDataDecoder decoder)
+                                 ReadyStateComponent readyStateComponent, NavigationDataDecoder decoder)
   {
     super();
     this.threadComponent = threadComponent;
     this.addressComponent = addressComponent;
     this.udpComponent = udpComponent;
+    this.readyStateComponent = readyStateComponent;
     this.decoder = decoder;
     navDataListeners = Sets.newLinkedHashSet();
 
@@ -61,6 +66,16 @@ public class NavigationDataRetriever implements Runnable
   {
     logger.info("Stopping nav data thread");
     threadComponent.stop();
+  }
+
+  public void addReadyStateChangeListener(ReadyStateChangeListener readyStateChangeListener)
+  {
+    readyStateComponent.addReadyStateChangeListener(readyStateChangeListener);
+  }
+
+  public void removeReadyStateChangeListener(ReadyStateChangeListener readyStateChangeListener)
+  {
+    readyStateComponent.addReadyStateChangeListener(readyStateChangeListener);
   }
 
   public void addNavDataListener(NavDataListener navDataListener)
@@ -90,6 +105,7 @@ public class NavigationDataRetriever implements Runnable
   {
     connectToNavDataPort();
     initializeCommunication();
+    readyStateComponent.emitReadyStateChange(ReadyStateChangeListener.ReadyState.READY);
 
     while (!threadComponent.isStopped())
     {
@@ -113,8 +129,8 @@ public class NavigationDataRetriever implements Runnable
   {
     InetAddress address = addressComponent.getInetAddress(DroneConfig.DRONE_IP_ADDRESS);
 
-    logger.info(String.format("Connecting to nav data port %d", DroneConfig.NAVDATA_PORT));
-    udpComponent.connect(address, DroneConfig.NAVDATA_PORT);
+    logger.info(String.format("Connecting to nav data port %d", DroneConfig.NAV_DATA_PORT));
+    udpComponent.connect(address, DroneConfig.NAV_DATA_PORT);
   }
 
   private void initializeCommunication()
@@ -130,7 +146,6 @@ public class NavigationDataRetriever implements Runnable
     {
       return;
     }
-    logger.info(navData.getAltitude());
     logger.trace(String.format("Received nav data - battery level: %d percent, altitude: %.2f", navData.getBatteryLevel(), navData.getAltitude()));
     for (NavDataListener listener : navDataListeners)
     {
@@ -145,14 +160,14 @@ public class NavigationDataRetriever implements Runnable
       return decoder.getNavDataFrom(receivingBuffer, incomingDataPacket.getLength());
     } catch (RuntimeException e)
     {
-      logger.error("Error processing the navigation data", e);
+      // Happens from time to time
       return null;
     }
   }
 
   private void disconnectFromNavDataPort()
   {
-    logger.info(String.format("Disconnecting from nav data port %d", DroneConfig.NAVDATA_PORT));
+    logger.info(String.format("Disconnecting from nav data port %d", DroneConfig.NAV_DATA_PORT));
     udpComponent.disconnect();
   }
 }

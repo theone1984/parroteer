@@ -2,6 +2,9 @@ package com.tngtech.leapdrone.drone;
 
 
 import com.google.inject.Inject;
+import com.tngtech.leapdrone.drone.commands.FlatTrimCommand;
+import com.tngtech.leapdrone.drone.commands.FlightModeCommand;
+import com.tngtech.leapdrone.drone.commands.FlightMoveCommand;
 import com.tngtech.leapdrone.drone.config.DroneConfig;
 import com.tngtech.leapdrone.drone.listeners.NavDataListener;
 import com.tngtech.leapdrone.drone.listeners.VideoDataListener;
@@ -21,6 +24,8 @@ public class DroneController
 
   private final NavigationDataRetriever navigationDataRetriever;
 
+  private final DroneCoordinator droneCoordinator;
+
   private final VideoRetrieverAbstract videoRetriever;
 
   private final AddressComponent addressComponent;
@@ -34,10 +39,11 @@ public class DroneController
   @Inject
   public DroneController(CommandSender commandSender, NavigationDataRetriever navigationDataRetriever,
                          ArDroneOneVideoRetriever arDroneOnevideoRetriever, ArDroneTwoVideoRetriever arDroneTwoVideoRetriever,
-                         AddressComponent addressComponent)
+                         AddressComponent addressComponent, DroneCoordinator droneCoordinator)
   {
     this.commandSender = commandSender;
     this.navigationDataRetriever = navigationDataRetriever;
+    this.droneCoordinator = droneCoordinator;
     this.videoRetriever = DroneConfig.DRONE_VERSION == DroneConfig.DroneVersion.ARDRONE_1 ? arDroneOnevideoRetriever : arDroneTwoVideoRetriever;
     this.addressComponent = addressComponent;
   }
@@ -47,9 +53,7 @@ public class DroneController
     checkIfDroneIsReachable();
 
     logger.info("Starting dronce controller");
-    commandSender.start();
-    navigationDataRetriever.start();
-    videoRetriever.start();
+    droneCoordinator.start();
   }
 
   private void checkIfDroneIsReachable()
@@ -60,9 +64,7 @@ public class DroneController
   public void stop()
   {
     logger.info("Stopping dronce controller");
-    commandSender.stop();
-    navigationDataRetriever.stop();
-    videoRetriever.stop();
+    droneCoordinator.stop();
   }
 
   public void addNavDataListener(NavDataListener navDataListener)
@@ -87,26 +89,31 @@ public class DroneController
 
   public void takeOff()
   {
-    commandSender.sendTakeOffCommand();
+    logger.debug("Taking off");
+    commandSender.sendCommand(new FlightModeCommand(FlightModeCommand.FlightMode.TAKE_OFF));
   }
 
   public void land()
   {
-    commandSender.sendLandCommand();
+    logger.debug("Landing");
+    commandSender.sendCommand(new FlightModeCommand(FlightModeCommand.FlightMode.LAND));
   }
 
   public void emergency()
   {
-    commandSender.sendEmergencyCommand();
+    logger.debug("Setting emergency");
+    commandSender.sendCommand(new FlightModeCommand(FlightModeCommand.FlightMode.EMERGENCY));
   }
 
   public void flatTrim()
   {
-    commandSender.sendFlatTrimCommand();
+    logger.debug("Flat trim");
+    commandSender.sendCommand(new FlatTrimCommand());
   }
 
   public void move(float roll, float pitch, float yaw, float gaz)
   {
-    commandSender.move(roll, pitch, yaw, gaz);
+    logger.trace(String.format("Moving - roll: %.2f, pitch: %.2f, yaw: %.2f, gaz: %.2f", roll, pitch, yaw, gaz));
+    commandSender.sendCommand(new FlightMoveCommand(roll, pitch, yaw, gaz));
   }
 }

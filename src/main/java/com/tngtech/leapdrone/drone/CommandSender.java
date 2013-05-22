@@ -2,8 +2,13 @@ package com.tngtech.leapdrone.drone;
 
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
+import com.tngtech.leapdrone.drone.commands.Command;
+import com.tngtech.leapdrone.drone.commands.SetConfigValueCommand;
+import com.tngtech.leapdrone.drone.commands.WatchDogCommand;
 import com.tngtech.leapdrone.drone.config.DroneConfig;
+import com.tngtech.leapdrone.drone.listeners.ReadyStateChangeListener;
 import com.tngtech.leapdrone.helpers.components.AddressComponent;
+import com.tngtech.leapdrone.helpers.components.ReadyStateComponent;
 import com.tngtech.leapdrone.helpers.components.ThreadComponent;
 import com.tngtech.leapdrone.helpers.components.UdpComponent;
 import org.apache.log4j.Logger;
@@ -12,17 +17,10 @@ import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.util.List;
 
-import static com.tngtech.leapdrone.helpers.BinaryDataHelper.getNormalizedIntValue;
 import static com.tngtech.leapdrone.helpers.ThreadHelper.sleep;
 
 public class CommandSender implements Runnable
 {
-  private static final int TAKE_OFF_VALUE = 290718208;
-
-  private static final int LAND_VALUE = 290717696;
-
-  private static final int EMERGENCY_VALUE = 290717952;
-
   private final Logger logger = Logger.getLogger(CommandSender.class.getSimpleName());
 
   private final ThreadComponent threadComponent;
@@ -31,16 +29,24 @@ public class CommandSender implements Runnable
 
   private final UdpComponent udpComponent;
 
-  private List<String> commandsToSend;
+  private final ReadyStateComponent readyStateComponent;
+
+  private ReadyStateChangeListener.ReadyState readyState = ReadyStateChangeListener.ReadyState.NOT_READY;
+
+  private List<Command> commandsToSend;
 
   private int sequenceNumber = 1;
 
+  private int sequenceNumberSent = 0;
+
   @Inject
-  public CommandSender(ThreadComponent threadComponent, AddressComponent addressComponent, UdpComponent udpComponent)
+  public CommandSender(ThreadComponent threadComponent, AddressComponent addressComponent, UdpComponent udpComponent,
+                       ReadyStateComponent readyStateComponent)
   {
     this.threadComponent = threadComponent;
     this.addressComponent = addressComponent;
     this.udpComponent = udpComponent;
+    this.readyStateComponent = readyStateComponent;
 
     commandsToSend = Lists.newArrayList();
   }
@@ -57,45 +63,25 @@ public class CommandSender implements Runnable
     threadComponent.stop();
   }
 
-  public void sendTakeOffCommand()
+  public void addReadyStateChangeListener(ReadyStateChangeListener readyStateChangeListener)
   {
-    logger.debug("Taking off");
-    sendFlightModeCommand(TAKE_OFF_VALUE);
+    readyStateComponent.addReadyStateChangeListener(readyStateChangeListener);
   }
 
-  public void sendLandCommand()
+  public void removeReadyStateChangeListener(ReadyStateChangeListener readyStateChangeListener)
   {
-    logger.debug("Landing");
-    sendFlightModeCommand(LAND_VALUE);
+    readyStateComponent.addReadyStateChangeListener(readyStateChangeListener);
   }
 
-  public void sendEmergencyCommand()
+  public void sendCommand(Command command)
   {
-    logger.debug("Setting emergency");
-    sendFlightModeCommand(EMERGENCY_VALUE);
+    queue(command);
   }
 
-  public void sendFlatTrimCommand()
-  {
-    logger.debug("Flat trim");
-    queue(String.format("AT*FTRIM=%s", sequenceNumber++));
-  }
-
-  private void sendFlightModeCommand(int flightModeValue)
-  {
-    queue(String.format("AT*REF=%s,%s", sequenceNumber++, flightModeValue));
-  }
-
-  public void move(float roll, float pitch, float yaw, float gaz)
-  {
-    logger.trace(String.format("Moving - roll: %.2f, pitch: %.2f, yaw: %.2f, gaz: %.2f", roll, pitch, yaw, gaz));
-    queue(String.format("AT*PCMD=%d,%d,%d,%d,%d,%d", sequenceNumber++, 1, getNormalizedIntValue(roll), getNormalizedIntValue(pitch),
-            getNormalizedIntValue(gaz), getNormalizedIntValue(yaw)));
-  }
-
-  private void queue(String command)
+  private Command queue(Command command)
   {
     commandsToSend.add(command);
+    return command;
   }
 
   @Override
@@ -109,6 +95,7 @@ public class CommandSender implements Runnable
     while (!threadComponent.isStopped())
     {
       count = sendPendingCommands(count);
+      changeReadyState();
     }
 
     disconnectFromCommandSenderPort();
@@ -122,23 +109,16 @@ public class CommandSender implements Runnable
     udpComponent.connect(address, DroneConfig.COMMAND_PORT);
   }
 
-  private List<String> getCommands()
-  {
-    List<String> commands = commandsToSend;
-    commandsToSend = Lists.newArrayList();
-    return commands;
-  }
-
   private void sendEnableNavDataCommand()
   {
     logger.debug("Enabling nav data");
-    send(String.format("AT*CONFIG=%s,\"general:navdata_demo\",\"TRUE\"", sequenceNumber++));
+    send(new SetConfigValueCommand("general:navdata_demo", "TRUE"));
   }
 
   private int sendPendingCommands(int count)
   {
-    List<String> commands = getCommands();
-    for (String command : commands)
+    List<Command> commands = getCommands();
+    for (Command command : commands)
     {
       send(command);
     }
@@ -147,29 +127,56 @@ public class CommandSender implements Runnable
     return count;
   }
 
+  private List<Command> getCommands()
+  {
+    List<Command> commands = commandsToSend;
+    commands.add(new WatchDogCommand());
+
+    commandsToSend = Lists.newArrayList();
+    return commands;
+  }
+
   private void sendWatchDogCommand(int count)
   {
     if (count % 20 == 0)
     {
       logger.trace("Sending watchdog command");
-      send(String.format("AT*COMWDG=%s", sequenceNumber++));
+      send(new WatchDogCommand());
     }
   }
 
-  private void send(String command)
+  private void send(Command command)
   {
-    command += "\r";
-    byte[] sendData = command.getBytes();
-
+    sequenceNumberSent = getSequenceNumber();
+    byte[] sendData = command.getCommandText(sequenceNumberSent).getBytes();
     InetAddress address = addressComponent.getInetAddress(DroneConfig.DRONE_IP_ADDRESS);
-
     DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, address, DroneConfig.COMMAND_PORT);
+
     udpComponent.send(sendPacket);
+  }
+
+  private int getSequenceNumber()
+  {
+    return sequenceNumber++;
+  }
+
+  private void changeReadyState()
+  {
+    if (readyState != ReadyStateChangeListener.ReadyState.READY)
+    {
+      readyState = ReadyStateChangeListener.ReadyState.READY;
+      readyStateComponent.emitReadyStateChange(ReadyStateChangeListener.ReadyState.READY);
+    }
   }
 
   private void disconnectFromCommandSenderPort()
   {
     logger.info(String.format("Disconnecting from command send port %d", DroneConfig.COMMAND_PORT));
     udpComponent.disconnect();
+  }
+
+  public int getSequenceNumberSent()
+  {
+    return sequenceNumberSent;
   }
 }
