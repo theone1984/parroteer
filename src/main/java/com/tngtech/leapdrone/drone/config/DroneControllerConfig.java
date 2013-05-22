@@ -20,6 +20,8 @@ public final class DroneControllerConfig
 
   public static final String DRONE_IP_ADDRESS = "192.168.1.1";
 
+  public static final int FTP_PORT = 5551;
+
   public static final int NAV_DATA_PORT = 5554;
 
   public static final int VIDEO_DATA_PORT = 5555;

@@ -6,6 +6,7 @@ import com.tngtech.leapdrone.drone.commands.FlatTrimCommand;
 import com.tngtech.leapdrone.drone.commands.FlightModeCommand;
 import com.tngtech.leapdrone.drone.commands.FlightMoveCommand;
 import com.tngtech.leapdrone.drone.data.DroneConfiguration;
+import com.tngtech.leapdrone.drone.data.DroneVersion;
 import com.tngtech.leapdrone.drone.listeners.NavDataListener;
 import com.tngtech.leapdrone.drone.listeners.ReadyStateChangeListener;
 import com.tngtech.leapdrone.drone.listeners.VideoDataListener;
@@ -83,10 +84,15 @@ public class DroneController
     droneCoordinator.getVideoRetriever().removeVideoDataListener(videoDataListener);
   }
 
+  public DroneVersion getDroneVersion()
+  {
+    checkInitializationState();
+    return droneCoordinator.getDroneVersion();
+  }
+
   public DroneConfiguration getDroneConfiguration()
   {
     checkInitializationState();
-
     return droneCoordinator.getDroneConfiguration();
   }
 

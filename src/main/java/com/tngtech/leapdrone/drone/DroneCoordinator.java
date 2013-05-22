@@ -6,6 +6,7 @@ import com.tngtech.leapdrone.drone.commands.ControlDataCommand;
 import com.tngtech.leapdrone.drone.commands.SetConfigValueCommand;
 import com.tngtech.leapdrone.drone.config.DroneControllerConfig;
 import com.tngtech.leapdrone.drone.data.DroneConfiguration;
+import com.tngtech.leapdrone.drone.data.DroneVersion;
 import com.tngtech.leapdrone.drone.data.NavData;
 import com.tngtech.leapdrone.drone.listeners.DroneConfigurationListener;
 import com.tngtech.leapdrone.drone.listeners.NavDataListener;
@@ -38,6 +39,8 @@ public class DroneCoordinator
 
   private final ReadyStateComponent readyStateComponent;
 
+  private final VersionReader versionReader;
+
   private final CommandSender commandSender;
 
   private final NavigationDataRetriever navigationDataRetriever;
@@ -48,18 +51,21 @@ public class DroneCoordinator
 
   private State currentState;
 
+  private DroneVersion droneVersion;
+
   private DroneConfiguration droneConfiguration;
 
   private NavData currentNavData;
 
   @Inject
-  public DroneCoordinator(AddressComponent addressComponent, ReadyStateComponent readyStateComponent, CommandSender commandSender,
-                          NavigationDataRetriever navigationDataRetriever,
+  public DroneCoordinator(AddressComponent addressComponent, ReadyStateComponent readyStateComponent, VersionReader versionReader,
+                          CommandSender commandSender, NavigationDataRetriever navigationDataRetriever,
                           VideoRetrieverP264 videoRetrieverP264, VideoRetrieverH264 videoRetrieverH264,
                           ConfigurationDataRetriever configurationDataRetriever)
   {
     this.addressComponent = addressComponent;
     this.readyStateComponent = readyStateComponent;
+    this.versionReader = versionReader;
     this.commandSender = commandSender;
     this.navigationDataRetriever = navigationDataRetriever;
     this.configurationDataRetriever = configurationDataRetriever;
@@ -163,6 +169,7 @@ public class DroneCoordinator
   public void start()
   {
     checkIfDroneIsReachable();
+    droneVersion = versionReader.getDroneVersion();
 
     commandSender.start();
     configurationDataRetriever.start();
@@ -265,6 +272,11 @@ public class DroneCoordinator
   public VideoRetrieverAbstract getVideoRetriever()
   {
     return videoRetriever;
+  }
+
+  public DroneVersion getDroneVersion()
+  {
+    return droneVersion;
   }
 
   public DroneConfiguration getDroneConfiguration()
