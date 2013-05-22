@@ -178,10 +178,11 @@ public class DroneCoordinator
     waitForState(DroneControllerState.WORKERS_READY);
     logger.info("Workers are ready to be used");
 
-    loginAndDetermineConfiguration();
+    login();
+    startVideoRetriever();
+    determineConfiguration();
     logger.info("Got configuration data");
 
-    startVideoRetriever();
     waitForState(DroneControllerState.READY);
     logger.info("Drone setup complete");
 
@@ -195,27 +196,36 @@ public class DroneCoordinator
     logger.info("The drone could be pinged");
   }
 
-  private void loginAndDetermineConfiguration()
+  private void login()
   {
     sendConfigCommandToBeAcknowledged(new SetConfigValueCommand(DroneConfiguration.SESSION_ID_KEY, DroneControllerConfig.SESSION_ID));
     sendConfigCommandToBeAcknowledged(new SetConfigValueCommand(DroneConfiguration.PROFILE_ID_KEY, DroneControllerConfig.PROFILE_ID));
     sendConfigCommandToBeAcknowledged(new SetConfigValueCommand(DroneConfiguration.APPLICATION_ID_KEY, DroneControllerConfig.APPLICATION_ID));
 
     sendConfigCommandToBeAcknowledged(new SetConfigValueCommand(DroneConfiguration.ENABLE_NAV_DATA_KEY, "TRUE"));
-
-    sendConfigCommandToBeAcknowledged(new ControlDataCommand(ControlDataCommand.ControlDataMode.GET_CONTROL_DATA));
-    waitForConfigurationData();
   }
 
   private void startVideoRetriever()
   {
     if (droneVersion == DroneVersion.AR_DRONE_1)
     {
+      String codecValue = String.valueOf(DroneControllerConfig.ARDRONE_1_VIDEO_CODEC.getCodecValue());
+      sendConfigCommandToBeAcknowledged(new SetConfigValueCommand(DroneConfiguration.VIDEO_CODEC_KEY, codecValue));
+
       videoRetrieverP264.start();
     } else
     {
+      String codecValue = String.valueOf(DroneControllerConfig.ARDRONE_2_VIDEO_CODEC.getCodecValue());
+      sendConfigCommandToBeAcknowledged(new SetConfigValueCommand(DroneConfiguration.VIDEO_CODEC_KEY, codecValue));
+
       videoRetrieverH264.start();
     }
+  }
+
+  private void determineConfiguration()
+  {
+    sendConfigCommandToBeAcknowledged(new ControlDataCommand(ControlDataCommand.ControlDataMode.GET_CONTROL_DATA));
+    waitForConfigurationData();
   }
 
   private void sendConfigCommandToBeAcknowledged(Command configCommand)

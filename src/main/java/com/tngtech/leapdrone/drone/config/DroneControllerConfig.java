@@ -1,5 +1,8 @@
 package com.tngtech.leapdrone.drone.config;
 
+import com.tngtech.leapdrone.drone.data.ARDrone1VideoCodec;
+import com.tngtech.leapdrone.drone.data.ARDrone2VideoCodec;
+
 public final class DroneControllerConfig
 {
   // Must be an 8-character hex field
@@ -24,6 +27,10 @@ public final class DroneControllerConfig
   public static final int CONFIG_DATA_PORT = 5559;
 
   public static final int REACHABLE_TIMEOUT = 1000;
+
+  public static ARDrone1VideoCodec ARDRONE_1_VIDEO_CODEC = ARDrone1VideoCodec.P264;
+
+  public static ARDrone2VideoCodec ARDRONE_2_VIDEO_CODEC = ARDrone2VideoCodec.H264_360P;
 
   private DroneControllerConfig()
   {
