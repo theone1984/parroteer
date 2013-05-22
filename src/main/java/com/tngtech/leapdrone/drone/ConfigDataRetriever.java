@@ -1,5 +1,6 @@
 package com.tngtech.leapdrone.drone;
 
+import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import com.tngtech.leapdrone.drone.config.DroneConfig;
 import com.tngtech.leapdrone.drone.listeners.ReadyStateChangeListener;
@@ -9,6 +10,8 @@ import com.tngtech.leapdrone.helpers.components.TcpComponent;
 import com.tngtech.leapdrone.helpers.components.ThreadComponent;
 import org.apache.log4j.Logger;
 
+import java.io.IOException;
+import java.net.SocketTimeoutException;
 import java.util.Collection;
 
 public class ConfigDataRetriever implements Runnable
@@ -35,13 +38,13 @@ public class ConfigDataRetriever implements Runnable
 
   public void start()
   {
-    logger.info("Starting control data thread");
+    logger.info("Starting config data thread");
     threadComponent.start(this);
   }
 
   public void stop()
   {
-    logger.info("Stopping control data thread");
+    logger.info("Stopping config data thread");
     threadComponent.stop();
   }
 
@@ -58,38 +61,74 @@ public class ConfigDataRetriever implements Runnable
   @Override
   public void run()
   {
-    connectToControlDataPort();
+    connectToConfigDataPort();
     readyStateComponent.emitReadyStateChange(ReadyStateChangeListener.ReadyState.READY);
 
     while (!threadComponent.isStopped())
     {
       try
       {
-        processData(tcpComponent.readLines());
+        processData(readLines());
       } catch (RuntimeException e)
       {
-        logger.error("Error processing the drone control data", e);
+        logger.error("Error processing the config control data", e);
       }
     }
 
-    disconnectFromControlDataPort();
+    disconnectFromConfigDataPort();
   }
 
-  private void connectToControlDataPort()
+  private void connectToConfigDataPort()
   {
-    logger.info(String.format("Connecting to control data port %d", DroneConfig.CONTROL_DATA_PORT));
-    tcpComponent.connect(addressComponent.getInetAddress(DroneConfig.DRONE_IP_ADDRESS), DroneConfig.CONTROL_DATA_PORT);
+    logger.info(String.format("Connecting to config data port %d", DroneConfig.CONFIG_DATA_PORT));
+    tcpComponent.connect(addressComponent.getInetAddress(DroneConfig.DRONE_IP_ADDRESS), DroneConfig.CONFIG_DATA_PORT, 1000);
+  }
+
+  public Collection<String> readLines()
+  {
+    try
+    {
+      return doReadLines();
+    } catch (IOException | ClassNotFoundException e)
+    {
+      throw new IllegalStateException("Error receiving current lines", e);
+    }
+  }
+
+  private Collection<String> doReadLines() throws IOException, ClassNotFoundException
+  {
+    Collection<String> receivedLines = Lists.newArrayList();
+
+    try
+    {
+      String line = tcpComponent.getReader().readLine();
+      while (line != null)
+      {
+        receivedLines.add(line);
+        line = tcpComponent.getReader().readLine();
+      }
+    } catch (SocketTimeoutException e)
+    {
+      // EOF is reached (this is a dirty workaround, but there is no indicator telling us when to stop)
+    }
+
+    return receivedLines;
   }
 
   private void processData(Collection<String> lines)
   {
+    if (lines.size() == 0)
+    {
+      return;
+    }
+
     logger.info("Got data");
     System.out.println(lines);
   }
 
-  private void disconnectFromControlDataPort()
+  private void disconnectFromConfigDataPort()
   {
-    logger.info(String.format("Connecting to control data port %d", DroneConfig.CONTROL_DATA_PORT));
+    logger.info(String.format("Connecting to config data port %d", DroneConfig.CONFIG_DATA_PORT));
     tcpComponent.disconnect();
   }
 }

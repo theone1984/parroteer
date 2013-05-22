@@ -1,18 +1,17 @@
 package com.tngtech.leapdrone.helpers.components;
 
-import com.google.common.collect.Lists;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.net.Socket;
-import java.util.Collection;
 
 public class TcpComponent
 {
   private static final byte[] KEEP_ALIVE_BYTES = new byte[]{0x01, 0x00, 0x00, 0x00};
+
+  private static final int DEFAULT_TIMEOUT = 3000;
 
   private Socket socket = null;
 
@@ -20,12 +19,16 @@ public class TcpComponent
 
   public void connect(InetAddress address, int port)
   {
+    connect(address, port, DEFAULT_TIMEOUT);
+  }
+
+  public void connect(InetAddress address, int port, int timeout)
+  {
     try
     {
       socket = new Socket(address, port);
-      socket.setSoTimeout(3000);
+      socket.setSoTimeout(timeout);
       reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-
     } catch (IOException e)
     {
       throw new IllegalStateException(String.format("Error while connecting to TCP socket %s:%d", address.getHostName(), port), e);
@@ -68,25 +71,8 @@ public class TcpComponent
     }
   }
 
-  public Collection<String> readLines()
+  public BufferedReader getReader()
   {
-    try
-    {
-      return doReadLines();
-    } catch (IOException e)
-    {
-      throw new IllegalStateException("Error receiving current lines", e);
-    }
-  }
-
-  private Collection<String> doReadLines() throws IOException
-  {
-    Collection<String> receivedLines = Lists.newArrayList();
-    String line;
-    while ((line = reader.readLine()) != null)
-    {
-      receivedLines.add(line);
-    }
-    return receivedLines;
+    return reader;
   }
 }

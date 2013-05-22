@@ -117,32 +117,25 @@ public class CommandSender implements Runnable
 
   private int sendPendingCommands(int count)
   {
-    List<Command> commands = getCommands();
+    List<Command> commands = getCommands(count);
     for (Command command : commands)
     {
       send(command);
     }
-    sendWatchDogCommand(count++);
     sleep(15);
     return count;
   }
 
-  private List<Command> getCommands()
+  private List<Command> getCommands(int count)
   {
     List<Command> commands = commandsToSend;
-    commands.add(new WatchDogCommand());
+    if (count % 20 == 25)
+    {
+      commands.add(new WatchDogCommand());
+    }
 
     commandsToSend = Lists.newArrayList();
     return commands;
-  }
-
-  private void sendWatchDogCommand(int count)
-  {
-    if (count % 20 == 0)
-    {
-      logger.trace("Sending watchdog command");
-      send(new WatchDogCommand());
-    }
   }
 
   private void send(Command command)
@@ -151,6 +144,8 @@ public class CommandSender implements Runnable
     byte[] sendData = command.getCommandText(sequenceNumberSent).getBytes();
     InetAddress address = addressComponent.getInetAddress(DroneConfig.DRONE_IP_ADDRESS);
     DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, address, DroneConfig.COMMAND_PORT);
+
+    System.out.println(command.getCommandText(sequenceNumberSent));
 
     udpComponent.send(sendPacket);
   }
