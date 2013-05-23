@@ -4,7 +4,6 @@ import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import com.tngtech.leapdrone.drone.commands.Command;
 import com.tngtech.leapdrone.drone.commands.WatchDogCommand;
-import com.tngtech.leapdrone.drone.data.Config;
 import com.tngtech.leapdrone.drone.listeners.ReadyStateChangeListener;
 import com.tngtech.leapdrone.helpers.components.AddressComponent;
 import com.tngtech.leapdrone.helpers.components.ReadyStateComponent;
@@ -38,6 +37,10 @@ public class CommandSender implements Runnable
 
   private int sequenceNumberSent = 0;
 
+  private String droneIpAddress;
+
+  private int commandPort;
+
   @Inject
   public CommandSender(ThreadComponent threadComponent, AddressComponent addressComponent, UdpComponent udpComponent,
                        ReadyStateComponent readyStateComponent)
@@ -50,8 +53,11 @@ public class CommandSender implements Runnable
     commandsToSend = Lists.newArrayList();
   }
 
-  public void start()
+  public void start(String droneIpAddress, int commandPort)
   {
+    this.droneIpAddress = droneIpAddress;
+    this.commandPort = commandPort;
+
     logger.info("Starting command sender thread");
     threadComponent.start(this);
   }
@@ -101,10 +107,10 @@ public class CommandSender implements Runnable
 
   private void connectToCommandSenderPort()
   {
-    InetAddress address = addressComponent.getInetAddress(Config.DRONE_IP_ADDRESS);
+    InetAddress address = addressComponent.getInetAddress(droneIpAddress);
 
-    logger.info(String.format("Connecting to command send port %d", Config.COMMAND_PORT));
-    udpComponent.connect(address, Config.COMMAND_PORT);
+    logger.info(String.format("Connecting to command send port %d", commandPort));
+    udpComponent.connect(address, commandPort);
   }
 
   private int sendPendingCommands(int count)
@@ -145,8 +151,8 @@ public class CommandSender implements Runnable
   private void sendCommandText(String commandText)
   {
     byte[] sendData = commandText.getBytes();
-    InetAddress address = addressComponent.getInetAddress(Config.DRONE_IP_ADDRESS);
-    DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, address, Config.COMMAND_PORT);
+    InetAddress address = addressComponent.getInetAddress(droneIpAddress);
+    DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, address, commandPort);
 
     udpComponent.send(sendPacket);
   }
@@ -167,7 +173,7 @@ public class CommandSender implements Runnable
 
   private void disconnectFromCommandSenderPort()
   {
-    logger.info(String.format("Disconnecting from command send port %d", Config.COMMAND_PORT));
+    logger.info(String.format("Disconnecting from command send port %d", commandPort));
     udpComponent.disconnect();
   }
 

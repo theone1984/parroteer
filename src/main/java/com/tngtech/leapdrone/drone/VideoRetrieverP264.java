@@ -1,7 +1,6 @@
 package com.tngtech.leapdrone.drone;
 
 import com.google.inject.Inject;
-import com.tngtech.leapdrone.drone.data.Config;
 import com.tngtech.leapdrone.drone.data.VideoData;
 import com.tngtech.leapdrone.drone.listeners.VideoDataListener;
 import com.tngtech.leapdrone.drone.video.P264ImageDecoder;
@@ -43,7 +42,7 @@ public class VideoRetrieverP264 extends VideoRetrieverAbstract
   private void determineDatagramPackets()
   {
     receivingBuffer = new byte[RECEIVING_BUFFER_SIZE];
-    incomingDataPacket = new DatagramPacket(receivingBuffer, receivingBuffer.length, getDroneAddress(), Config.VIDEO_DATA_PORT);
+    incomingDataPacket = new DatagramPacket(receivingBuffer, receivingBuffer.length, getDroneAddress(), getVideoDataPort());
   }
 
   @Override
@@ -72,8 +71,8 @@ public class VideoRetrieverP264 extends VideoRetrieverAbstract
 
   private void connectToVideoDataPort()
   {
-    logger.info(String.format("Connecting to video data port %d", Config.VIDEO_DATA_PORT));
-    udpComponent.connect(getDroneAddress(), Config.VIDEO_DATA_PORT);
+    logger.info(String.format("Connecting to video data port %d", getVideoDataPort()));
+    udpComponent.connect(getDroneAddress(), getVideoDataPort());
   }
 
   private void initializeCommunication()
@@ -106,7 +105,7 @@ public class VideoRetrieverP264 extends VideoRetrieverAbstract
 
   private void disconnectFromVideoDataPort()
   {
-    logger.info(String.format("Disconnecting from video data port %d", Config.VIDEO_DATA_PORT));
+    logger.info(String.format("Disconnecting from video data port %d", getVideoDataPort()));
     udpComponent.disconnect();
   }
 }

@@ -2,39 +2,135 @@ package com.tngtech.leapdrone.drone.data;
 
 import com.tngtech.leapdrone.drone.data.enums.ARDrone1VideoCodec;
 import com.tngtech.leapdrone.drone.data.enums.ARDrone2VideoCodec;
+import com.tngtech.leapdrone.helpers.ChecksumHelper;
 
 public final class Config
 {
   public static final int WAIT_TIMEOUT = 15;
 
-  // Must be an 8-character hex field
-  public static final String SESSION_ID = "affeaffa";
-
-  // Must be an 8-character hex field
-  public static final String APPLICATION_ID = "afafafaf";
-
-  // Must be an 8-character hex field
-  public static final String PROFILE_ID = "faeffaef";
-
-  public static final String DRONE_IP_ADDRESS = "192.168.1.1";
-
-  public static final int FTP_PORT = 5551;
-
-  public static final int NAV_DATA_PORT = 5554;
-
-  public static final int VIDEO_DATA_PORT = 5555;
-
-  public static final int COMMAND_PORT = 5556;
-
-  public static final int CONFIG_DATA_PORT = 5559;
-
   public static final int REACHABLE_TIMEOUT = 1000;
 
-  public static ARDrone1VideoCodec ARDRONE_1_VIDEO_CODEC = ARDrone1VideoCodec.P264;
+  private final String sessionChecksum;
 
-  public static ARDrone2VideoCodec ARDRONE_2_VIDEO_CODEC = ARDrone2VideoCodec.H264_720P;
+  private final String profileChecksum;
 
-  private Config()
+  private final String applicationChecksum;
+
+  private String droneIpAddress = "192.168.1.1";
+
+  private int ftpPort = 5551;
+
+  private int navDataPort = 5554;
+
+  private int videoDataPort = 5555;
+
+  private int commandPort = 5556;
+
+  private int configDataPort = 5559;
+
+  private ARDrone1VideoCodec arDrone1VideoCodec = ARDrone1VideoCodec.P264;
+
+  private ARDrone2VideoCodec arDrone2VideoCodec = ARDrone2VideoCodec.H264_360P;
+
+  public Config(String applicationName, String profileName)
   {
+    sessionChecksum = ChecksumHelper.createRandomCrc32Hex();
+    applicationChecksum = ChecksumHelper.createCrc32Hex(applicationName);
+    profileChecksum = ChecksumHelper.createCrc32Hex(profileName);
+  }
+
+  public String getSessionChecksum()
+  {
+    return sessionChecksum;
+  }
+
+  public String getProfileChecksum()
+  {
+    return profileChecksum;
+  }
+
+  public String getApplicationChecksum()
+  {
+    return applicationChecksum;
+  }
+
+  public String getDroneIpAddress()
+  {
+    return droneIpAddress;
+  }
+
+  public void setDroneIpAddress(String droneIpAddress)
+  {
+    this.droneIpAddress = droneIpAddress;
+  }
+
+  public int getFtpPort()
+  {
+    return ftpPort;
+  }
+
+  public void setFtpPort(int ftpPort)
+  {
+    this.ftpPort = ftpPort;
+  }
+
+  public int getNavDataPort()
+  {
+    return navDataPort;
+  }
+
+  public void setNavDataPort(int navDataPort)
+  {
+    this.navDataPort = navDataPort;
+  }
+
+  public int getVideoDataPort()
+  {
+    return videoDataPort;
+  }
+
+  public void setVideoDataPort(int videoDataPort)
+  {
+    this.videoDataPort = videoDataPort;
+  }
+
+  public int getCommandPort()
+  {
+    return commandPort;
+  }
+
+  public void setCommandPort(int commandPort)
+  {
+    this.commandPort = commandPort;
+  }
+
+  public int getConfigDataPort()
+  {
+    return configDataPort;
+  }
+
+  public void setConfigDataPort(int configDataPort)
+  {
+    this.configDataPort = configDataPort;
+  }
+
+  public ARDrone1VideoCodec getArDrone1VideoCodec()
+  {
+    return arDrone1VideoCodec;
+  }
+
+  public void setArDrone1VideoCodec(ARDrone1VideoCodec arDrone1VideoCodec)
+  {
+    this.arDrone1VideoCodec = arDrone1VideoCodec;
+  }
+
+  public ARDrone2VideoCodec getArDrone2VideoCodec()
+  {
+    return arDrone2VideoCodec;
+  }
+
+  public void setArDrone2VideoCodec(ARDrone2VideoCodec arDrone2VideoCodec)
+  {
+    this.arDrone2VideoCodec = arDrone2VideoCodec;
   }
 }

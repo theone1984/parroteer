@@ -25,8 +25,8 @@ public class SwitchCameraCommand extends SetConfigValueCommand
     }
   }
 
-  public SwitchCameraCommand(Camera camera)
+  public SwitchCameraCommand(String sessionId, String profileId, String applicationId, Camera camera)
   {
-    super(DroneConfiguration.VIDEO_CHANNEL_KEY, camera.getCameraCode());
+    super(sessionId, profileId, applicationId, DroneConfiguration.VIDEO_CHANNEL_KEY, camera.getCameraCode());
   }
 }

@@ -7,6 +7,7 @@ import com.tngtech.leapdrone.drone.commands.FlightModeCommand;
 import com.tngtech.leapdrone.drone.commands.FlightMoveCommand;
 import com.tngtech.leapdrone.drone.commands.SetConfigValueCommand;
 import com.tngtech.leapdrone.drone.commands.SwitchCameraCommand;
+import com.tngtech.leapdrone.drone.data.Config;
 import com.tngtech.leapdrone.drone.data.DroneConfiguration;
 import com.tngtech.leapdrone.drone.data.enums.ControllerState;
 import com.tngtech.leapdrone.drone.data.enums.DroneVersion;
@@ -35,6 +36,8 @@ public class DroneController
 
   private final VideoRetrieverH264 videoRetrieverH264;
 
+  private Config config;
+
   @Inject
   public DroneController(ReadyStateComponent readyStateComponent, DroneCoordinator droneCoordinator, CommandSenderCoordinator commandSender,
                          NavigationDataRetriever navigationDataRetriever, VideoRetrieverP264 videoRetrieverP264,
@@ -48,15 +51,16 @@ public class DroneController
     this.videoRetrieverH264 = videoRetrieverH264;
   }
 
-  public void start()
+  public void start(Config config)
   {
     checkInitializationStateStarted();
     logger.info("Starting drone controller");
 
-    droneCoordinator.start();
+    this.config = config;
+    droneCoordinator.start(config);
     readyStateComponent.emitReadyStateChange(ReadyStateChangeListener.ReadyState.READY);
 
-    System.out.println(droneCoordinator.getDroneConfiguration().getConfig().get(DroneConfiguration.PROFILE_ID_KEY));
+    System.out.println(droneCoordinator.getDroneConfiguration().getConfig().get("video:video_on_usb"));
   }
 
   public void stop()
@@ -115,15 +119,22 @@ public class DroneController
     return droneCoordinator.getDroneConfiguration();
   }
 
-  /**
-   * CAUTION: This is a synchronous method. Don't call it from the nav data or drone configuration callback methods!
-   */
   public void setConfigurationValue(String key, Object value)
   {
     checkInitializationState();
 
     logger.debug(String.format("Setting config setting '%s' to '%s'", key, value.toString()));
-    commandSender.sendConfigCommand(new SetConfigValueCommand(key, value));
+    commandSender.sendConfigCommand(new SetConfigValueCommand(config.getSessionChecksum(), config.getProfileChecksum(),
+            config.getApplicationChecksum(), key, value));
+  }
+
+  public void switchCamera(SwitchCameraCommand.Camera camera)
+  {
+    checkInitializationState();
+
+    logger.debug(String.format("Changing camera to '%s'", camera.name()));
+    commandSender.sendConfigCommand(new SwitchCameraCommand(config.getSessionChecksum(), config.getProfileChecksum(),
+            config.getApplicationChecksum(), camera));
   }
 
   public void takeOff()
@@ -156,15 +167,6 @@ public class DroneController
 
     logger.debug("Flat trim");
     commandSender.sendCommand(new FlatTrimCommand());
-  }
-
-  public void switchCamera(SwitchCameraCommand.Camera camera)
-  {
-    checkInitializationState();
-
-    logger.debug(String.format("Changing camera to '%s'", camera.name()));
-    // Since this is a config command changed very often, we don't need to reload the config here
-    commandSender.sendConfigCommand(new SwitchCameraCommand(camera));
   }
 
   public void move(float roll, float pitch, float yaw, float gaz)

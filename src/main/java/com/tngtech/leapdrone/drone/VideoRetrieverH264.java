@@ -1,7 +1,6 @@
 package com.tngtech.leapdrone.drone;
 
 import com.google.inject.Inject;
-import com.tngtech.leapdrone.drone.data.Config;
 import com.tngtech.leapdrone.drone.listeners.ImageListener;
 import com.tngtech.leapdrone.drone.listeners.VideoDataListener;
 import com.tngtech.leapdrone.drone.video.H264VideoDecoder;
@@ -51,8 +50,8 @@ public class VideoRetrieverH264 extends VideoRetrieverAbstract implements ImageL
 
   private void connectToVideoDataPort()
   {
-    logger.info(String.format("Connecting to video data port %d", Config.VIDEO_DATA_PORT));
-    tcpComponent.connect(getDroneAddress(), Config.VIDEO_DATA_PORT);
+    logger.info(String.format("Connecting to video data port %d", getVideoDataPort()));
+    tcpComponent.connect(getDroneAddress(), getVideoDataPort());
   }
 
   private void initializeCommunication()
@@ -62,7 +61,7 @@ public class VideoRetrieverH264 extends VideoRetrieverAbstract implements ImageL
 
   private void disconnectFromVideoDataPort()
   {
-    logger.info(String.format("Disconnecting from video data port %d", Config.VIDEO_DATA_PORT));
+    logger.info(String.format("Disconnecting from video data port %d", getVideoDataPort()));
     tcpComponent.disconnect();
   }
 

@@ -2,7 +2,6 @@ package com.tngtech.leapdrone.drone;
 
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
-import com.tngtech.leapdrone.drone.data.Config;
 import com.tngtech.leapdrone.drone.data.NavData;
 import com.tngtech.leapdrone.drone.listeners.NavDataListener;
 import com.tngtech.leapdrone.drone.listeners.ReadyStateChangeListener;
@@ -41,6 +40,10 @@ public class NavigationDataRetriever implements Runnable
 
   private DatagramPacket incomingDataPacket;
 
+  private String droneIpAddress;
+
+  private int navDataPort;
+
   @Inject
   public NavigationDataRetriever(ThreadComponent threadComponent, AddressComponent addressComponent, UdpComponent udpComponent,
                                  ReadyStateComponent readyStateComponent, NavigationDataDecoder decoder)
@@ -56,8 +59,11 @@ public class NavigationDataRetriever implements Runnable
     determineDatagramPackets();
   }
 
-  public void start()
+  public void start(String droneIpAddress, int navDataPort)
   {
+    this.droneIpAddress = droneIpAddress;
+    this.navDataPort = navDataPort;
+
     logger.info("Starting nav data thread");
     threadComponent.start(this);
   }
@@ -127,10 +133,10 @@ public class NavigationDataRetriever implements Runnable
 
   private void connectToNavDataPort()
   {
-    InetAddress address = addressComponent.getInetAddress(Config.DRONE_IP_ADDRESS);
+    InetAddress address = addressComponent.getInetAddress(droneIpAddress);
 
-    logger.info(String.format("Connecting to nav data port %d", Config.NAV_DATA_PORT));
-    udpComponent.connect(address, Config.NAV_DATA_PORT);
+    logger.info(String.format("Connecting to nav data port %d", navDataPort));
+    udpComponent.connect(address, navDataPort);
   }
 
   private void initializeCommunication()
@@ -167,7 +173,7 @@ public class NavigationDataRetriever implements Runnable
 
   private void disconnectFromNavDataPort()
   {
-    logger.info(String.format("Disconnecting from nav data port %d", Config.NAV_DATA_PORT));
+    logger.info(String.format("Disconnecting from nav data port %d", navDataPort));
     udpComponent.disconnect();
   }
 }

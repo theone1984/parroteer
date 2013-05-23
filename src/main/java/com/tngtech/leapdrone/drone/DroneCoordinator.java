@@ -34,6 +34,8 @@ public class DroneCoordinator implements ReadyStateChangeListener, NavDataListen
 
   private final ConfigurationDataRetriever configurationDataRetriever;
 
+  private Config config;
+
   private ControllerState currentState;
 
   private DroneVersion droneVersion;
@@ -69,8 +71,9 @@ public class DroneCoordinator implements ReadyStateChangeListener, NavDataListen
     configurationDataRetriever.addDroneConfigurationListener(this);
   }
 
-  public void start()
+  public void start(Config config)
   {
+    this.config = config;
     checkIfDroneIsReachable();
     determineDroneVersion();
 
@@ -89,39 +92,44 @@ public class DroneCoordinator implements ReadyStateChangeListener, NavDataListen
 
   private void checkIfDroneIsReachable()
   {
-    checkState(addressComponent.isReachable(Config.DRONE_IP_ADDRESS, Config.REACHABLE_TIMEOUT), "The drone could not be pinged");
+    checkState(addressComponent.isReachable(config.getDroneIpAddress(), Config.REACHABLE_TIMEOUT), "The drone could not be pinged");
     logger.info("The drone could be pinged");
   }
 
   private void determineDroneVersion()
   {
-    droneVersion = versionReader.getDroneVersion();
+    droneVersion = versionReader.getDroneVersion(config.getDroneIpAddress(), config.getFtpPort());
   }
 
   private void startWorkers()
   {
-    commandSender.start();
-    configurationDataRetriever.start();
-    navigationDataRetriever.start();
+    commandSender.start(config.getDroneIpAddress(), config.getCommandPort());
+    configurationDataRetriever.start(config.getDroneIpAddress(), config.getConfigDataPort());
+    navigationDataRetriever.start(config.getDroneIpAddress(), config.getNavDataPort());
   }
 
   private void login()
   {
-    commandSender.sendLogin(Config.SESSION_ID, Config.PROFILE_ID, Config.APPLICATION_ID);
-    commandSender.sendBareConfigCommand(new SetConfigValueCommand(DroneConfiguration.ENABLE_NAV_DATA_KEY, "TRUE"));
+    commandSender.sendLogin(config.getSessionChecksum(), config.getProfileChecksum(), config.getApplicationChecksum());
+    commandSender.sendBareConfigCommand(getSetConfigCommand(DroneConfiguration.ENABLE_NAV_DATA_KEY, "TRUE"));
   }
 
   private void startVideoRetriever()
   {
     if (droneVersion == DroneVersion.AR_DRONE_1)
     {
-      commandSender.sendBareConfigCommand(new SetConfigValueCommand(DroneConfiguration.VIDEO_CODEC_KEY, Config.ARDRONE_1_VIDEO_CODEC));
-      videoRetrieverP264.start();
+      commandSender.sendBareConfigCommand(getSetConfigCommand(DroneConfiguration.VIDEO_CODEC_KEY, config.getArDrone1VideoCodec()));
+      videoRetrieverP264.start(config.getDroneIpAddress(), config.getVideoDataPort());
     } else
     {
-      commandSender.sendBareConfigCommand(new SetConfigValueCommand(DroneConfiguration.VIDEO_CODEC_KEY, Config.ARDRONE_2_VIDEO_CODEC));
-      videoRetrieverH264.start();
+      commandSender.sendBareConfigCommand(getSetConfigCommand(DroneConfiguration.VIDEO_CODEC_KEY, config.getArDrone2VideoCodec()));
+      videoRetrieverH264.start(config.getDroneIpAddress(), config.getVideoDataPort());
     }
+  }
+
+  private SetConfigValueCommand getSetConfigCommand(String key, Object value)
+  {
+    return new SetConfigValueCommand(config.getSessionChecksum(), config.getProfileChecksum(), config.getApplicationChecksum(), key, value);
   }
 
   private void determineConfiguration()

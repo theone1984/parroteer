@@ -33,9 +33,9 @@ public class CommandSenderCoordinator extends CommandSender implements NavDataLi
 
   public void sendLogin(String sessionId, String profileId, String applicationId)
   {
-    sendBareConfigCommand(new SetConfigValueCommand(DroneConfiguration.SESSION_ID_KEY, sessionId));
-    sendBareConfigCommand(new SetConfigValueCommand(DroneConfiguration.PROFILE_ID_KEY, profileId));
-    sendBareConfigCommand(new SetConfigValueCommand(DroneConfiguration.APPLICATION_ID_KEY, applicationId));
+    sendBareConfigCommand(new SetConfigValueCommand(sessionId, profileId, applicationId, DroneConfiguration.SESSION_ID_KEY, sessionId));
+    sendBareConfigCommand(new SetConfigValueCommand(sessionId, profileId, applicationId, DroneConfiguration.PROFILE_ID_KEY, profileId));
+    sendBareConfigCommand(new SetConfigValueCommand(sessionId, profileId, applicationId, DroneConfiguration.APPLICATION_ID_KEY, applicationId));
   }
 
   public void sendConfigCommand(SetConfigValueCommand configCommand)

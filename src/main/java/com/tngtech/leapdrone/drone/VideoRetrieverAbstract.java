@@ -2,7 +2,6 @@ package com.tngtech.leapdrone.drone;
 
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
-import com.tngtech.leapdrone.drone.data.Config;
 import com.tngtech.leapdrone.drone.listeners.ReadyStateChangeListener;
 import com.tngtech.leapdrone.drone.listeners.VideoDataListener;
 import com.tngtech.leapdrone.helpers.components.AddressComponent;
@@ -19,11 +18,15 @@ public abstract class VideoRetrieverAbstract implements Runnable
 
   private final ThreadComponent threadComponent;
 
+  private final AddressComponent addressComponent;
+
   private final ReadyStateComponent readyStateComponent;
 
-  private final InetAddress droneAddress;
-
   private final Set<VideoDataListener> videoDataListeners;
+
+  private InetAddress droneAddress;
+
+  private int videoDataPort;
 
   @Inject
   public VideoRetrieverAbstract(ThreadComponent threadComponent, AddressComponent addressComponent, ReadyStateComponent readyStateComponent)
@@ -31,14 +34,17 @@ public abstract class VideoRetrieverAbstract implements Runnable
     super();
 
     this.threadComponent = threadComponent;
+    this.addressComponent = addressComponent;
     this.readyStateComponent = readyStateComponent;
 
     videoDataListeners = Sets.newLinkedHashSet();
-    droneAddress = addressComponent.getInetAddress(Config.DRONE_IP_ADDRESS);
   }
 
-  public void start()
+  public void start(String droneIpAddress, int videoDataPort)
   {
+    droneAddress = addressComponent.getInetAddress(droneIpAddress);
+    this.videoDataPort = videoDataPort;
+
     logger.info("Starting video thread");
     threadComponent.start(this);
   }
@@ -93,5 +99,10 @@ public abstract class VideoRetrieverAbstract implements Runnable
   protected void setReady()
   {
     readyStateComponent.emitReadyStateChange(ReadyStateChangeListener.ReadyState.READY);
+  }
+
+  public int getVideoDataPort()
+  {
+    return videoDataPort;
   }
 }

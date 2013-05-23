@@ -4,7 +4,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
-import com.tngtech.leapdrone.drone.data.Config;
 import com.tngtech.leapdrone.drone.data.DroneConfiguration;
 import com.tngtech.leapdrone.drone.listeners.DroneConfigurationListener;
 import com.tngtech.leapdrone.drone.listeners.ReadyStateChangeListener;
@@ -36,6 +35,10 @@ public class ConfigurationDataRetriever implements Runnable
 
   private final Set<DroneConfigurationListener> droneConfigurationListeners;
 
+  private String droneIpAddress;
+
+  private int configDataPort;
+
   @Inject
   public ConfigurationDataRetriever(ThreadComponent threadComponent, AddressComponent addressComponent, TcpComponent tcpComponent,
                                     ReadyStateComponent readyStateComponent)
@@ -48,8 +51,11 @@ public class ConfigurationDataRetriever implements Runnable
     droneConfigurationListeners = Sets.newHashSet();
   }
 
-  public void start()
+  public void start(String droneIpAddress, int configDataPort)
   {
+    this.droneIpAddress = droneIpAddress;
+    this.configDataPort = configDataPort;
+
     logger.info("Starting config data thread");
     threadComponent.start(this);
   }
@@ -108,8 +114,8 @@ public class ConfigurationDataRetriever implements Runnable
 
   private void connectToConfigDataPort()
   {
-    logger.info(String.format("Connecting to config data port %d", Config.CONFIG_DATA_PORT));
-    tcpComponent.connect(addressComponent.getInetAddress(Config.DRONE_IP_ADDRESS), Config.CONFIG_DATA_PORT, 1000);
+    logger.info(String.format("Connecting to config data port %d", configDataPort));
+    tcpComponent.connect(addressComponent.getInetAddress(droneIpAddress), configDataPort, 1000);
   }
 
   public Collection<String> readLines()
@@ -179,7 +185,7 @@ public class ConfigurationDataRetriever implements Runnable
 
   private void disconnectFromConfigDataPort()
   {
-    logger.info(String.format("Connecting to config data port %d", Config.CONFIG_DATA_PORT));
+    logger.info(String.format("Connecting to config data port %d", configDataPort));
     tcpComponent.disconnect();
   }
 }
