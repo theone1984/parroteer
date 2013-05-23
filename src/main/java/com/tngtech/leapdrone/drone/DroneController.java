@@ -80,8 +80,6 @@ public class DroneController
     this.config = config;
     droneCoordinator.start(config);
     readyStateComponent.emitReadyStateChange(ReadyStateChangeListener.ReadyState.READY);
-
-    System.out.println(droneCoordinator.getDroneConfiguration().getConfig().get("video:video_on_usb"));
   }
 
   public void stop()
