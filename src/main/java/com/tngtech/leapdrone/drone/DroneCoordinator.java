@@ -167,6 +167,13 @@ public class DroneCoordinator implements ReadyStateChangeListener, NavDataListen
   @Override
   public void onNavData(NavData navData)
   {
+    //noinspection StatementWithEmptyBody
+    if (navData.getState().isCommunicationProblemOccurred())
+    {
+      // TODO if there are problems, reset the command sender sequence number
+      // There is no clear reference in the manual for that
+      // (@see Developer Manual, page 40 ("How do the client and the drone synchronize?")
+    }
   }
 
   @Override
