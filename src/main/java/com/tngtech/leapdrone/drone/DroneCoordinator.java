@@ -10,8 +10,11 @@ import com.tngtech.leapdrone.drone.data.enums.DroneVersion;
 import com.tngtech.leapdrone.drone.listeners.DroneConfigurationListener;
 import com.tngtech.leapdrone.drone.listeners.NavDataListener;
 import com.tngtech.leapdrone.drone.listeners.ReadyStateChangeListener;
+import com.tngtech.leapdrone.helpers.VersionHelper;
 import com.tngtech.leapdrone.helpers.components.AddressComponent;
 import org.apache.log4j.Logger;
+
+import java.util.Objects;
 
 import static com.google.common.base.Preconditions.checkState;
 import static com.tngtech.leapdrone.helpers.ThreadHelper.sleep;
@@ -86,6 +89,8 @@ public class DroneCoordinator implements ReadyStateChangeListener, NavDataListen
     determineConfiguration();
     logger.info("Got configuration data");
 
+    checkConfiguration();
+
     waitForState(ControllerState.READY);
     logger.info("Drone setup complete");
   }
@@ -143,6 +148,19 @@ public class DroneCoordinator implements ReadyStateChangeListener, NavDataListen
     {
       sleep(Config.WAIT_TIMEOUT);
     }
+  }
+
+  private void checkConfiguration()
+  {
+    String firmwareVersion = droneConfiguration.getConfig().get(DroneConfiguration.FIRMWARE_VERSION_KEY);
+    String sessionId = droneConfiguration.getConfig().get(DroneConfiguration.SESSION_ID_KEY);
+    String applicationId = droneConfiguration.getConfig().get(DroneConfiguration.APPLICATION_ID_KEY);
+    String profileId = droneConfiguration.getConfig().get(DroneConfiguration.PROFILE_ID_KEY);
+
+    checkState(Objects.equals(config.getSessionChecksum(), sessionId), "Session ID checksums do not match");
+    checkState(Objects.equals(config.getProfileChecksum(), profileId), "Profile ID checksums do not match");
+    checkState(Objects.equals(config.getApplicationChecksum(), applicationId), "Application ID checksums do not match");
+    checkState(VersionHelper.compareVersions(firmwareVersion, Config.MIN_FIRMWARE_VERSION) >= 0, "The firmware version used is too old");
   }
 
   public void stop()

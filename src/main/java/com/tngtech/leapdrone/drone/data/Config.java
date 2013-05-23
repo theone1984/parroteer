@@ -10,6 +10,8 @@ public final class Config
 
   public static final int REACHABLE_TIMEOUT = 1000;
 
+  public static final String MIN_FIRMWARE_VERSION = "1.6.4";
+
   private final String sessionChecksum;
 
   private final String profileChecksum;

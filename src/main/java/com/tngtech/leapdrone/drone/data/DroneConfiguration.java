@@ -18,6 +18,8 @@ public class DroneConfiguration
 
   public static final String VIDEO_CHANNEL_KEY = "video:video_channel";
 
+  public static final String FIRMWARE_VERSION_KEY = "general:num_version_soft";
+
   private Map<String, String> config;
 
   public DroneConfiguration(Map<String, String> config)
