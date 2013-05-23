@@ -118,6 +118,7 @@ public class VideoPanel extends javax.swing.JPanel implements VideoDataListener,
     String batteryLevelText = "Battery: " + currentBatteryLevel + "%";
 
     Font font = graphics2D.getFont().deriveFont(12.0f);
+    graphics2D.setColor(Color.GREEN);
     graphics2D.setFont(font);
     graphics2D.drawString(batteryLevelText, 10, 20);
   }
