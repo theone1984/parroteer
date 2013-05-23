@@ -60,7 +60,7 @@ public class Main
     swingWindow.createWindow();
 
     leapMotionController.connect();
-    speechDetector.start();
+    //speechDetector.start();
   }
 
   @SuppressWarnings("ResultOfMethodCallIgnored")

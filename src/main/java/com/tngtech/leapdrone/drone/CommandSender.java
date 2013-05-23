@@ -148,11 +148,6 @@ public class CommandSender implements Runnable
     InetAddress address = addressComponent.getInetAddress(Config.DRONE_IP_ADDRESS);
     DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, address, Config.COMMAND_PORT);
 
-    if (!commandText.startsWith("AT*COMWDG"))
-    {
-      System.out.println(commandText);
-    }
-
     udpComponent.send(sendPacket);
   }
 

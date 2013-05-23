@@ -96,7 +96,7 @@ public class SwingWindow implements ActionListener
         droneController.emergency();
         break;
       case "switchCamera":
-        droneController.switchCamera(SwitchCameraCommand.Camera.BACK);
+        droneController.switchCamera(SwitchCameraCommand.Camera.NEXT);
         break;
       default:
         System.out.println(String.format("Don't know what to do with command '%s'", e.getActionCommand()));
