@@ -5,7 +5,7 @@ public class ControlDataCommand extends CommandAbstract
   public enum ControlDataMode
   {
     IDLE(0),
-    GET_CONTROL_DATA(4),
+    GET_CONFIGURATION_DATA(4),
     RESET_ACK_FLAG(5);
 
     private final int controlModeCode;

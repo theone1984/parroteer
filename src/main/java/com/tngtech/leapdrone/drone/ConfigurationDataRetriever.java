@@ -4,7 +4,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
-import com.tngtech.leapdrone.drone.config.DroneControllerConfig;
+import com.tngtech.leapdrone.drone.data.Config;
 import com.tngtech.leapdrone.drone.data.DroneConfiguration;
 import com.tngtech.leapdrone.drone.listeners.DroneConfigurationListener;
 import com.tngtech.leapdrone.drone.listeners.ReadyStateChangeListener;
@@ -108,8 +108,8 @@ public class ConfigurationDataRetriever implements Runnable
 
   private void connectToConfigDataPort()
   {
-    logger.info(String.format("Connecting to config data port %d", DroneControllerConfig.CONFIG_DATA_PORT));
-    tcpComponent.connect(addressComponent.getInetAddress(DroneControllerConfig.DRONE_IP_ADDRESS), DroneControllerConfig.CONFIG_DATA_PORT, 1000);
+    logger.info(String.format("Connecting to config data port %d", Config.CONFIG_DATA_PORT));
+    tcpComponent.connect(addressComponent.getInetAddress(Config.DRONE_IP_ADDRESS), Config.CONFIG_DATA_PORT, 1000);
   }
 
   public Collection<String> readLines()
@@ -179,7 +179,7 @@ public class ConfigurationDataRetriever implements Runnable
 
   private void disconnectFromConfigDataPort()
   {
-    logger.info(String.format("Connecting to config data port %d", DroneControllerConfig.CONFIG_DATA_PORT));
+    logger.info(String.format("Connecting to config data port %d", Config.CONFIG_DATA_PORT));
     tcpComponent.disconnect();
   }
 }

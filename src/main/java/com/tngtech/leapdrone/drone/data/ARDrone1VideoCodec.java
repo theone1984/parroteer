@@ -15,4 +15,10 @@ public enum ARDrone1VideoCodec
   {
     return codecValue;
   }
+
+  @Override
+  public String toString()
+  {
+    return String.valueOf(codecValue);
+  }
 }

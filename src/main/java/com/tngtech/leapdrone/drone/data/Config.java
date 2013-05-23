@@ -1,10 +1,9 @@
-package com.tngtech.leapdrone.drone.config;
+package com.tngtech.leapdrone.drone.data;
 
-import com.tngtech.leapdrone.drone.data.ARDrone1VideoCodec;
-import com.tngtech.leapdrone.drone.data.ARDrone2VideoCodec;
-
-public final class DroneControllerConfig
+public final class Config
 {
+  public static final int WAIT_TIMEOUT = 15;
+
   // Must be an 8-character hex field
   public static final String SESSION_ID = "affeaffe";
 
@@ -32,7 +31,7 @@ public final class DroneControllerConfig
 
   public static ARDrone2VideoCodec ARDRONE_2_VIDEO_CODEC = ARDrone2VideoCodec.H264_360P;
 
-  private DroneControllerConfig()
+  private Config()
   {
   }
 }

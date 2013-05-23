@@ -2,7 +2,7 @@ package com.tngtech.leapdrone.drone;
 
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
-import com.tngtech.leapdrone.drone.config.DroneControllerConfig;
+import com.tngtech.leapdrone.drone.data.Config;
 import com.tngtech.leapdrone.drone.data.DroneVersion;
 import com.tngtech.leapdrone.helpers.components.UrlConnectionComponent;
 
@@ -25,8 +25,8 @@ public class VersionReader
   {
     this.urlConnectionComponent = urlConnectionComponent;
 
-    ftpFilePath = String.format("%s//%s:%d/%s", FTP_URL_SCHEMA, DroneControllerConfig.DRONE_IP_ADDRESS,
-            DroneControllerConfig.FTP_PORT, VERSION_FILE_NAME);
+    ftpFilePath = String.format("%s//%s:%d/%s", FTP_URL_SCHEMA, Config.DRONE_IP_ADDRESS,
+            Config.FTP_PORT, VERSION_FILE_NAME);
   }
 
   public DroneVersion getDroneVersion()

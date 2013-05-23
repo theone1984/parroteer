@@ -1,37 +1,30 @@
 package com.tngtech.leapdrone.drone;
 
 import com.google.inject.Inject;
-import com.tngtech.leapdrone.drone.commands.Command;
-import com.tngtech.leapdrone.drone.commands.ControlDataCommand;
 import com.tngtech.leapdrone.drone.commands.SetConfigValueCommand;
-import com.tngtech.leapdrone.drone.config.DroneControllerConfig;
+import com.tngtech.leapdrone.drone.data.Config;
+import com.tngtech.leapdrone.drone.data.ControllerState;
 import com.tngtech.leapdrone.drone.data.DroneConfiguration;
-import com.tngtech.leapdrone.drone.data.DroneControllerState;
 import com.tngtech.leapdrone.drone.data.DroneVersion;
 import com.tngtech.leapdrone.drone.data.NavData;
 import com.tngtech.leapdrone.drone.listeners.DroneConfigurationListener;
 import com.tngtech.leapdrone.drone.listeners.NavDataListener;
 import com.tngtech.leapdrone.drone.listeners.ReadyStateChangeListener;
 import com.tngtech.leapdrone.helpers.components.AddressComponent;
-import com.tngtech.leapdrone.helpers.components.ReadyStateComponent;
 import org.apache.log4j.Logger;
 
 import static com.google.common.base.Preconditions.checkState;
 import static com.tngtech.leapdrone.helpers.ThreadHelper.sleep;
 
-public class DroneCoordinator
+public class DroneCoordinator implements ReadyStateChangeListener, NavDataListener, DroneConfigurationListener
 {
-  public static final int WAIT_PERIOD = 15;
-
   private final Logger logger = Logger.getLogger(DroneCoordinator.class.getSimpleName());
 
   private final AddressComponent addressComponent;
 
-  private final ReadyStateComponent readyStateComponent;
-
   private final VersionReader versionReader;
 
-  private final CommandSender commandSender;
+  private final CommandSenderCoordinator commandSender;
 
   private final NavigationDataRetriever navigationDataRetriever;
 
@@ -41,22 +34,18 @@ public class DroneCoordinator
 
   private final ConfigurationDataRetriever configurationDataRetriever;
 
-  private DroneControllerState currentState;
+  private ControllerState currentState;
 
   private DroneVersion droneVersion;
 
   private DroneConfiguration droneConfiguration;
 
-  private NavData currentNavData;
-
   @Inject
-  public DroneCoordinator(AddressComponent addressComponent, ReadyStateComponent readyStateComponent, VersionReader versionReader,
-                          CommandSender commandSender, NavigationDataRetriever navigationDataRetriever,
-                          VideoRetrieverP264 videoRetrieverP264, VideoRetrieverH264 videoRetrieverH264,
-                          ConfigurationDataRetriever configurationDataRetriever)
+  public DroneCoordinator(AddressComponent addressComponent, VersionReader versionReader, CommandSenderCoordinator commandSender,
+                          NavigationDataRetriever navigationDataRetriever, VideoRetrieverP264 videoRetrieverP264,
+                          VideoRetrieverH264 videoRetrieverH264, ConfigurationDataRetriever configurationDataRetriever)
   {
     this.addressComponent = addressComponent;
-    this.readyStateComponent = readyStateComponent;
     this.versionReader = versionReader;
     this.commandSender = commandSender;
     this.navigationDataRetriever = navigationDataRetriever;
@@ -65,117 +54,28 @@ public class DroneCoordinator
     this.configurationDataRetriever = configurationDataRetriever;
 
     addListeners(commandSender);
-    currentState = DroneControllerState.STARTED;
+    currentState = ControllerState.STARTED;
   }
 
   private void addListeners(CommandSender commandSender)
   {
-    commandSender.addReadyStateChangeListener(new ReadyStateChangeListener()
-    {
-      @Override
-      public void onReadyStateChange(ReadyState readyState)
-      {
-        workerReady(readyState);
-      }
-    });
-    configurationDataRetriever.addReadyStateChangeListener(new ReadyStateChangeListener()
-    {
-      @Override
-      public void onReadyStateChange(ReadyState readyState)
-      {
-        workerReady(readyState);
-      }
-    });
-    navigationDataRetriever.addReadyStateChangeListener(new ReadyStateChangeListener()
-    {
-      @Override
-      public void onReadyStateChange(ReadyState readyState)
-      {
-        workerReady(readyState);
-      }
-    });
-    videoRetrieverH264.addReadyStateChangeListener(new ReadyStateChangeListener()
-    {
-      @Override
-      public void onReadyStateChange(ReadyState readyState)
-      {
-        videoRetrieverReady(readyState);
-      }
-    });
-    videoRetrieverP264.addReadyStateChangeListener(new ReadyStateChangeListener()
-    {
-      @Override
-      public void onReadyStateChange(ReadyState readyState)
-      {
-        videoRetrieverReady(readyState);
-      }
-    });
+    commandSender.addReadyStateChangeListener(this);
+    configurationDataRetriever.addReadyStateChangeListener(this);
+    navigationDataRetriever.addReadyStateChangeListener(this);
+    videoRetrieverH264.addReadyStateChangeListener(this);
+    videoRetrieverP264.addReadyStateChangeListener(this);
 
-    navigationDataRetriever.addNavDataListener(new NavDataListener()
-    {
-      @Override
-      public void onNavData(NavData navData)
-      {
-        navDataReceived(navData);
-      }
-    });
-    configurationDataRetriever.addDroneConfigurationListener(new DroneConfigurationListener()
-    {
-      @Override
-      public void onDroneConfiguration(DroneConfiguration config)
-      {
-        droneConfigurationReceived(config);
-      }
-    });
-  }
-
-  private void workerReady(ReadyStateChangeListener.ReadyState readyState)
-  {
-    if (readyState == ReadyStateChangeListener.ReadyState.READY)
-    {
-      currentState = currentState == DroneControllerState.STARTED ? DroneControllerState.COMMAND_ONE_RETRIEVER_READY :
-              currentState == DroneControllerState.COMMAND_ONE_RETRIEVER_READY ? DroneControllerState.COMMAND_TWO_RETRIEVERS_READY :
-                      DroneControllerState.WORKERS_READY;
-    }
-  }
-
-  private void videoRetrieverReady(ReadyStateChangeListener.ReadyState readyState)
-  {
-    if (readyState == ReadyStateChangeListener.ReadyState.READY)
-    {
-      currentState = DroneControllerState.READY;
-    }
-  }
-
-  private void droneConfigurationReceived(DroneConfiguration config)
-  {
-    droneConfiguration = config;
-  }
-
-  private void navDataReceived(NavData navData)
-  {
-    currentNavData = navData;
-  }
-
-  public void addReadyStateChangeListener(ReadyStateChangeListener readyStateChangeListener)
-  {
-    readyStateComponent.addReadyStateChangeListener(readyStateChangeListener);
-  }
-
-  public void removeReadyStateChangeListener(ReadyStateChangeListener readyStateChangeListener)
-  {
-    readyStateComponent.addReadyStateChangeListener(readyStateChangeListener);
+    navigationDataRetriever.addNavDataListener(this);
+    configurationDataRetriever.addDroneConfigurationListener(this);
   }
 
   public void start()
   {
     checkIfDroneIsReachable();
-    droneVersion = versionReader.getDroneVersion();
+    determineDroneVersion();
 
-    commandSender.start();
-    configurationDataRetriever.start();
-    navigationDataRetriever.start();
-    waitForState(DroneControllerState.WORKERS_READY);
+    startWorkers();
+    waitForState(ControllerState.WORKERS_READY);
     logger.info("Workers are ready to be used");
 
     login();
@@ -183,92 +83,63 @@ public class DroneCoordinator
     determineConfiguration();
     logger.info("Got configuration data");
 
-    waitForState(DroneControllerState.READY);
+    waitForState(ControllerState.READY);
     logger.info("Drone setup complete");
-
-    readyStateComponent.emitReadyStateChange(ReadyStateChangeListener.ReadyState.READY);
   }
 
   private void checkIfDroneIsReachable()
   {
-    checkState(addressComponent.isReachable(DroneControllerConfig.DRONE_IP_ADDRESS, DroneControllerConfig.REACHABLE_TIMEOUT),
-            "The drone could not be pinged");
+    checkState(addressComponent.isReachable(Config.DRONE_IP_ADDRESS, Config.REACHABLE_TIMEOUT), "The drone could not be pinged");
     logger.info("The drone could be pinged");
+  }
+
+  private void determineDroneVersion()
+  {
+    droneVersion = versionReader.getDroneVersion();
+  }
+
+  private void startWorkers()
+  {
+    commandSender.start();
+    configurationDataRetriever.start();
+    navigationDataRetriever.start();
   }
 
   private void login()
   {
-    sendConfigCommandToBeAcknowledged(new SetConfigValueCommand(DroneConfiguration.SESSION_ID_KEY, DroneControllerConfig.SESSION_ID));
-    sendConfigCommandToBeAcknowledged(new SetConfigValueCommand(DroneConfiguration.PROFILE_ID_KEY, DroneControllerConfig.PROFILE_ID));
-    sendConfigCommandToBeAcknowledged(new SetConfigValueCommand(DroneConfiguration.APPLICATION_ID_KEY, DroneControllerConfig.APPLICATION_ID));
-
-    sendConfigCommandToBeAcknowledged(new SetConfigValueCommand(DroneConfiguration.ENABLE_NAV_DATA_KEY, "TRUE"));
+    commandSender.sendLogin(Config.SESSION_ID, Config.APPLICATION_ID, Config.PROFILE_ID);
+    commandSender.sendBareConfigCommand(new SetConfigValueCommand(DroneConfiguration.ENABLE_NAV_DATA_KEY, "TRUE"));
   }
 
   private void startVideoRetriever()
   {
     if (droneVersion == DroneVersion.AR_DRONE_1)
     {
-      String codecValue = String.valueOf(DroneControllerConfig.ARDRONE_1_VIDEO_CODEC.getCodecValue());
-      sendConfigCommandToBeAcknowledged(new SetConfigValueCommand(DroneConfiguration.VIDEO_CODEC_KEY, codecValue));
-
+      commandSender.sendBareConfigCommand(new SetConfigValueCommand(DroneConfiguration.VIDEO_CODEC_KEY, Config.ARDRONE_1_VIDEO_CODEC));
       videoRetrieverP264.start();
     } else
     {
-      String codecValue = String.valueOf(DroneControllerConfig.ARDRONE_2_VIDEO_CODEC.getCodecValue());
-      sendConfigCommandToBeAcknowledged(new SetConfigValueCommand(DroneConfiguration.VIDEO_CODEC_KEY, codecValue));
-
+      commandSender.sendBareConfigCommand(new SetConfigValueCommand(DroneConfiguration.VIDEO_CODEC_KEY, Config.ARDRONE_2_VIDEO_CODEC));
       videoRetrieverH264.start();
     }
   }
 
   private void determineConfiguration()
   {
-    sendConfigCommandToBeAcknowledged(new ControlDataCommand(ControlDataCommand.ControlDataMode.GET_CONTROL_DATA));
-    waitForConfigurationData();
+    commandSender.sendRefreshDroneConfigurationCommand();
   }
 
-  private void sendConfigCommandToBeAcknowledged(Command configCommand)
-  {
-    sendResetControlDataAcknowledgementFlagCommand();
-    waitForCommandAcknowledgeFlagToBe(false);
-
-    commandSender.sendCommand(configCommand);
-    waitForCommandAcknowledgeFlagToBe(true);
-  }
-
-  private void sendResetControlDataAcknowledgementFlagCommand()
-  {
-    commandSender.sendCommand(new ControlDataCommand(ControlDataCommand.ControlDataMode.RESET_ACK_FLAG));
-  }
-
-  private void waitForState(DroneControllerState state)
+  private void waitForState(ControllerState state)
   {
     while (currentState != state)
     {
-      sleep(WAIT_PERIOD);
-    }
-  }
-
-  private void waitForCommandAcknowledgeFlagToBe(boolean value)
-  {
-    while (currentNavData == null || currentNavData.getState().isControlReceived() != value)
-    {
-      sleep(WAIT_PERIOD);
-    }
-  }
-
-  private void waitForConfigurationData()
-  {
-    while (droneConfiguration == null)
-    {
-      sleep(WAIT_PERIOD);
+      sleep(Config.WAIT_TIMEOUT);
     }
   }
 
   public void stop()
   {
-    currentState = DroneControllerState.STOPPED;
+    currentState = ControllerState.STOPPED;
 
     commandSender.stop();
     navigationDataRetriever.stop();
@@ -287,29 +158,29 @@ public class DroneCoordinator
     }
   }
 
-  public DroneControllerState getState()
+  @Override
+  public void onDroneConfiguration(DroneConfiguration configuration)
+  {
+    droneConfiguration = configuration;
+  }
+
+  @Override
+  public void onNavData(NavData navData)
+  {
+  }
+
+  @Override
+  public void onReadyStateChange(ReadyState readyState)
+  {
+    if (readyState == ReadyStateChangeListener.ReadyState.READY)
+    {
+      currentState = currentState.getNextState();
+    }
+  }
+
+  public ControllerState getState()
   {
     return currentState;
-  }
-
-  public NavigationDataRetriever getNavigationDataRetriever()
-  {
-    return navigationDataRetriever;
-  }
-
-  public VideoRetrieverP264 getVideoRetrieverP264()
-  {
-    return videoRetrieverP264;
-  }
-
-  public VideoRetrieverH264 getVideoRetrieverH264()
-  {
-    return videoRetrieverH264;
-  }
-
-  public CommandSender getCommandSender()
-  {
-    return commandSender;
   }
 
   public DroneVersion getDroneVersion()

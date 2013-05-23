@@ -2,7 +2,7 @@ package com.tngtech.leapdrone.drone;
 
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
-import com.tngtech.leapdrone.drone.config.DroneControllerConfig;
+import com.tngtech.leapdrone.drone.data.Config;
 import com.tngtech.leapdrone.drone.listeners.ReadyStateChangeListener;
 import com.tngtech.leapdrone.drone.listeners.VideoDataListener;
 import com.tngtech.leapdrone.helpers.components.AddressComponent;
@@ -34,7 +34,7 @@ public abstract class VideoRetrieverAbstract implements Runnable
     this.readyStateComponent = readyStateComponent;
 
     videoDataListeners = Sets.newLinkedHashSet();
-    droneAddress = addressComponent.getInetAddress(DroneControllerConfig.DRONE_IP_ADDRESS);
+    droneAddress = addressComponent.getInetAddress(Config.DRONE_IP_ADDRESS);
   }
 
   public void start()

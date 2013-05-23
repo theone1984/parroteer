@@ -4,7 +4,7 @@ import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import com.tngtech.leapdrone.drone.commands.Command;
 import com.tngtech.leapdrone.drone.commands.WatchDogCommand;
-import com.tngtech.leapdrone.drone.config.DroneControllerConfig;
+import com.tngtech.leapdrone.drone.data.Config;
 import com.tngtech.leapdrone.drone.listeners.ReadyStateChangeListener;
 import com.tngtech.leapdrone.helpers.components.AddressComponent;
 import com.tngtech.leapdrone.helpers.components.ReadyStateComponent;
@@ -101,10 +101,10 @@ public class CommandSender implements Runnable
 
   private void connectToCommandSenderPort()
   {
-    InetAddress address = addressComponent.getInetAddress(DroneControllerConfig.DRONE_IP_ADDRESS);
+    InetAddress address = addressComponent.getInetAddress(Config.DRONE_IP_ADDRESS);
 
-    logger.info(String.format("Connecting to command send port %d", DroneControllerConfig.COMMAND_PORT));
-    udpComponent.connect(address, DroneControllerConfig.COMMAND_PORT);
+    logger.info(String.format("Connecting to command send port %d", Config.COMMAND_PORT));
+    udpComponent.connect(address, Config.COMMAND_PORT);
   }
 
   private int sendPendingCommands(int count)
@@ -145,8 +145,8 @@ public class CommandSender implements Runnable
   private void sendCommandText(String commandText)
   {
     byte[] sendData = commandText.getBytes();
-    InetAddress address = addressComponent.getInetAddress(DroneControllerConfig.DRONE_IP_ADDRESS);
-    DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, address, DroneControllerConfig.COMMAND_PORT);
+    InetAddress address = addressComponent.getInetAddress(Config.DRONE_IP_ADDRESS);
+    DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, address, Config.COMMAND_PORT);
 
     udpComponent.send(sendPacket);
   }
@@ -167,7 +167,7 @@ public class CommandSender implements Runnable
 
   private void disconnectFromCommandSenderPort()
   {
-    logger.info(String.format("Disconnecting from command send port %d", DroneControllerConfig.COMMAND_PORT));
+    logger.info(String.format("Disconnecting from command send port %d", Config.COMMAND_PORT));
     udpComponent.disconnect();
   }
 
