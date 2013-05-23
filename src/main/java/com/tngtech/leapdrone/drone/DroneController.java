@@ -17,11 +17,17 @@ import com.tngtech.leapdrone.drone.listeners.VideoDataListener;
 import com.tngtech.leapdrone.helpers.components.ReadyStateComponent;
 import org.apache.log4j.Logger;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+
 import static com.google.common.base.Preconditions.checkState;
 
 @SuppressWarnings("UnusedDeclaration")
 public class DroneController
 {
+  private static final int NUMBER_OF_THREADS = 1;
+
   private final Logger logger = Logger.getLogger(DroneController.class.getSimpleName());
 
   private final ReadyStateComponent readyStateComponent;
@@ -36,6 +42,8 @@ public class DroneController
 
   private final VideoRetrieverH264 videoRetrieverH264;
 
+  private final ExecutorService executor;
+
   private Config config;
 
   @Inject
@@ -49,6 +57,19 @@ public class DroneController
     this.navigationDataRetriever = navigationDataRetriever;
     this.videoRetrieverP264 = videoRetrieverP264;
     this.videoRetrieverH264 = videoRetrieverH264;
+    executor = Executors.newFixedThreadPool(NUMBER_OF_THREADS);
+  }
+
+  public Future startAsync(final Config config)
+  {
+    return executor.submit(new Runnable()
+    {
+      @Override
+      public void run()
+      {
+        start(config);
+      }
+    });
   }
 
   public void start(Config config)
@@ -119,22 +140,34 @@ public class DroneController
     return droneCoordinator.getDroneConfiguration();
   }
 
-  public void setConfigurationValue(String key, Object value)
+  public Future setConfigurationValue(String key, Object value)
   {
     checkInitializationState();
 
     logger.debug(String.format("Setting config setting '%s' to '%s'", key, value.toString()));
-    commandSender.sendConfigCommand(new SetConfigValueCommand(config.getSessionChecksum(), config.getProfileChecksum(),
+    return sendAsyncConfigCommand(new SetConfigValueCommand(config.getSessionChecksum(), config.getProfileChecksum(),
             config.getApplicationChecksum(), key, value));
   }
 
-  public void switchCamera(SwitchCameraCommand.Camera camera)
+  public Future switchCamera(SwitchCameraCommand.Camera camera)
   {
     checkInitializationState();
 
     logger.debug(String.format("Changing camera to '%s'", camera.name()));
-    commandSender.sendConfigCommand(new SwitchCameraCommand(config.getSessionChecksum(), config.getProfileChecksum(),
+    return sendAsyncConfigCommand(new SwitchCameraCommand(config.getSessionChecksum(), config.getProfileChecksum(),
             config.getApplicationChecksum(), camera));
+  }
+
+  public Future sendAsyncConfigCommand(final SetConfigValueCommand configCommand)
+  {
+    return executor.submit(new Runnable()
+    {
+      @Override
+      public void run()
+      {
+        commandSender.sendConfigCommand(configCommand);
+      }
+    });
   }
 
   public void takeOff()

@@ -27,6 +27,8 @@ public class CommandSenderCoordinator extends CommandSender implements NavDataLi
                                   ConfigurationDataRetriever configurationDataRetriever)
   {
     super(threadComponent, addressComponent, udpComponent, readyStateComponent);
+
+
     navigationDataRetriever.addNavDataListener(this);
     configurationDataRetriever.addDroneConfigurationListener(this);
   }

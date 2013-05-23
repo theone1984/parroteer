@@ -156,7 +156,7 @@ public class ConfigurationDataRetriever implements Runnable
       return;
     }
 
-    logger.info("Drone configuration data received");
+    logger.debug("Drone configuration data received");
     DroneConfiguration droneConfiguration = getDroneConfiguration(lines);
 
     for (DroneConfigurationListener listener : droneConfigurationListeners)
