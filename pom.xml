@@ -75,6 +75,9 @@
     <build>
         <resources>
             <resource>
+                <directory>src/main/resources</directory>
+            </resource>
+            <resource>
                 <directory>.</directory>
                 <includes>
                     <include>*.dll</include>
@@ -87,6 +90,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
+                <version>2.5</version>
                 <configuration>
                     <source>1.7</source>
                     <target>1.7</target>
