@@ -3,10 +3,10 @@ package com.tngtech.leapdrone.drone;
 import com.google.inject.Inject;
 import com.tngtech.leapdrone.drone.commands.SetConfigValueCommand;
 import com.tngtech.leapdrone.drone.data.Config;
-import com.tngtech.leapdrone.drone.data.ControllerState;
 import com.tngtech.leapdrone.drone.data.DroneConfiguration;
-import com.tngtech.leapdrone.drone.data.DroneVersion;
 import com.tngtech.leapdrone.drone.data.NavData;
+import com.tngtech.leapdrone.drone.data.enums.ControllerState;
+import com.tngtech.leapdrone.drone.data.enums.DroneVersion;
 import com.tngtech.leapdrone.drone.listeners.DroneConfigurationListener;
 import com.tngtech.leapdrone.drone.listeners.NavDataListener;
 import com.tngtech.leapdrone.drone.listeners.ReadyStateChangeListener;
@@ -107,7 +107,7 @@ public class DroneCoordinator implements ReadyStateChangeListener, NavDataListen
 
   private void login()
   {
-    commandSender.sendLogin(Config.SESSION_ID, Config.APPLICATION_ID, Config.PROFILE_ID);
+    commandSender.sendLogin(Config.SESSION_ID, Config.PROFILE_ID, Config.APPLICATION_ID);
     commandSender.sendBareConfigCommand(new SetConfigValueCommand(DroneConfiguration.ENABLE_NAV_DATA_KEY, "TRUE"));
   }
 
