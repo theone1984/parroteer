@@ -16,6 +16,8 @@ public class DroneConfiguration
 
   public static final String VIDEO_CODEC_KEY = "video:video_codec";
 
+  public static final String VIDEO_CHANNEL_KEY = "video:video_channel";
+
   private Map<String, String> config;
 
   public DroneConfiguration(Map<String, String> config)

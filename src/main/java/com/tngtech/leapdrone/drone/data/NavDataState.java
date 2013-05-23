@@ -1,5 +1,7 @@
 package com.tngtech.leapdrone.drone.data;
 
+import com.tngtech.leapdrone.drone.data.enums.ControlAlgorithm;
+
 public class NavDataState
 {
   private boolean flying;

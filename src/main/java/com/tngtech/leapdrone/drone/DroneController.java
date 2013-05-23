@@ -6,9 +6,10 @@ import com.tngtech.leapdrone.drone.commands.FlatTrimCommand;
 import com.tngtech.leapdrone.drone.commands.FlightModeCommand;
 import com.tngtech.leapdrone.drone.commands.FlightMoveCommand;
 import com.tngtech.leapdrone.drone.commands.SetConfigValueCommand;
-import com.tngtech.leapdrone.drone.data.ControllerState;
+import com.tngtech.leapdrone.drone.commands.SwitchCameraCommand;
 import com.tngtech.leapdrone.drone.data.DroneConfiguration;
-import com.tngtech.leapdrone.drone.data.DroneVersion;
+import com.tngtech.leapdrone.drone.data.enums.ControllerState;
+import com.tngtech.leapdrone.drone.data.enums.DroneVersion;
 import com.tngtech.leapdrone.drone.listeners.NavDataListener;
 import com.tngtech.leapdrone.drone.listeners.ReadyStateChangeListener;
 import com.tngtech.leapdrone.drone.listeners.VideoDataListener;
@@ -54,6 +55,8 @@ public class DroneController
 
     droneCoordinator.start();
     readyStateComponent.emitReadyStateChange(ReadyStateChangeListener.ReadyState.READY);
+
+    System.out.println(droneCoordinator.getDroneConfiguration().getConfig().get(DroneConfiguration.PROFILE_ID_KEY));
   }
 
   public void stop()
@@ -153,6 +156,15 @@ public class DroneController
 
     logger.debug("Flat trim");
     commandSender.sendCommand(new FlatTrimCommand());
+  }
+
+  public void switchCamera(SwitchCameraCommand.Camera camera)
+  {
+    checkInitializationState();
+
+    logger.debug(String.format("Changing camera to '%s'", camera.name()));
+    // Since this is a config command changed very often, we don't need to reload the config here
+    commandSender.sendConfigCommand(new SwitchCameraCommand(camera));
   }
 
   public void move(float roll, float pitch, float yaw, float gaz)

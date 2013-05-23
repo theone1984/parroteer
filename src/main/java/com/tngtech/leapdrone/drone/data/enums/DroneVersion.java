@@ -1,4 +1,4 @@
-package com.tngtech.leapdrone.drone.data;
+package com.tngtech.leapdrone.drone.data.enums;
 
 import static com.google.common.base.Preconditions.checkState;
 

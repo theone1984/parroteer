@@ -1,4 +1,4 @@
-package com.tngtech.leapdrone.drone.data;
+package com.tngtech.leapdrone.drone.data.enums;
 
 public enum ARDrone2VideoCodec
 {

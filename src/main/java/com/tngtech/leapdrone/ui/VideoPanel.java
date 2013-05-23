@@ -18,9 +18,9 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public class VideoPanel extends javax.swing.JPanel implements VideoDataListener, NavDataListener
 {
-  public static final int DEFAULT_WIDTH = 320;
+  public static final int DEFAULT_WIDTH = 640;
 
-  public static final int DEFAULT_HEIGHT = 240;
+  public static final int DEFAULT_HEIGHT = 360;
 
   private AtomicReference<BufferedImage> currentImage;
 

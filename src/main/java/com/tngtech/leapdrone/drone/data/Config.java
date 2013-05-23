@@ -1,11 +1,14 @@
 package com.tngtech.leapdrone.drone.data;
 
+import com.tngtech.leapdrone.drone.data.enums.ARDrone1VideoCodec;
+import com.tngtech.leapdrone.drone.data.enums.ARDrone2VideoCodec;
+
 public final class Config
 {
   public static final int WAIT_TIMEOUT = 15;
 
   // Must be an 8-character hex field
-  public static final String SESSION_ID = "affeaffe";
+  public static final String SESSION_ID = "affeaffa";
 
   // Must be an 8-character hex field
   public static final String APPLICATION_ID = "afafafaf";
@@ -29,7 +32,7 @@ public final class Config
 
   public static ARDrone1VideoCodec ARDRONE_1_VIDEO_CODEC = ARDrone1VideoCodec.P264;
 
-  public static ARDrone2VideoCodec ARDRONE_2_VIDEO_CODEC = ARDrone2VideoCodec.H264_360P;
+  public static ARDrone2VideoCodec ARDRONE_2_VIDEO_CODEC = ARDrone2VideoCodec.H264_720P;
 
   private Config()
   {

@@ -1,6 +1,6 @@
 package com.tngtech.leapdrone.drone.navdata;
 
-import com.tngtech.leapdrone.drone.data.ControlAlgorithm;
+import com.tngtech.leapdrone.drone.data.enums.ControlAlgorithm;
 import com.tngtech.leapdrone.drone.data.NavData;
 import com.tngtech.leapdrone.drone.data.NavDataState;
 

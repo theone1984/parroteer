@@ -2,6 +2,7 @@ package com.tngtech.leapdrone.ui;
 
 import com.google.inject.Inject;
 import com.tngtech.leapdrone.drone.DroneController;
+import com.tngtech.leapdrone.drone.commands.SwitchCameraCommand;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -50,12 +51,16 @@ public class SwingWindow implements ActionListener
     flatTrimButton.setActionCommand("emergency");
     flatTrimButton.addActionListener(this);
 
+    final JButton switchCameraButton = new JButton("Switch camera");
+    switchCameraButton.setActionCommand("switchCamera");
+    switchCameraButton.addActionListener(this);
+
     final VideoPanel videoPanel = new VideoPanel();
     droneController.addVideoDataListener(videoPanel);
     droneController.addNavDataListener(videoPanel);
 
     final JPanel buttonPanel = new JPanel();
-    GridLayout horizontalLayout = new GridLayout(2, 2);
+    GridLayout horizontalLayout = new GridLayout(3, 2);
     buttonPanel.setLayout(horizontalLayout);
 
     final JPanel panel = new JPanel();
@@ -66,6 +71,7 @@ public class SwingWindow implements ActionListener
     buttonPanel.add(landButton);
     buttonPanel.add(flatTrimButton);
     buttonPanel.add(emergencyButton);
+    buttonPanel.add(switchCameraButton);
 
     panel.add(buttonPanel);
     panel.add(videoPanel);
@@ -88,6 +94,9 @@ public class SwingWindow implements ActionListener
         break;
       case "emergency":
         droneController.emergency();
+        break;
+      case "switchCamera":
+        droneController.switchCamera(SwitchCameraCommand.Camera.BACK);
         break;
       default:
         System.out.println(String.format("Don't know what to do with command '%s'", e.getActionCommand()));
