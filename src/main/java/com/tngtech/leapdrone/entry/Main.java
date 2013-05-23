@@ -3,6 +3,7 @@ package com.tngtech.leapdrone.entry;
 import com.google.inject.Inject;
 import com.tngtech.leapdrone.control.DroneInputController;
 import com.tngtech.leapdrone.drone.DroneController;
+import com.tngtech.leapdrone.drone.data.Config;
 import com.tngtech.leapdrone.injection.Context;
 import com.tngtech.leapdrone.input.leapmotion.LeapMotionController;
 import com.tngtech.leapdrone.input.speech.SpeechDetector;
@@ -56,7 +57,7 @@ public class Main
 
   private void startComponents()
   {
-    droneController.start();
+    droneController.startAsync(new Config("com.tngtech.internal.leap-drone", "myProfile"));
     swingWindow.createWindow();
 
     leapMotionController.connect();
