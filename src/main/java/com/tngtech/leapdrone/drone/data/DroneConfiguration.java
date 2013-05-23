@@ -12,13 +12,15 @@ public class DroneConfiguration
 
   public static final String APPLICATION_ID_KEY = "custom:application_id";
 
+  public static final String FIRMWARE_VERSION_KEY = "general:num_version_soft";
+
   public static final String ENABLE_NAV_DATA_KEY = "general:navdata_demo";
 
   public static final String VIDEO_CODEC_KEY = "video:video_codec";
 
   public static final String VIDEO_CHANNEL_KEY = "video:video_channel";
 
-  public static final String FIRMWARE_VERSION_KEY = "general:num_version_soft";
+  public static final Object LED_ANIMATION_KEY = "leds:leds_anim";
 
   private Map<String, String> config;
 

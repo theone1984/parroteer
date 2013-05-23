@@ -5,6 +5,7 @@ import com.google.inject.Inject;
 import com.tngtech.leapdrone.drone.commands.FlatTrimCommand;
 import com.tngtech.leapdrone.drone.commands.FlightModeCommand;
 import com.tngtech.leapdrone.drone.commands.FlightMoveCommand;
+import com.tngtech.leapdrone.drone.commands.PlayLedAnimationCommand;
 import com.tngtech.leapdrone.drone.commands.SetConfigValueCommand;
 import com.tngtech.leapdrone.drone.commands.SwitchCameraCommand;
 import com.tngtech.leapdrone.drone.data.Config;
@@ -206,6 +207,11 @@ public class DroneController
 
     logger.trace(String.format("Moving - roll: %.2f, pitch: %.2f, yaw: %.2f, gaz: %.2f", roll, pitch, yaw, gaz));
     commandSender.sendCommand(new FlightMoveCommand(roll, pitch, yaw, gaz));
+  }
+
+  public void playLedAnimation()
+  {
+    commandSender.sendCommand(new PlayLedAnimationCommand(config.getSessionChecksum(), config.getProfileChecksum(), config.getApplicationChecksum()));
   }
 
   private void checkInitializationState()

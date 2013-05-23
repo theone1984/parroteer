@@ -55,6 +55,10 @@ public class SwingWindow implements ActionListener
     switchCameraButton.setActionCommand("switchCamera");
     switchCameraButton.addActionListener(this);
 
+    final JButton ledAnimationButton = new JButton("LED animation");
+    ledAnimationButton.setActionCommand("playLedAnimation");
+    ledAnimationButton.addActionListener(this);
+
     final VideoPanel videoPanel = new VideoPanel();
     droneController.addVideoDataListener(videoPanel);
     droneController.addNavDataListener(videoPanel);
@@ -72,6 +76,7 @@ public class SwingWindow implements ActionListener
     buttonPanel.add(flatTrimButton);
     buttonPanel.add(emergencyButton);
     buttonPanel.add(switchCameraButton);
+    buttonPanel.add(ledAnimationButton);
 
     panel.add(buttonPanel);
     panel.add(videoPanel);
@@ -97,6 +102,9 @@ public class SwingWindow implements ActionListener
         break;
       case "switchCamera":
         droneController.switchCamera(SwitchCameraCommand.Camera.NEXT);
+        break;
+      case "playLedAnimation":
+        droneController.playLedAnimation();
         break;
       default:
         System.out.println(String.format("Don't know what to do with command '%s'", e.getActionCommand()));
