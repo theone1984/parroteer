@@ -1,36 +1,75 @@
 package com.tngtech.leapdrone.ui;
 
-import javafx.application.Application;
+import com.google.common.collect.Sets;
+import com.tngtech.leapdrone.drone.data.VideoData;
+import com.tngtech.leapdrone.drone.listeners.VideoDataListener;
+import com.tngtech.leapdrone.ui.data.UIAction;
+import com.tngtech.leapdrone.ui.helpers.ImageConverter;
+import com.tngtech.leapdrone.ui.listeners.UIActionListener;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
 
-import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.net.URL;
+import java.util.Set;
 
-public class FxWindow extends Application
+public class FxWindow implements VideoDataListener
 {
-  String user = "user";
+  private final Set<UIActionListener> uiActionListeners;
 
-  String pw = "password";
+  private Button buttonTakeOff;
 
-  String checkUser, checkPw;
+  private Button buttonLand;
 
-  public static void main(String[] args)
+  private Button buttonFlatTrim;
+
+  private Button buttonEmergency;
+
+  private Button buttonSwitchCamera;
+
+  private Button buttonPlayLedAnimation;
+
+  private Button buttonPlayFlightAnimation;
+
+  private ImageView imageView;
+
+  public FxWindow()
   {
-    launch(args);
+    uiActionListeners = Sets.newHashSet();
   }
 
-  @Override
+  public void addUIActionListener(UIActionListener uiActionlistener)
+  {
+    if (!uiActionListeners.contains(uiActionlistener))
+    {
+      uiActionListeners.add(uiActionlistener);
+    }
+  }
+
+  public void removeUIActionListener(UIActionListener uiActionlistener)
+  {
+    if (uiActionListeners.contains(uiActionlistener))
+    {
+      uiActionListeners.remove(uiActionlistener);
+    }
+  }
+
   public void start(Stage primaryStage)
+  {
+    createWindow(primaryStage);
+    addEventListeners();
+
+    primaryStage.show();
+  }
+
+  public void createWindow(Stage primaryStage)
   {
     primaryStage.setTitle("Drone control");
 
@@ -38,101 +77,122 @@ public class FxWindow extends Application
     borderPane.setPadding(new Insets(10, 50, 50, 50));
     borderPane.setId("root");
 
-    //Adding HBox
-    //HBox hb = new HBox();
-    //hb.setPadding(new Insets(20, 20, 20, 30));
-
     //Adding GridPane
     GridPane gridPane = new GridPane();
     gridPane.setHgap(5);
     gridPane.setVgap(5);
 
     //Implementing Nodes for GridPane
-    Button buttonTakeOffLand = new Button("Take off");
-    buttonTakeOffLand.setId("button-takeoff-land");
-    Button buttonFlatTrim = new Button("Flat Trim");
-    buttonFlatTrim.setId("button-flat-trim");
-    Button buttonEmergency = new Button("Emergency");
-    buttonEmergency.setId("button-emergency");
-    Button buttonSwitchCamera = new Button("Switch camera");
-    buttonSwitchCamera.setId("button-switch-camera");
+    buttonTakeOff = new Button("Take off");
+    gridPane.add(buttonTakeOff, 0, 0);
+    buttonLand = new Button("Land");
+    gridPane.add(buttonLand, 1, 0);
+    buttonFlatTrim = new Button("Flat Trim");
+    gridPane.add(buttonFlatTrim, 2, 0);
+    buttonEmergency = new Button("Emergency");
+    gridPane.add(buttonEmergency, 3, 0);
+    buttonSwitchCamera = new Button("Switch camera");
+    gridPane.add(buttonSwitchCamera, 0, 1);
+    buttonPlayLedAnimation = new Button("Play LED animation");
+    gridPane.add(buttonPlayLedAnimation, 1, 1);
+    buttonPlayFlightAnimation = new Button("Play flight animation");
+    gridPane.add(buttonPlayFlightAnimation, 2, 1);
 
-    ImageView imageView = getImageView();
+    imageView = new ImageView();
+    imageView.setFitWidth(640);
+    imageView.setFitHeight(360);
 
-    //Adding Nodes to GridPane layout
-    gridPane.add(buttonTakeOffLand, 0, 0);
-    gridPane.add(buttonFlatTrim, 1, 0);
-    gridPane.add(buttonEmergency, 0, 1);
-    gridPane.add(buttonSwitchCamera, 1, 1);
-
-    /*btnLogin.setOnAction(new EventHandler<ActionEvent>()
-    {
-      public void handle(ActionEvent event)
-      {
-        checkUser = txtUserName.getText();
-        checkPw = pf.getText();
-        if (checkUser.equals(user) && checkPw.equals(pw))
-        {
-          lblMessage.setText("Congratulations!");
-          lblMessage.setTextFill(Color.GREEN);
-        } else
-        {
-          lblMessage.setText("Incorrect user or pw.");
-          lblMessage.setTextFill(Color.RED);
-        }
-        txtUserName.setText("");
-        pf.setText("");
-      }
-    });*/
-
-    //Add HBox and GridPane layout to BorderPane Layout
     borderPane.setTop(gridPane);
     borderPane.setCenter(imageView);
 
-    //Adding BorderPane to the scene and loading CSS
     Scene scene = new Scene(borderPane);
-    scene.getStylesheets().add(getClass().getClassLoader().getResource("test.css").toExternalForm());
+    //noinspection ConstantConditions
+    scene.getStylesheets().add(Thread.currentThread().getContextClassLoader().getResource("test.css").toExternalForm());
     primaryStage.setScene(scene);
     primaryStage.titleProperty().set("Drone control");
-    primaryStage.show();
   }
 
-  // Can be used for displaying the incoming buffered image
-  private ImageView getImageView()
+  private void addEventListeners()
   {
-    BufferedImage bufferedImage = getBufferedImage();
-
-    ImageView imageView = new ImageView();
-    imageView.setImage(createFxImage(bufferedImage));
-    imageView.setFitWidth(640);
-    imageView.setFitHeight(360);
-    return imageView;
+    buttonTakeOff.setOnAction(new EventHandler<ActionEvent>()
+    {
+      @Override
+      public void handle(ActionEvent actionEvent)
+      {
+        emitUIAction(UIAction.TAKE_OFF);
+      }
+    });
+    buttonLand.setOnAction(new EventHandler<ActionEvent>()
+    {
+      @Override
+      public void handle(ActionEvent actionEvent)
+      {
+        emitUIAction(UIAction.LAND);
+      }
+    });
+    buttonFlatTrim.setOnAction(new EventHandler<ActionEvent>()
+    {
+      @Override
+      public void handle(ActionEvent actionEvent)
+      {
+        emitUIAction(UIAction.FLAT_TRIM);
+      }
+    });
+    buttonEmergency.setOnAction(new EventHandler<ActionEvent>()
+    {
+      @Override
+      public void handle(ActionEvent actionEvent)
+      {
+        emitUIAction(UIAction.EMERGENCY);
+      }
+    });
+    buttonSwitchCamera.setOnAction(new EventHandler<ActionEvent>()
+    {
+      @Override
+      public void handle(ActionEvent actionEvent)
+      {
+        emitUIAction(UIAction.SWITCH_CAMERA);
+      }
+    });
+    buttonPlayLedAnimation.setOnAction(new EventHandler<ActionEvent>()
+    {
+      @Override
+      public void handle(ActionEvent actionEvent)
+      {
+        emitUIAction(UIAction.PLAY_LED_ANIMATION);
+      }
+    });
+    buttonPlayFlightAnimation.setOnAction(new EventHandler<ActionEvent>()
+    {
+      @Override
+      public void handle(ActionEvent actionEvent)
+      {
+        emitUIAction(UIAction.PLAY_FLIGHT_ANIMATION);
+      }
+    });
   }
 
-  private BufferedImage getBufferedImage()
+  private void emitUIAction(UIAction action)
   {
-    try
+    for (UIActionListener listener : uiActionListeners)
     {
-      URL url = Thread.currentThread().getContextClassLoader().getResource("flower.png");
-      return ImageIO.read(url);
-    } catch (IOException e)
-    {
-      throw new IllegalStateException(e);
+      listener.onAction(action);
     }
   }
 
-  public static javafx.scene.image.Image createFxImage(BufferedImage image)
+  @Override
+  public void onVideoData(VideoData videoData)
   {
-    try
-    {
-      ByteArrayOutputStream out = new ByteArrayOutputStream();
-      ImageIO.write(image, "png", out);
-      out.flush();
-      ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
-      return new javafx.scene.image.Image(in);
-    } catch (IOException e)
-    {
-      throw new IllegalStateException(e);
-    }
+    BufferedImage droneImage = new BufferedImage(videoData.getWidth(), videoData.getHeight(), BufferedImage.TYPE_INT_RGB);
+    droneImage.setRGB(0, 0, videoData.getWidth(), videoData.getHeight(), videoData.getPixelData(), 0, videoData.getWidth());
+
+    onVideoData(droneImage);
+  }
+
+  @Override
+  public void onVideoData(BufferedImage droneImage)
+  {
+    Image image = ImageConverter.createFxImage(droneImage);
+    imageView.setImage(image);
   }
 }

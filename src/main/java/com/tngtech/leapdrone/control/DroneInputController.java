@@ -2,6 +2,9 @@ package com.tngtech.leapdrone.control;
 
 import com.google.inject.Inject;
 import com.tngtech.leapdrone.drone.DroneController;
+import com.tngtech.leapdrone.drone.commands.PlayFlightAnimationCommand;
+import com.tngtech.leapdrone.drone.commands.PlayLedAnimationCommand;
+import com.tngtech.leapdrone.drone.commands.SwitchCameraCommand;
 import com.tngtech.leapdrone.drone.data.NavData;
 import com.tngtech.leapdrone.drone.listeners.NavDataListener;
 import com.tngtech.leapdrone.input.leapmotion.data.DetectionData;
@@ -10,8 +13,10 @@ import com.tngtech.leapdrone.input.leapmotion.listeners.DetectionListener;
 import com.tngtech.leapdrone.input.leapmotion.listeners.GestureListener;
 import com.tngtech.leapdrone.input.speech.data.SpeechData;
 import com.tngtech.leapdrone.input.speech.listeners.SpeechListener;
+import com.tngtech.leapdrone.ui.data.UIAction;
+import com.tngtech.leapdrone.ui.listeners.UIActionListener;
 
-public class DroneInputController implements NavDataListener, DetectionListener, GestureListener, SpeechListener
+public class DroneInputController implements NavDataListener, DetectionListener, GestureListener, SpeechListener, UIActionListener
 {
   private static final float PITCH_DECAY = 0.5f;
 
@@ -54,6 +59,35 @@ public class DroneInputController implements NavDataListener, DetectionListener,
     } else if (sentence.endsWith("flat trim"))
     {
       droneController.flatTrim();
+    }
+  }
+
+  @Override
+  public void onAction(UIAction action)
+  {
+    switch (action)
+    {
+      case TAKE_OFF:
+        droneController.takeOff();
+        break;
+      case LAND:
+        droneController.land();
+        break;
+      case FLAT_TRIM:
+        droneController.flatTrim();
+        break;
+      case EMERGENCY:
+        droneController.emergency();
+        break;
+      case SWITCH_CAMERA:
+        droneController.switchCamera(SwitchCameraCommand.Camera.NEXT);
+        break;
+      case PLAY_LED_ANIMATION:
+        droneController.playLedAnimation(PlayLedAnimationCommand.LedAnimation.RED_SNAKE, 2.0f, 3);
+        break;
+      case PLAY_FLIGHT_ANIMATION:
+        droneController.playFlightAnimation(PlayFlightAnimationCommand.FlightAnimation.YAW_SHAKE);
+        break;
     }
   }
 

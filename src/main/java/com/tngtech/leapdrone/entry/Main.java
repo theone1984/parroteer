@@ -5,19 +5,17 @@ import com.tngtech.leapdrone.control.DroneInputController;
 import com.tngtech.leapdrone.drone.DroneController;
 import com.tngtech.leapdrone.drone.data.Config;
 import com.tngtech.leapdrone.drone.listeners.ErrorListener;
-import com.tngtech.leapdrone.injection.Context;
 import com.tngtech.leapdrone.input.leapmotion.LeapMotionController;
 import com.tngtech.leapdrone.input.speech.SpeechDetector;
-import com.tngtech.leapdrone.ui.SwingWindow;
+import com.tngtech.leapdrone.ui.FxWindow;
+import javafx.stage.Stage;
 import org.apache.log4j.Logger;
-
-import java.io.IOException;
 
 public class Main implements ErrorListener
 {
   private final Logger logger = Logger.getLogger(ErrorListener.class);
 
-  private final SwingWindow swingWindow;
+  private final FxWindow fxWindow;
 
   private final DroneController droneController;
 
@@ -27,59 +25,43 @@ public class Main implements ErrorListener
 
   private final DroneInputController droneInputController;
 
-  public static void main(String[] args)
-  {
-    Context.getBean(Main.class).start();
-  }
-
   @Inject
-  public Main(SwingWindow swingWindow, DroneController droneController,
-              SpeechDetector speechDetector, LeapMotionController leapMotionController, DroneInputController droneInputController)
+  public Main(FxWindow fxWindow, DroneController droneController, SpeechDetector speechDetector, LeapMotionController leapMotionController,
+              DroneInputController droneInputController)
   {
-    this.swingWindow = swingWindow;
+    this.fxWindow = fxWindow;
     this.droneController = droneController;
     this.speechDetector = speechDetector;
     this.leapMotionController = leapMotionController;
     this.droneInputController = droneInputController;
   }
 
-  private void start()
+  public void start(Stage primaryStage)
   {
     addEventListeners();
-    startComponents();
-
-    keepProcessBusy();
+    startComponents(primaryStage);
   }
 
   private void addEventListeners()
   {
     droneController.addErrorListener(this);
 
+    droneController.addVideoDataListener(fxWindow);
+
     droneController.addNavDataListener(droneInputController);
     leapMotionController.addDetectionListener(droneInputController);
     leapMotionController.addGestureListener(droneInputController);
     speechDetector.addSpeechListener(droneInputController);
+    fxWindow.addUIActionListener(droneInputController);
   }
 
-  private void startComponents()
+  private void startComponents(Stage primaryStage)
   {
     droneController.startAsync(new Config("com.tngtech.internal.leap-drone", "myProfile"));
-    swingWindow.createWindow();
+    fxWindow.start(primaryStage);
 
     leapMotionController.connect();
     //speechDetector.start();
-  }
-
-  @SuppressWarnings("ResultOfMethodCallIgnored")
-  private void keepProcessBusy()
-  {
-    try
-    {
-      System.in.read();
-    } catch (IOException e)
-    {
-      e.printStackTrace();
-    }
   }
 
   @Override
