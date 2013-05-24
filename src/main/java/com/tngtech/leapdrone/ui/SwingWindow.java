@@ -2,6 +2,8 @@ package com.tngtech.leapdrone.ui;
 
 import com.google.inject.Inject;
 import com.tngtech.leapdrone.drone.DroneController;
+import com.tngtech.leapdrone.drone.commands.PlayFlightAnimationCommand;
+import com.tngtech.leapdrone.drone.commands.PlayLedAnimationCommand;
 import com.tngtech.leapdrone.drone.commands.SwitchCameraCommand;
 
 import javax.swing.JButton;
@@ -59,12 +61,16 @@ public class SwingWindow implements ActionListener
     ledAnimationButton.setActionCommand("playLedAnimation");
     ledAnimationButton.addActionListener(this);
 
+    final JButton flightAnimationButton = new JButton("Flight animation");
+    flightAnimationButton.setActionCommand("playFlightAnimation");
+    flightAnimationButton.addActionListener(this);
+
     final VideoPanel videoPanel = new VideoPanel();
     droneController.addVideoDataListener(videoPanel);
     droneController.addNavDataListener(videoPanel);
 
     final JPanel buttonPanel = new JPanel();
-    GridLayout horizontalLayout = new GridLayout(3, 2);
+    GridLayout horizontalLayout = new GridLayout(4, 2);
     buttonPanel.setLayout(horizontalLayout);
 
     final JPanel panel = new JPanel();
@@ -77,6 +83,7 @@ public class SwingWindow implements ActionListener
     buttonPanel.add(emergencyButton);
     buttonPanel.add(switchCameraButton);
     buttonPanel.add(ledAnimationButton);
+    buttonPanel.add(flightAnimationButton);
 
     panel.add(buttonPanel);
     panel.add(videoPanel);
@@ -104,7 +111,10 @@ public class SwingWindow implements ActionListener
         droneController.switchCamera(SwitchCameraCommand.Camera.NEXT);
         break;
       case "playLedAnimation":
-        droneController.playLedAnimation();
+        droneController.playLedAnimation(PlayLedAnimationCommand.LedAnimation.RED_SNAKE, 2.0f, 3);
+        break;
+      case "playFlightAnimation":
+        droneController.playFlightAnimation(PlayFlightAnimationCommand.FlightAnimation.TURNAROUND_GODOWN);
         break;
       default:
         System.out.println(String.format("Don't know what to do with command '%s'", e.getActionCommand()));

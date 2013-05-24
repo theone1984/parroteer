@@ -5,6 +5,7 @@ import com.google.inject.Inject;
 import com.tngtech.leapdrone.drone.commands.FlatTrimCommand;
 import com.tngtech.leapdrone.drone.commands.FlightModeCommand;
 import com.tngtech.leapdrone.drone.commands.FlightMoveCommand;
+import com.tngtech.leapdrone.drone.commands.PlayFlightAnimationCommand;
 import com.tngtech.leapdrone.drone.commands.PlayLedAnimationCommand;
 import com.tngtech.leapdrone.drone.commands.SetConfigValueCommand;
 import com.tngtech.leapdrone.drone.commands.SwitchCameraCommand;
@@ -209,9 +210,16 @@ public class DroneController
     commandSender.sendCommand(new FlightMoveCommand(roll, pitch, yaw, gaz));
   }
 
-  public void playLedAnimation()
+  public void playLedAnimation(PlayLedAnimationCommand.LedAnimation ledAnimation, float frequency, int durationSeconds)
   {
-    commandSender.sendCommand(new PlayLedAnimationCommand(config.getSessionChecksum(), config.getProfileChecksum(), config.getApplicationChecksum()));
+    commandSender.sendCommand(new PlayLedAnimationCommand(config.getSessionChecksum(), config.getProfileChecksum(),
+            config.getApplicationChecksum(), ledAnimation, frequency, durationSeconds));
+  }
+
+  public void playFlightAnimation(PlayFlightAnimationCommand.FlightAnimation animation)
+  {
+    commandSender.sendCommand(new PlayFlightAnimationCommand(config.getSessionChecksum(), config.getProfileChecksum(),
+            config.getApplicationChecksum(), animation));
   }
 
   private void checkInitializationState()

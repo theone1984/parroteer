@@ -22,6 +22,8 @@ public class DroneConfiguration
 
   public static final Object LED_ANIMATION_KEY = "leds:leds_anim";
 
+  public static final Object FLIGHT_ANIMATION_KEY = "control:flight_anim";
+
   private Map<String, String> config;
 
   public DroneConfiguration(Map<String, String> config)
