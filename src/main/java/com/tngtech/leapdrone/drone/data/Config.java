@@ -2,7 +2,7 @@ package com.tngtech.leapdrone.drone.data;
 
 import com.tngtech.leapdrone.drone.data.enums.ARDrone1VideoCodec;
 import com.tngtech.leapdrone.drone.data.enums.ARDrone2VideoCodec;
-import com.tngtech.leapdrone.helpers.ChecksumHelper;
+import com.tngtech.leapdrone.drone.helpers.ChecksumHelper;
 
 public final class Config
 {

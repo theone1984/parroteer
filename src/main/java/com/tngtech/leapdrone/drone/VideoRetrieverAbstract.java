@@ -2,11 +2,12 @@ package com.tngtech.leapdrone.drone;
 
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
+import com.tngtech.leapdrone.drone.components.AddressComponent;
+import com.tngtech.leapdrone.drone.components.ErrorListenerComponent;
+import com.tngtech.leapdrone.drone.components.ReadyStateListenerComponent;
+import com.tngtech.leapdrone.drone.components.ThreadComponent;
 import com.tngtech.leapdrone.drone.listeners.ReadyStateChangeListener;
 import com.tngtech.leapdrone.drone.listeners.VideoDataListener;
-import com.tngtech.leapdrone.helpers.components.AddressComponent;
-import com.tngtech.leapdrone.helpers.components.ReadyStateComponent;
-import com.tngtech.leapdrone.helpers.components.ThreadComponent;
 import org.apache.log4j.Logger;
 
 import java.net.InetAddress;
@@ -20,7 +21,9 @@ public abstract class VideoRetrieverAbstract implements Runnable
 
   private final AddressComponent addressComponent;
 
-  private final ReadyStateComponent readyStateComponent;
+  private final ReadyStateListenerComponent readyStateListenerComponent;
+
+  private final ErrorListenerComponent errorListenerComponent;
 
   private final Set<VideoDataListener> videoDataListeners;
 
@@ -29,13 +32,15 @@ public abstract class VideoRetrieverAbstract implements Runnable
   private int videoDataPort;
 
   @Inject
-  public VideoRetrieverAbstract(ThreadComponent threadComponent, AddressComponent addressComponent, ReadyStateComponent readyStateComponent)
+  public VideoRetrieverAbstract(ThreadComponent threadComponent, AddressComponent addressComponent,
+                                ReadyStateListenerComponent readyStateListenerComponent, ErrorListenerComponent errorListenerComponent)
   {
     super();
 
     this.threadComponent = threadComponent;
     this.addressComponent = addressComponent;
-    this.readyStateComponent = readyStateComponent;
+    this.readyStateListenerComponent = readyStateListenerComponent;
+    this.errorListenerComponent = errorListenerComponent;
 
     videoDataListeners = Sets.newLinkedHashSet();
   }
@@ -57,12 +62,12 @@ public abstract class VideoRetrieverAbstract implements Runnable
 
   public void addReadyStateChangeListener(ReadyStateChangeListener readyStateChangeListener)
   {
-    readyStateComponent.addReadyStateChangeListener(readyStateChangeListener);
+    readyStateListenerComponent.addReadyStateChangeListener(readyStateChangeListener);
   }
 
   public void removeReadyStateChangeListener(ReadyStateChangeListener readyStateChangeListener)
   {
-    readyStateComponent.addReadyStateChangeListener(readyStateChangeListener);
+    readyStateListenerComponent.addReadyStateChangeListener(readyStateChangeListener);
   }
 
   public void addVideoDataListener(VideoDataListener videoDataListener)
@@ -98,11 +103,25 @@ public abstract class VideoRetrieverAbstract implements Runnable
 
   protected void setReady()
   {
-    readyStateComponent.emitReadyStateChange(ReadyStateChangeListener.ReadyState.READY);
+    readyStateListenerComponent.emitReadyStateChange(ReadyStateChangeListener.ReadyState.READY);
   }
 
   public int getVideoDataPort()
   {
     return videoDataPort;
   }
+
+  @Override
+  public void run()
+  {
+    try
+    {
+      doRun();
+    } catch (Throwable e)
+    {
+      errorListenerComponent.emitError(e);
+    }
+  }
+
+  protected abstract void doRun();
 }

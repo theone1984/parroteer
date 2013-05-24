@@ -1,4 +1,4 @@
-package com.tngtech.leapdrone.helpers.components;
+package com.tngtech.leapdrone.drone.components;
 
 import com.google.common.collect.Lists;
 

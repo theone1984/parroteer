@@ -5,10 +5,10 @@ import com.tngtech.leapdrone.drone.data.NavData;
 import com.tngtech.leapdrone.drone.data.NavDataState;
 
 import static com.google.common.base.Preconditions.checkState;
-import static com.tngtech.leapdrone.helpers.BinaryDataHelper.flagSet;
-import static com.tngtech.leapdrone.helpers.BinaryDataHelper.getFloatValue;
-import static com.tngtech.leapdrone.helpers.BinaryDataHelper.getIntValue;
-import static com.tngtech.leapdrone.helpers.BinaryDataHelper.getUnsignedByteValue;
+import static com.tngtech.leapdrone.drone.helpers.BinaryDataHelper.flagSet;
+import static com.tngtech.leapdrone.drone.helpers.BinaryDataHelper.getFloatValue;
+import static com.tngtech.leapdrone.drone.helpers.BinaryDataHelper.getIntValue;
+import static com.tngtech.leapdrone.drone.helpers.BinaryDataHelper.getUnsignedByteValue;
 
 public class NavigationDataDecoder
 {

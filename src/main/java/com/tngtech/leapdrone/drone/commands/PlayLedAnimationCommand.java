@@ -2,7 +2,7 @@ package com.tngtech.leapdrone.drone.commands;
 
 import com.tngtech.leapdrone.drone.data.DroneConfiguration;
 
-import static com.tngtech.leapdrone.helpers.BinaryDataHelper.getNormalizedIntValue;
+import static com.tngtech.leapdrone.drone.helpers.BinaryDataHelper.getNormalizedIntValue;
 
 public class PlayLedAnimationCommand extends SetConfigValueCommand
 {

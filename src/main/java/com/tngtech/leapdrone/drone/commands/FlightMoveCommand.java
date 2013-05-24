@@ -1,6 +1,6 @@
 package com.tngtech.leapdrone.drone.commands;
 
-import static com.tngtech.leapdrone.helpers.BinaryDataHelper.getNormalizedIntValue;
+import static com.tngtech.leapdrone.drone.helpers.BinaryDataHelper.getNormalizedIntValue;
 
 public class FlightMoveCommand extends CommandAbstract
 {

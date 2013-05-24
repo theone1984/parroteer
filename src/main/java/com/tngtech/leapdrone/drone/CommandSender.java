@@ -4,18 +4,19 @@ import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import com.tngtech.leapdrone.drone.commands.Command;
 import com.tngtech.leapdrone.drone.commands.WatchDogCommand;
+import com.tngtech.leapdrone.drone.components.AddressComponent;
+import com.tngtech.leapdrone.drone.components.ErrorListenerComponent;
+import com.tngtech.leapdrone.drone.components.ReadyStateListenerComponent;
+import com.tngtech.leapdrone.drone.components.ThreadComponent;
+import com.tngtech.leapdrone.drone.components.UdpComponent;
 import com.tngtech.leapdrone.drone.listeners.ReadyStateChangeListener;
-import com.tngtech.leapdrone.helpers.components.AddressComponent;
-import com.tngtech.leapdrone.helpers.components.ReadyStateComponent;
-import com.tngtech.leapdrone.helpers.components.ThreadComponent;
-import com.tngtech.leapdrone.helpers.components.UdpComponent;
 import org.apache.log4j.Logger;
 
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.util.List;
 
-import static com.tngtech.leapdrone.helpers.ThreadHelper.sleep;
+import static com.tngtech.leapdrone.drone.helpers.ThreadHelper.sleep;
 
 public class CommandSender implements Runnable
 {
@@ -27,7 +28,9 @@ public class CommandSender implements Runnable
 
   private final UdpComponent udpComponent;
 
-  private final ReadyStateComponent readyStateComponent;
+  private final ReadyStateListenerComponent readyStateListenerComponent;
+
+  private final ErrorListenerComponent errorListenerComponent;
 
   private ReadyStateChangeListener.ReadyState readyState = ReadyStateChangeListener.ReadyState.NOT_READY;
 
@@ -35,20 +38,19 @@ public class CommandSender implements Runnable
 
   private int sequenceNumber = 1;
 
-  private int sequenceNumberSent = 0;
-
   private String droneIpAddress;
 
   private int commandPort;
 
   @Inject
   public CommandSender(ThreadComponent threadComponent, AddressComponent addressComponent, UdpComponent udpComponent,
-                       ReadyStateComponent readyStateComponent)
+                       ReadyStateListenerComponent readyStateListenerComponent, ErrorListenerComponent errorListenerComponent)
   {
     this.threadComponent = threadComponent;
     this.addressComponent = addressComponent;
     this.udpComponent = udpComponent;
-    this.readyStateComponent = readyStateComponent;
+    this.readyStateListenerComponent = readyStateListenerComponent;
+    this.errorListenerComponent = errorListenerComponent;
 
     commandsToSend = Lists.newArrayList();
   }
@@ -70,12 +72,12 @@ public class CommandSender implements Runnable
 
   public void addReadyStateChangeListener(ReadyStateChangeListener readyStateChangeListener)
   {
-    readyStateComponent.addReadyStateChangeListener(readyStateChangeListener);
+    readyStateListenerComponent.addReadyStateChangeListener(readyStateChangeListener);
   }
 
   public void removeReadyStateChangeListener(ReadyStateChangeListener readyStateChangeListener)
   {
-    readyStateComponent.addReadyStateChangeListener(readyStateChangeListener);
+    readyStateListenerComponent.addReadyStateChangeListener(readyStateChangeListener);
   }
 
   public void sendCommand(Command command)
@@ -92,8 +94,18 @@ public class CommandSender implements Runnable
   @Override
   public void run()
   {
-    int count = 1;
+    try
+    {
+      doRun();
+    } catch (Throwable e)
+    {
+      errorListenerComponent.emitError(e);
+    }
+  }
 
+  private void doRun()
+  {
+    int count = 1;
     connectToCommandSenderPort();
 
     while (!threadComponent.isStopped())
@@ -140,12 +152,10 @@ public class CommandSender implements Runnable
   {
     if (command.isPreparationCommandNeeded())
     {
-      sequenceNumberSent = getSequenceNumber();
-      sendCommandText(command.getPreparationCommandText(sequenceNumberSent));
+      sendCommandText(command.getPreparationCommandText(getSequenceNumber()));
     }
 
-    sequenceNumberSent = getSequenceNumber();
-    sendCommandText(command.getCommandText(sequenceNumberSent));
+    sendCommandText(command.getCommandText(getSequenceNumber()));
   }
 
   private void sendCommandText(String commandText)
@@ -167,7 +177,7 @@ public class CommandSender implements Runnable
     if (readyState != ReadyStateChangeListener.ReadyState.READY)
     {
       readyState = ReadyStateChangeListener.ReadyState.READY;
-      readyStateComponent.emitReadyStateChange(ReadyStateChangeListener.ReadyState.READY);
+      readyStateListenerComponent.emitReadyStateChange(ReadyStateChangeListener.ReadyState.READY);
     }
   }
 
@@ -175,10 +185,5 @@ public class CommandSender implements Runnable
   {
     logger.info(String.format("Disconnecting from command send port %d", commandPort));
     udpComponent.disconnect();
-  }
-
-  public int getSequenceNumberSent()
-  {
-    return sequenceNumberSent;
   }
 }

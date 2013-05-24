@@ -4,15 +4,19 @@ import com.google.inject.Inject;
 import com.tngtech.leapdrone.control.DroneInputController;
 import com.tngtech.leapdrone.drone.DroneController;
 import com.tngtech.leapdrone.drone.data.Config;
+import com.tngtech.leapdrone.drone.listeners.ErrorListener;
 import com.tngtech.leapdrone.injection.Context;
 import com.tngtech.leapdrone.input.leapmotion.LeapMotionController;
 import com.tngtech.leapdrone.input.speech.SpeechDetector;
 import com.tngtech.leapdrone.ui.SwingWindow;
+import org.apache.log4j.Logger;
 
 import java.io.IOException;
 
-public class Main
+public class Main implements ErrorListener
 {
+  private final Logger logger = Logger.getLogger(ErrorListener.class);
+
   private final SwingWindow swingWindow;
 
   private final DroneController droneController;
@@ -49,10 +53,12 @@ public class Main
 
   private void addEventListeners()
   {
+    droneController.addErrorListener(this);
+
     droneController.addNavDataListener(droneInputController);
     leapMotionController.addDetectionListener(droneInputController);
     leapMotionController.addGestureListener(droneInputController);
-    //speechDetector.addSpeechListener(droneInputController);
+    speechDetector.addSpeechListener(droneInputController);
   }
 
   private void startComponents()
@@ -74,5 +80,12 @@ public class Main
     {
       e.printStackTrace();
     }
+  }
+
+  @Override
+  public void onError(Throwable e)
+  {
+    logger.error("There was an error", e);
+    System.exit(1);
   }
 }

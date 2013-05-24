@@ -4,13 +4,14 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
+import com.tngtech.leapdrone.drone.components.AddressComponent;
+import com.tngtech.leapdrone.drone.components.ErrorListenerComponent;
+import com.tngtech.leapdrone.drone.components.ReadyStateListenerComponent;
+import com.tngtech.leapdrone.drone.components.TcpComponent;
+import com.tngtech.leapdrone.drone.components.ThreadComponent;
 import com.tngtech.leapdrone.drone.data.DroneConfiguration;
 import com.tngtech.leapdrone.drone.listeners.DroneConfigurationListener;
 import com.tngtech.leapdrone.drone.listeners.ReadyStateChangeListener;
-import com.tngtech.leapdrone.helpers.components.AddressComponent;
-import com.tngtech.leapdrone.helpers.components.ReadyStateComponent;
-import com.tngtech.leapdrone.helpers.components.TcpComponent;
-import com.tngtech.leapdrone.helpers.components.ThreadComponent;
 import org.apache.log4j.Logger;
 
 import java.io.IOException;
@@ -31,7 +32,9 @@ public class ConfigurationDataRetriever implements Runnable
 
   private final TcpComponent tcpComponent;
 
-  private final ReadyStateComponent readyStateComponent;
+  private final ReadyStateListenerComponent readyStateListenerComponent;
+
+  private final ErrorListenerComponent errorListenerComponent;
 
   private final Set<DroneConfigurationListener> droneConfigurationListeners;
 
@@ -41,12 +44,13 @@ public class ConfigurationDataRetriever implements Runnable
 
   @Inject
   public ConfigurationDataRetriever(ThreadComponent threadComponent, AddressComponent addressComponent, TcpComponent tcpComponent,
-                                    ReadyStateComponent readyStateComponent)
+                                    ReadyStateListenerComponent readyStateListenerComponent, ErrorListenerComponent errorListenerComponent)
   {
     this.threadComponent = threadComponent;
     this.addressComponent = addressComponent;
     this.tcpComponent = tcpComponent;
-    this.readyStateComponent = readyStateComponent;
+    this.readyStateListenerComponent = readyStateListenerComponent;
+    this.errorListenerComponent = errorListenerComponent;
 
     droneConfigurationListeners = Sets.newHashSet();
   }
@@ -68,12 +72,12 @@ public class ConfigurationDataRetriever implements Runnable
 
   public void addReadyStateChangeListener(ReadyStateChangeListener readyStateChangeListener)
   {
-    readyStateComponent.addReadyStateChangeListener(readyStateChangeListener);
+    readyStateListenerComponent.addReadyStateChangeListener(readyStateChangeListener);
   }
 
   public void removeReadyStateChangeListener(ReadyStateChangeListener readyStateChangeListener)
   {
-    readyStateComponent.addReadyStateChangeListener(readyStateChangeListener);
+    readyStateListenerComponent.addReadyStateChangeListener(readyStateChangeListener);
   }
 
   public void addDroneConfigurationListener(DroneConfigurationListener droneConfigurationListener)
@@ -95,8 +99,19 @@ public class ConfigurationDataRetriever implements Runnable
   @Override
   public void run()
   {
+    try
+    {
+      doRun();
+    } catch (Throwable e)
+    {
+      errorListenerComponent.emitError(e);
+    }
+  }
+
+  private void doRun()
+  {
     connectToConfigDataPort();
-    readyStateComponent.emitReadyStateChange(ReadyStateChangeListener.ReadyState.READY);
+    readyStateListenerComponent.emitReadyStateChange(ReadyStateChangeListener.ReadyState.READY);
 
     while (!threadComponent.isStopped())
     {

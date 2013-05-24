@@ -1,7 +1,7 @@
 package com.tngtech.leapdrone.drone.video;
 
 import com.tngtech.leapdrone.drone.listeners.ImageListener;
-import com.tngtech.leapdrone.helpers.components.TcpComponent;
+import com.tngtech.leapdrone.drone.components.TcpComponent;
 import com.xuggle.xuggler.Global;
 import com.xuggle.xuggler.ICodec;
 import com.xuggle.xuggler.IContainer;
