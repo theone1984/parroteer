@@ -12,6 +12,8 @@ import org.apache.log4j.Logger;
 
 import java.awt.image.BufferedImage;
 
+import static com.tngtech.leapdrone.helpers.ThreadHelper.sleep;
+
 public class VideoRetrieverH264 extends VideoRetrieverAbstract implements ImageListener
 {
   private final Logger logger = Logger.getLogger(VideoRetrieverP264.class.getSimpleName());
@@ -46,9 +48,18 @@ public class VideoRetrieverH264 extends VideoRetrieverAbstract implements ImageL
     while (!isStopped())
     {
       videoDecoder.startDecoding(tcpComponent, this);
+      reconnectVideoPort();
     }
 
     disconnectFromVideoDataPort();
+  }
+
+  private void reconnectVideoPort()
+  {
+    logger.warn("Reconnecting video data port");
+    tcpComponent.disconnect();
+    sleep(4000);
+    tcpComponent.connect(getDroneAddress(), getVideoDataPort());
   }
 
   private void connectToVideoDataPort()
