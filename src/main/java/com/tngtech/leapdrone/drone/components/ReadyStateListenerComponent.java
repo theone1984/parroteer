@@ -1,15 +1,15 @@
-package com.tngtech.leapdrone.helpers.components;
+package com.tngtech.leapdrone.drone.components;
 
 import com.google.common.collect.Sets;
 import com.tngtech.leapdrone.drone.listeners.ReadyStateChangeListener;
 
 import java.util.Set;
 
-public class ReadyStateComponent
+public class ReadyStateListenerComponent
 {
   private final Set<ReadyStateChangeListener> readyStateChangeListeners;
 
-  public ReadyStateComponent()
+  public ReadyStateListenerComponent()
   {
     readyStateChangeListeners = Sets.newHashSet();
   }

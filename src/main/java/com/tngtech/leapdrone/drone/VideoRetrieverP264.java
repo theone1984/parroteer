@@ -1,18 +1,19 @@
 package com.tngtech.leapdrone.drone;
 
 import com.google.inject.Inject;
+import com.tngtech.leapdrone.drone.components.AddressComponent;
+import com.tngtech.leapdrone.drone.components.ErrorListenerComponent;
+import com.tngtech.leapdrone.drone.components.ReadyStateListenerComponent;
+import com.tngtech.leapdrone.drone.components.ThreadComponent;
+import com.tngtech.leapdrone.drone.components.UdpComponent;
 import com.tngtech.leapdrone.drone.data.VideoData;
 import com.tngtech.leapdrone.drone.listeners.VideoDataListener;
 import com.tngtech.leapdrone.drone.video.P264ImageDecoder;
-import com.tngtech.leapdrone.helpers.components.AddressComponent;
-import com.tngtech.leapdrone.helpers.components.ReadyStateComponent;
-import com.tngtech.leapdrone.helpers.components.ThreadComponent;
-import com.tngtech.leapdrone.helpers.components.UdpComponent;
 import org.apache.log4j.Logger;
 
 import java.net.DatagramPacket;
 
-import static com.tngtech.leapdrone.helpers.ThreadHelper.sleep;
+import static com.tngtech.leapdrone.drone.helpers.ThreadHelper.sleep;
 
 public class VideoRetrieverP264 extends VideoRetrieverAbstract
 {
@@ -30,9 +31,10 @@ public class VideoRetrieverP264 extends VideoRetrieverAbstract
 
   @Inject
   public VideoRetrieverP264(ThreadComponent threadComponent, AddressComponent addressComponent, UdpComponent udpComponent,
-                            ReadyStateComponent readyStateComponent, P264ImageDecoder imageDecoder)
+                            ReadyStateListenerComponent readyStateListenerComponent, ErrorListenerComponent errorListenerComponent,
+                            P264ImageDecoder imageDecoder)
   {
-    super(threadComponent, addressComponent, readyStateComponent);
+    super(threadComponent, addressComponent, readyStateListenerComponent, errorListenerComponent);
     this.udpComponent = udpComponent;
     this.imageDecoder = imageDecoder;
 
@@ -46,7 +48,7 @@ public class VideoRetrieverP264 extends VideoRetrieverAbstract
   }
 
   @Override
-  public void run()
+  protected void doRun()
   {
     connectToVideoDataPort();
     initializeCommunication();

@@ -1,5 +1,7 @@
 package com.tngtech.leapdrone.drone.commands;
 
+import static com.google.common.base.Preconditions.checkState;
+
 public class SetConfigValueCommand extends CommandAbstract
 {
   private final String sessionId;
@@ -11,6 +13,16 @@ public class SetConfigValueCommand extends CommandAbstract
   private final String key;
 
   private final String value;
+
+  public SetConfigValueCommand(String sessionId, String profileId, String applicationId)
+  {
+    super(true);
+    this.sessionId = sessionId;
+    this.profileId = profileId;
+    this.applicationId = applicationId;
+    this.key = null;
+    this.value = null;
+  }
 
   public SetConfigValueCommand(String sessionId, String profileId, String applicationId, String key, Object value)
   {
@@ -31,6 +43,7 @@ public class SetConfigValueCommand extends CommandAbstract
   @Override
   protected String getCommand(int sequenceNumber)
   {
+    checkState(key != null && value != null, "Cannot get the command text with no key or value set");
     return String.format("AT*CONFIG=%d,\"%s\",\"%s\"", sequenceNumber, key, value);
   }
 }

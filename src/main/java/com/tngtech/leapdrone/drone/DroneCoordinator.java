@@ -10,14 +10,14 @@ import com.tngtech.leapdrone.drone.data.enums.DroneVersion;
 import com.tngtech.leapdrone.drone.listeners.DroneConfigurationListener;
 import com.tngtech.leapdrone.drone.listeners.NavDataListener;
 import com.tngtech.leapdrone.drone.listeners.ReadyStateChangeListener;
-import com.tngtech.leapdrone.helpers.VersionHelper;
-import com.tngtech.leapdrone.helpers.components.AddressComponent;
+import com.tngtech.leapdrone.drone.helpers.VersionHelper;
+import com.tngtech.leapdrone.drone.components.AddressComponent;
 import org.apache.log4j.Logger;
 
 import java.util.Objects;
 
 import static com.google.common.base.Preconditions.checkState;
-import static com.tngtech.leapdrone.helpers.ThreadHelper.sleep;
+import static com.tngtech.leapdrone.drone.helpers.ThreadHelper.sleep;
 
 public class DroneCoordinator implements ReadyStateChangeListener, NavDataListener, DroneConfigurationListener
 {

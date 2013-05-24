@@ -1,16 +1,19 @@
 package com.tngtech.leapdrone.drone;
 
 import com.google.inject.Inject;
+import com.tngtech.leapdrone.drone.components.AddressComponent;
+import com.tngtech.leapdrone.drone.components.ErrorListenerComponent;
+import com.tngtech.leapdrone.drone.components.ReadyStateListenerComponent;
+import com.tngtech.leapdrone.drone.components.TcpComponent;
+import com.tngtech.leapdrone.drone.components.ThreadComponent;
 import com.tngtech.leapdrone.drone.listeners.ImageListener;
 import com.tngtech.leapdrone.drone.listeners.VideoDataListener;
 import com.tngtech.leapdrone.drone.video.H264VideoDecoder;
-import com.tngtech.leapdrone.helpers.components.AddressComponent;
-import com.tngtech.leapdrone.helpers.components.ReadyStateComponent;
-import com.tngtech.leapdrone.helpers.components.TcpComponent;
-import com.tngtech.leapdrone.helpers.components.ThreadComponent;
 import org.apache.log4j.Logger;
 
 import java.awt.image.BufferedImage;
+
+import static com.tngtech.leapdrone.drone.helpers.ThreadHelper.sleep;
 
 public class VideoRetrieverH264 extends VideoRetrieverAbstract implements ImageListener
 {
@@ -22,9 +25,10 @@ public class VideoRetrieverH264 extends VideoRetrieverAbstract implements ImageL
 
   @Inject
   public VideoRetrieverH264(ThreadComponent threadComponent, AddressComponent addressComponent, TcpComponent tcpComponent,
-                            ReadyStateComponent readyStateComponent, H264VideoDecoder videoDecoder)
+                            ReadyStateListenerComponent readyStateListenerComponent, ErrorListenerComponent errorListenerComponent,
+                            H264VideoDecoder videoDecoder)
   {
-    super(threadComponent, addressComponent, readyStateComponent);
+    super(threadComponent, addressComponent, readyStateListenerComponent, errorListenerComponent);
     this.tcpComponent = tcpComponent;
     this.videoDecoder = videoDecoder;
   }
@@ -37,15 +41,27 @@ public class VideoRetrieverH264 extends VideoRetrieverAbstract implements ImageL
   }
 
   @Override
-  public void run()
+  protected void doRun()
   {
     connectToVideoDataPort();
     initializeCommunication();
     setReady();
 
-    videoDecoder.startDecoding(tcpComponent.getInputStream(), this);
+    while (!isStopped())
+    {
+      videoDecoder.startDecoding(tcpComponent, this);
+      reconnectVideoPort();
+    }
 
     disconnectFromVideoDataPort();
+  }
+
+  private void reconnectVideoPort()
+  {
+    logger.warn("Reconnecting video data port");
+    tcpComponent.disconnect();
+    sleep(4000);
+    tcpComponent.connect(getDroneAddress(), getVideoDataPort());
   }
 
   private void connectToVideoDataPort()

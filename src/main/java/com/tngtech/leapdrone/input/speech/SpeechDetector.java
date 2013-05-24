@@ -2,7 +2,7 @@ package com.tngtech.leapdrone.input.speech;
 
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
-import com.tngtech.leapdrone.helpers.components.ThreadComponent;
+import com.tngtech.leapdrone.drone.components.ThreadComponent;
 import com.tngtech.leapdrone.injection.Context;
 import com.tngtech.leapdrone.input.speech.data.SpeechData;
 import com.tngtech.leapdrone.input.speech.listeners.SpeechListener;

@@ -1,5 +1,6 @@
 package com.tngtech.leapdrone.helpers;
 
+import com.tngtech.leapdrone.drone.helpers.BinaryDataHelper;
 import org.junit.Test;
 
 import static org.hamcrest.core.Is.is;

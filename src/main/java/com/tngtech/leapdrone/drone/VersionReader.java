@@ -3,7 +3,7 @@ package com.tngtech.leapdrone.drone;
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import com.tngtech.leapdrone.drone.data.enums.DroneVersion;
-import com.tngtech.leapdrone.helpers.components.UrlConnectionComponent;
+import com.tngtech.leapdrone.drone.components.UrlConnectionComponent;
 
 import java.util.List;
 

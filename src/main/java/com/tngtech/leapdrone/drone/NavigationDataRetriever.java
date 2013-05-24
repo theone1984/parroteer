@@ -2,21 +2,22 @@ package com.tngtech.leapdrone.drone;
 
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
+import com.tngtech.leapdrone.drone.components.AddressComponent;
+import com.tngtech.leapdrone.drone.components.ErrorListenerComponent;
+import com.tngtech.leapdrone.drone.components.ReadyStateListenerComponent;
+import com.tngtech.leapdrone.drone.components.ThreadComponent;
+import com.tngtech.leapdrone.drone.components.UdpComponent;
 import com.tngtech.leapdrone.drone.data.NavData;
 import com.tngtech.leapdrone.drone.listeners.NavDataListener;
 import com.tngtech.leapdrone.drone.listeners.ReadyStateChangeListener;
 import com.tngtech.leapdrone.drone.navdata.NavigationDataDecoder;
-import com.tngtech.leapdrone.helpers.components.AddressComponent;
-import com.tngtech.leapdrone.helpers.components.ReadyStateComponent;
-import com.tngtech.leapdrone.helpers.components.ThreadComponent;
-import com.tngtech.leapdrone.helpers.components.UdpComponent;
 import org.apache.log4j.Logger;
 
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.util.Set;
 
-import static com.tngtech.leapdrone.helpers.ThreadHelper.sleep;
+import static com.tngtech.leapdrone.drone.helpers.ThreadHelper.sleep;
 
 public class NavigationDataRetriever implements Runnable
 {
@@ -30,7 +31,9 @@ public class NavigationDataRetriever implements Runnable
 
   private final UdpComponent udpComponent;
 
-  private final ReadyStateComponent readyStateComponent;
+  private final ReadyStateListenerComponent readyStateListenerComponent;
+
+  private final ErrorListenerComponent errorListenerComponent;
 
   private final NavigationDataDecoder decoder;
 
@@ -46,13 +49,15 @@ public class NavigationDataRetriever implements Runnable
 
   @Inject
   public NavigationDataRetriever(ThreadComponent threadComponent, AddressComponent addressComponent, UdpComponent udpComponent,
-                                 ReadyStateComponent readyStateComponent, NavigationDataDecoder decoder)
+                                 ReadyStateListenerComponent readyStateListenerComponent, ErrorListenerComponent errorListenerComponent,
+                                 NavigationDataDecoder decoder)
   {
     super();
     this.threadComponent = threadComponent;
     this.addressComponent = addressComponent;
     this.udpComponent = udpComponent;
-    this.readyStateComponent = readyStateComponent;
+    this.readyStateListenerComponent = readyStateListenerComponent;
+    this.errorListenerComponent = errorListenerComponent;
     this.decoder = decoder;
     navDataListeners = Sets.newLinkedHashSet();
 
@@ -76,12 +81,12 @@ public class NavigationDataRetriever implements Runnable
 
   public void addReadyStateChangeListener(ReadyStateChangeListener readyStateChangeListener)
   {
-    readyStateComponent.addReadyStateChangeListener(readyStateChangeListener);
+    readyStateListenerComponent.addReadyStateChangeListener(readyStateChangeListener);
   }
 
   public void removeReadyStateChangeListener(ReadyStateChangeListener readyStateChangeListener)
   {
-    readyStateComponent.addReadyStateChangeListener(readyStateChangeListener);
+    readyStateListenerComponent.addReadyStateChangeListener(readyStateChangeListener);
   }
 
   public void addNavDataListener(NavDataListener navDataListener)
@@ -109,9 +114,20 @@ public class NavigationDataRetriever implements Runnable
   @Override
   public void run()
   {
+    try
+    {
+      doRun();
+    } catch (Throwable e)
+    {
+      errorListenerComponent.emitError(e);
+    }
+  }
+
+  private void doRun()
+  {
     connectToNavDataPort();
     initializeCommunication();
-    readyStateComponent.emitReadyStateChange(ReadyStateChangeListener.ReadyState.READY);
+    readyStateListenerComponent.emitReadyStateChange(ReadyStateChangeListener.ReadyState.READY);
 
     while (!threadComponent.isStopped())
     {

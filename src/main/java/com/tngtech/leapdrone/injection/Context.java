@@ -13,6 +13,7 @@ import com.tngtech.leapdrone.drone.DroneCoordinator;
 import com.tngtech.leapdrone.drone.NavigationDataRetriever;
 import com.tngtech.leapdrone.drone.VideoRetrieverH264;
 import com.tngtech.leapdrone.drone.VideoRetrieverP264;
+import com.tngtech.leapdrone.drone.components.ErrorListenerComponent;
 import com.tngtech.leapdrone.input.leapmotion.LeapMotionController;
 import com.tngtech.leapdrone.input.leapmotion.LeapMotionListener;
 import com.tngtech.leapdrone.input.speech.SpeechDetector;
@@ -41,11 +42,6 @@ public class Context extends AbstractModule
   @Override
   protected void configure()
   {
-    bind(LeapMotionController.class).in(Singleton.class);
-    bind(LeapMotionListener.class).in(Singleton.class);
-
-    bind(SpeechDetector.class).in(Singleton.class);
-
     bind(DroneController.class).in(Singleton.class);
     bind(DroneCoordinator.class).in(Singleton.class);
     bind(CommandSender.class).in(Singleton.class);
@@ -54,8 +50,14 @@ public class Context extends AbstractModule
     bind(VideoRetrieverH264.class).in(Singleton.class);
     bind(VideoRetrieverP264.class).in(Singleton.class);
     bind(ConfigurationDataRetriever.class).in(Singleton.class);
-    bind(SwingWindow.class).in(Singleton.class);
+    bind(ErrorListenerComponent.class).in(Singleton.class);
 
+    bind(LeapMotionController.class).in(Singleton.class);
+    bind(LeapMotionListener.class).in(Singleton.class);
+
+    bind(SpeechDetector.class).in(Singleton.class);
+
+    bind(SwingWindow.class).in(Singleton.class);
     bind(DroneInputController.class).in(Singleton.class);
   }
 }

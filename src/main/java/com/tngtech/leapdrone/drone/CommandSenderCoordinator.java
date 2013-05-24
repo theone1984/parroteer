@@ -3,17 +3,18 @@ package com.tngtech.leapdrone.drone;
 import com.google.inject.Inject;
 import com.tngtech.leapdrone.drone.commands.ControlDataCommand;
 import com.tngtech.leapdrone.drone.commands.SetConfigValueCommand;
+import com.tngtech.leapdrone.drone.components.AddressComponent;
+import com.tngtech.leapdrone.drone.components.ErrorListenerComponent;
+import com.tngtech.leapdrone.drone.components.ReadyStateListenerComponent;
+import com.tngtech.leapdrone.drone.components.ThreadComponent;
+import com.tngtech.leapdrone.drone.components.UdpComponent;
 import com.tngtech.leapdrone.drone.data.Config;
 import com.tngtech.leapdrone.drone.data.DroneConfiguration;
 import com.tngtech.leapdrone.drone.data.NavData;
 import com.tngtech.leapdrone.drone.listeners.DroneConfigurationListener;
 import com.tngtech.leapdrone.drone.listeners.NavDataListener;
-import com.tngtech.leapdrone.helpers.components.AddressComponent;
-import com.tngtech.leapdrone.helpers.components.ReadyStateComponent;
-import com.tngtech.leapdrone.helpers.components.ThreadComponent;
-import com.tngtech.leapdrone.helpers.components.UdpComponent;
 
-import static com.tngtech.leapdrone.helpers.ThreadHelper.sleep;
+import static com.tngtech.leapdrone.drone.helpers.ThreadHelper.sleep;
 
 public class CommandSenderCoordinator extends CommandSender implements NavDataListener, DroneConfigurationListener
 {
@@ -23,11 +24,10 @@ public class CommandSenderCoordinator extends CommandSender implements NavDataLi
 
   @Inject
   public CommandSenderCoordinator(ThreadComponent threadComponent, AddressComponent addressComponent, UdpComponent udpComponent,
-                                  ReadyStateComponent readyStateComponent, NavigationDataRetriever navigationDataRetriever,
-                                  ConfigurationDataRetriever configurationDataRetriever)
+                                  ReadyStateListenerComponent readyStateListenerComponent, ErrorListenerComponent errorListenerComponent,
+                                  NavigationDataRetriever navigationDataRetriever, ConfigurationDataRetriever configurationDataRetriever)
   {
-    super(threadComponent, addressComponent, udpComponent, readyStateComponent);
-
+    super(threadComponent, addressComponent, udpComponent, readyStateListenerComponent, errorListenerComponent);
 
     navigationDataRetriever.addNavDataListener(this);
     configurationDataRetriever.addDroneConfigurationListener(this);

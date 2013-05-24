@@ -1,4 +1,4 @@
-package com.tngtech.leapdrone.helpers;
+package com.tngtech.leapdrone.drone.helpers;
 
 import java.util.Random;
 import java.util.zip.CRC32;
