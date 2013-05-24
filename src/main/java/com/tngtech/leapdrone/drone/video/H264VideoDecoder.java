@@ -1,6 +1,7 @@
 package com.tngtech.leapdrone.drone.video;
 
 import com.tngtech.leapdrone.drone.listeners.ImageListener;
+import com.tngtech.leapdrone.helpers.components.TcpComponent;
 import com.xuggle.xuggler.Global;
 import com.xuggle.xuggler.ICodec;
 import com.xuggle.xuggler.IContainer;
@@ -11,21 +12,24 @@ import com.xuggle.xuggler.IStreamCoder;
 import com.xuggle.xuggler.IVideoPicture;
 import com.xuggle.xuggler.IVideoResampler;
 import com.xuggle.xuggler.Utils;
+import org.apache.log4j.Logger;
 
 import java.awt.image.BufferedImage;
-import java.io.InputStream;
+import java.net.SocketTimeoutException;
 
 public class H264VideoDecoder
 {
+  private final Logger logger = Logger.getLogger(H264VideoDecoder.class.getSimpleName());
+
   private boolean stopped;
 
-  private InputStream inputStream;
+  private TcpComponent tcpComponent;
 
   private ImageListener imageListener;
 
-  public void startDecoding(InputStream inputStream, ImageListener imageListener)
+  public void startDecoding(TcpComponent tcpComponent, ImageListener imageListener)
   {
-    this.inputStream = inputStream;
+    this.tcpComponent = tcpComponent;
     this.imageListener = imageListener;
     stopped = false;
 
@@ -50,7 +54,7 @@ public class H264VideoDecoder
     IContainer container = IContainer.make();
 
     // Open up the container
-    if (container.open(inputStream, null) < 0)
+    if (container.open(tcpComponent.getInputStream(), null) < 0)
     {
       throw new IllegalArgumentException("could not open inpustream");
     }
@@ -111,18 +115,18 @@ public class H264VideoDecoder
     long systemClockStartTime = 0;
     while (container.readNextPacket(packet) >= 0 && !stopped)
     {
-      /*
-       * Now we have a packet, let's see if it belongs to our video stream
-       */
-      if (packet.getStreamIndex() == videoStreamId)
+      try
       {
         /*
-         * We allocate a new picture to get the data out of Xuggler
+         * Now we have a packet, let's see if it belongs to our video stream
          */
-        IVideoPicture picture = IVideoPicture.make(videoCoder.getPixelType(), videoCoder.getWidth(), videoCoder.getHeight());
-
-        try
+        if (packet.getStreamIndex() == videoStreamId)
         {
+          /*
+           * We allocate a new picture to get the data out of Xuggler
+           */
+          IVideoPicture picture = IVideoPicture.make(videoCoder.getPixelType(), videoCoder.getWidth(), videoCoder.getHeight());
+
           int offset = 0;
           while (offset < packet.getSize())
           {        
@@ -208,10 +212,10 @@ public class H264VideoDecoder
               }
             }
           } // end of while
-        } catch (Exception exc)
-        {
-          exc.printStackTrace();
         }
+      } catch (Exception e)
+      {
+        handleException(e);
       }
     }
 
@@ -222,6 +226,18 @@ public class H264VideoDecoder
     if (container != null)
     {
       container.close();
+    }
+  }
+
+  private void handleException(Exception e)
+  {
+    if (e instanceof SocketTimeoutException)
+    {
+      logger.warn("Socket timeout for video channel");
+      tcpComponent.reconnect();
+    } else
+    {
+      logger.error(e);
     }
   }
 }

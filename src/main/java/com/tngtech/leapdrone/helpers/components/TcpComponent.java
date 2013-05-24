@@ -1,5 +1,7 @@
 package com.tngtech.leapdrone.helpers.components;
 
+import org.apache.log4j.Logger;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -13,7 +15,15 @@ public class TcpComponent
 
   private static final int DEFAULT_TIMEOUT = 3000;
 
+  private final Logger logger = Logger.getLogger(UdpComponent.class.getSimpleName());
+
   private Socket socket = null;
+
+  private InetAddress address;
+
+  private int port;
+
+  private int timeout;
 
   private BufferedReader reader = null;
 
@@ -24,6 +34,10 @@ public class TcpComponent
 
   public void connect(InetAddress address, int port, int timeout)
   {
+    this.address = address;
+    this.port = port;
+    this.timeout = timeout;
+
     try
     {
       socket = new Socket(address, port);
@@ -47,6 +61,19 @@ public class TcpComponent
     {
       throw new IllegalStateException("Error while disconnecting socket", e);
     }
+  }
+
+  public void reconnect()
+  {
+    try
+    {
+      disconnect();
+    } catch (Exception e)
+    {
+      logger.error(String.format("Error while disconnecting from port %d", port), e);
+    }
+
+    connect(address, port, timeout);
   }
 
   public void sendKeepAlivePacket()

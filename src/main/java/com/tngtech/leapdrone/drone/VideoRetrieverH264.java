@@ -43,7 +43,10 @@ public class VideoRetrieverH264 extends VideoRetrieverAbstract implements ImageL
     initializeCommunication();
     setReady();
 
-    videoDecoder.startDecoding(tcpComponent.getInputStream(), this);
+    while (!isStopped())
+    {
+      videoDecoder.startDecoding(tcpComponent, this);
+    }
 
     disconnectFromVideoDataPort();
   }

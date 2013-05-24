@@ -14,8 +14,15 @@ public class UdpComponent
 
   private DatagramSocket socket;
 
+  private InetAddress address;
+
+  private int port;
+
   public void connect(InetAddress address, int port)
   {
+    this.address = address;
+    this.port = port;
+
     determineKeepAlivePacket(address, port);
 
     try
@@ -26,6 +33,18 @@ public class UdpComponent
     {
       throw new IllegalStateException(e);
     }
+  }
+
+  public void disconnect()
+  {
+    socket.disconnect();
+    socket = null;
+  }
+
+  public void reconnect()
+  {
+    disconnect();
+    connect(address, port);
   }
 
   private void determineKeepAlivePacket(InetAddress address, int port)
@@ -58,11 +77,5 @@ public class UdpComponent
     {
       throw new IllegalStateException(e);
     }
-  }
-
-  public void disconnect()
-  {
-    socket.disconnect();
-    socket = null;
   }
 }
