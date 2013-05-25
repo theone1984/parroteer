@@ -14,6 +14,7 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.WritableImage;
+import javafx.scene.layout.VBox;
 
 import java.awt.image.BufferedImage;
 import java.util.Set;
@@ -24,6 +25,9 @@ public class FxController implements VideoDataListener, NavDataListener
 
   @FXML
   private ImageView imageView;
+
+  @FXML
+  private VBox vbox;
 
   @FXML
   private Label labelBattery;
@@ -141,6 +145,9 @@ public class FxController implements VideoDataListener, NavDataListener
       @Override
       public void run()
       {
+        imageView.setFitWidth(vbox.getWidth() - 20);
+        imageView.setFitHeight(vbox.getHeight() - 100);
+
         image = SwingFXUtils.toFXImage(droneImage, image);
         if (imageView.getImage() != image)
         {

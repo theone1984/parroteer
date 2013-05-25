@@ -72,7 +72,7 @@ public class FxWindow
 
     primaryStage.setTitle("Drone control");
     primaryStage.setWidth(800);
-    primaryStage.setHeight(600);
+    primaryStage.setHeight(650);
 
     primaryStage.show();
   }
