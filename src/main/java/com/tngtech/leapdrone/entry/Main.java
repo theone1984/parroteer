@@ -7,6 +7,7 @@ import com.tngtech.leapdrone.drone.data.Config;
 import com.tngtech.leapdrone.drone.listeners.ErrorListener;
 import com.tngtech.leapdrone.input.leapmotion.LeapMotionController;
 import com.tngtech.leapdrone.input.speech.SpeechDetector;
+import com.tngtech.leapdrone.ui.FxController;
 import com.tngtech.leapdrone.ui.FxWindow;
 import com.tngtech.leapdrone.ui.data.UIAction;
 import com.tngtech.leapdrone.ui.listeners.UIActionListener;
@@ -27,6 +28,8 @@ public class Main implements ErrorListener, UIActionListener
 
   private final DroneInputController droneInputController;
 
+  private FxController fxController;
+
   @Inject
   public Main(FxWindow fxWindow, DroneController droneController, SpeechDetector speechDetector, LeapMotionController leapMotionController,
               DroneInputController droneInputController)
@@ -40,29 +43,34 @@ public class Main implements ErrorListener, UIActionListener
 
   public void start(Stage primaryStage)
   {
+    startWindow(primaryStage);
+
     addEventListeners();
-    startComponents(primaryStage);
+    startComponents();
+  }
+
+  private void startWindow(Stage primaryStage)
+  {
+    fxController = fxWindow.start(primaryStage);
   }
 
   private void addEventListeners()
   {
     droneController.addErrorListener(this);
-    fxWindow.addUIActionListener(this);
+    fxController.addUIActionListener(this);
 
-    droneController.addVideoDataListener(fxWindow);
+    droneController.addVideoDataListener(fxController);
 
     droneController.addNavDataListener(droneInputController);
     leapMotionController.addDetectionListener(droneInputController);
     leapMotionController.addGestureListener(droneInputController);
     speechDetector.addSpeechListener(droneInputController);
-    fxWindow.addUIActionListener(droneInputController);
+    fxController.addUIActionListener(droneInputController);
   }
 
-  private void startComponents(Stage primaryStage)
+  private void startComponents()
   {
     droneController.startAsync(new Config("com.tngtech.internal.leap-drone", "myProfile"));
-    fxWindow.start(primaryStage);
-
     leapMotionController.connect();
     //speechDetector.start();
   }

@@ -1,212 +1,91 @@
 package com.tngtech.leapdrone.ui;
 
-import com.google.common.collect.Sets;
-import com.tngtech.leapdrone.drone.data.VideoData;
-import com.tngtech.leapdrone.drone.listeners.VideoDataListener;
-import com.tngtech.leapdrone.ui.data.UIAction;
-import com.tngtech.leapdrone.ui.listeners.UIActionListener;
-import javafx.embed.swing.SwingFXUtils;
-import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-import javafx.geometry.Insets;
+import javafx.fxml.FXMLLoader;
+import javafx.fxml.JavaFXBuilderFactory;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.image.ImageView;
-import javafx.scene.image.WritableImage;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 
-import java.awt.image.BufferedImage;
-import java.util.Set;
+import java.io.IOException;
+import java.net.URL;
 
-public class FxWindow implements VideoDataListener
+public class FxWindow
 {
-  private final Set<UIActionListener> uiActionListeners;
-
-  private Button buttonTakeOff;
-
-  private Button buttonLand;
-
-  private Button buttonFlatTrim;
-
-  private Button buttonEmergency;
-
-  private Button buttonSwitchCamera;
-
-  private Button buttonPlayLedAnimation;
-
-  private Button buttonPlayFlightAnimation;
-
-  private ImageView imageView;
-
-  private WritableImage image;
-
-  public FxWindow()
+  public FxController start(Stage primaryStage)
   {
-    uiActionListeners = Sets.newHashSet();
+    FXMLLoader loader = getLoader();
+    Scene scene = getScene(loader);
+    addStyleSheetToScene(scene);
+
+    showStage(primaryStage, scene);
+
+    FxController controller = loader.getController();
+    attachCloseEventHandler(primaryStage, controller);
+
+    return controller;
   }
 
-  public void addUIActionListener(UIActionListener uiActionlistener)
+  private FXMLLoader getLoader()
   {
-    if (!uiActionListeners.contains(uiActionlistener))
+    FXMLLoader fxmlLoader = new FXMLLoader();
+
+    fxmlLoader.setBuilderFactory(new JavaFXBuilderFactory());
+    return fxmlLoader;
+  }
+
+  private Scene getScene(FXMLLoader loader)
+  {
+    URL fxmlLocationUrl = getResourceUrl("ui/droneControl.fxml");
+    loader.setLocation(fxmlLocationUrl);
+
+    try
     {
-      uiActionListeners.add(uiActionlistener);
+      return new Scene((Parent) loader.load(fxmlLocationUrl.openStream()));
+    } catch (IOException e)
+    {
+      throw new IllegalStateException("Error loading the FXML file", e);
     }
   }
 
-  public void removeUIActionListener(UIActionListener uiActionlistener)
+  private void addStyleSheetToScene(Scene scene)
   {
-    if (uiActionListeners.contains(uiActionlistener))
+    String styleSheet = getResourceUrl("ui/droneControl.css").toExternalForm();
+    scene.getStylesheets().add(styleSheet);
+  }
+
+  private URL getResourceUrl(String location)
+  {
+    try
     {
-      uiActionListeners.remove(uiActionlistener);
+      return Thread.currentThread().getContextClassLoader().getResource(location);
+    } catch (NullPointerException e)
+    {
+      throw new IllegalStateException(String.format("Error loading resource %s", location));
     }
   }
 
-  public void start(Stage primaryStage)
+  private void showStage(Stage primaryStage, Scene scene)
   {
-    createWindow(primaryStage);
-    addEventListeners(primaryStage);
+    primaryStage.setScene(scene);
+
+    primaryStage.setTitle("Drone control");
+    primaryStage.setWidth(800);
+    primaryStage.setHeight(600);
 
     primaryStage.show();
   }
 
-  public void createWindow(Stage primaryStage)
+  private void attachCloseEventHandler(Stage primaryStage, final FxController controller)
   {
-    primaryStage.setTitle("Drone control");
-
-    BorderPane borderPane = new BorderPane();
-    borderPane.setPadding(new Insets(10, 50, 50, 50));
-    borderPane.setId("root");
-
-    //Adding GridPane
-    GridPane gridPane = new GridPane();
-    gridPane.setHgap(5);
-    gridPane.setVgap(5);
-
-    //Implementing Nodes for GridPane
-    buttonTakeOff = new Button("Take off");
-    gridPane.add(buttonTakeOff, 0, 0);
-    buttonLand = new Button("Land");
-    gridPane.add(buttonLand, 1, 0);
-    buttonFlatTrim = new Button("Flat Trim");
-    gridPane.add(buttonFlatTrim, 2, 0);
-    buttonEmergency = new Button("Emergency");
-    gridPane.add(buttonEmergency, 3, 0);
-    buttonSwitchCamera = new Button("Switch camera");
-    gridPane.add(buttonSwitchCamera, 0, 1);
-    buttonPlayLedAnimation = new Button("Play LED animation");
-    gridPane.add(buttonPlayLedAnimation, 1, 1);
-    buttonPlayFlightAnimation = new Button("Play flight animation");
-    gridPane.add(buttonPlayFlightAnimation, 2, 1);
-
-    imageView = new ImageView();
-    imageView.setFitWidth(640);
-    imageView.setFitHeight(360);
-
-    borderPane.setTop(gridPane);
-    borderPane.setCenter(imageView);
-
-    Scene scene = new Scene(borderPane);
-    //noinspection ConstantConditions
-    scene.getStylesheets().add(Thread.currentThread().getContextClassLoader().getResource("test.css").toExternalForm());
-    primaryStage.setScene(scene);
-    primaryStage.titleProperty().set("Drone control");
-  }
-
-  private void addEventListeners(Stage stage)
-  {
-    buttonTakeOff.setOnAction(new EventHandler<ActionEvent>()
-    {
-      @Override
-      public void handle(ActionEvent actionEvent)
-      {
-        emitUIAction(UIAction.TAKE_OFF);
-      }
-    });
-    buttonLand.setOnAction(new EventHandler<ActionEvent>()
-    {
-      @Override
-      public void handle(ActionEvent actionEvent)
-      {
-        emitUIAction(UIAction.LAND);
-      }
-    });
-    buttonFlatTrim.setOnAction(new EventHandler<ActionEvent>()
-    {
-      @Override
-      public void handle(ActionEvent actionEvent)
-      {
-        emitUIAction(UIAction.FLAT_TRIM);
-      }
-    });
-    buttonEmergency.setOnAction(new EventHandler<ActionEvent>()
-    {
-      @Override
-      public void handle(ActionEvent actionEvent)
-      {
-        emitUIAction(UIAction.EMERGENCY);
-      }
-    });
-    buttonSwitchCamera.setOnAction(new EventHandler<ActionEvent>()
-    {
-      @Override
-      public void handle(ActionEvent actionEvent)
-      {
-        emitUIAction(UIAction.SWITCH_CAMERA);
-      }
-    });
-    buttonPlayLedAnimation.setOnAction(new EventHandler<ActionEvent>()
-    {
-      @Override
-      public void handle(ActionEvent actionEvent)
-      {
-        emitUIAction(UIAction.PLAY_LED_ANIMATION);
-      }
-    });
-    buttonPlayFlightAnimation.setOnAction(new EventHandler<ActionEvent>()
-    {
-      @Override
-      public void handle(ActionEvent actionEvent)
-      {
-        emitUIAction(UIAction.PLAY_FLIGHT_ANIMATION);
-      }
-    });
-    stage.setOnCloseRequest(new EventHandler<WindowEvent>()
+    primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>()
     {
       @Override
       public void handle(WindowEvent windowEvent)
       {
-        emitUIAction(UIAction.CLOSE_APPLICATION);
+        controller.onApplicationClose();
       }
     });
-  }
-
-  private void emitUIAction(UIAction action)
-  {
-    for (UIActionListener listener : uiActionListeners)
-    {
-      listener.onAction(action);
-    }
-  }
-
-  @Override
-  public void onVideoData(VideoData videoData)
-  {
-    BufferedImage droneImage = new BufferedImage(videoData.getWidth(), videoData.getHeight(), BufferedImage.TYPE_INT_RGB);
-    droneImage.setRGB(0, 0, videoData.getWidth(), videoData.getHeight(), videoData.getPixelData(), 0, videoData.getWidth());
-
-    onVideoData(droneImage);
-  }
-
-  @Override
-  public void onVideoData(BufferedImage droneImage)
-  {
-    image = SwingFXUtils.toFXImage(droneImage, image);
-    if (imageView.getImage() != image)
-    {
-      imageView.setImage(image);
-    }
   }
 }
