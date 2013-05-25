@@ -57,7 +57,7 @@ public abstract class VideoRetrieverAbstract implements Runnable
   public void stop()
   {
     logger.info("Stopping video thread");
-    threadComponent.stop();
+    threadComponent.stopAndWait();
   }
 
   public void addReadyStateChangeListener(ReadyStateChangeListener readyStateChangeListener)

@@ -67,7 +67,7 @@ public class ConfigurationDataRetriever implements Runnable
   public void stop()
   {
     logger.info("Stopping config data thread");
-    threadComponent.stop();
+    threadComponent.stopAndWait();
   }
 
   public void addReadyStateChangeListener(ReadyStateChangeListener readyStateChangeListener)

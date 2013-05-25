@@ -6,18 +6,33 @@ public class ThreadComponent
 {
   private boolean stopped = true;
 
+  private Thread currentThread;
+
   public void start(Runnable runnable)
   {
     checkState(stopped, "Already started");
     stopped = false;
 
-    new Thread(runnable).start();
+    currentThread = new Thread(runnable);
+    currentThread.start();
   }
 
   public void stop()
   {
     checkState(!stopped, "Already stopped");
     stopped = true;
+  }
+
+  public void stopAndWait()
+  {
+    try
+    {
+      stop();
+      currentThread.join();
+    } catch (InterruptedException e)
+    {
+      throw new IllegalStateException("Joining threads was interrupted", e);
+    }
   }
 
   public boolean isStopped()

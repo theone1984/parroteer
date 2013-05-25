@@ -157,7 +157,9 @@ public class DroneCoordinator implements ReadyStateChangeListener, NavDataListen
     String applicationId = droneConfiguration.getConfig().get(DroneConfiguration.APPLICATION_ID_KEY);
     String profileId = droneConfiguration.getConfig().get(DroneConfiguration.PROFILE_ID_KEY);
 
-    checkState(Objects.equals(config.getSessionChecksum(), sessionId), "Session ID checksums do not match");
+    // TODO remove session ID output
+    checkState(Objects.equals(config.getSessionChecksum(), sessionId),
+            String.format("Session ID checksums do not match '%s' - '%s'", sessionId, config.getSessionChecksum()));
     checkState(Objects.equals(config.getProfileChecksum(), profileId), "Profile ID checksums do not match");
     checkState(Objects.equals(config.getApplicationChecksum(), applicationId), "Application ID checksums do not match");
     checkState(VersionHelper.compareVersions(firmwareVersion, Config.MIN_FIRMWARE_VERSION) >= 0, "The firmware version used is too old");
@@ -167,9 +169,10 @@ public class DroneCoordinator implements ReadyStateChangeListener, NavDataListen
   {
     currentState = ControllerState.STOPPED;
 
-    commandSender.stop();
-    navigationDataRetriever.stop();
+
     configurationDataRetriever.stop();
+    navigationDataRetriever.stop();
+    commandSender.stop();
     stopVideoRetriever();
   }
 

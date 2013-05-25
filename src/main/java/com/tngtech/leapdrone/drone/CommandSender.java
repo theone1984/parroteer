@@ -67,7 +67,7 @@ public class CommandSender implements Runnable
   public void stop()
   {
     logger.info("Stopping command sender thread");
-    threadComponent.stop();
+    threadComponent.stopAndWait();
   }
 
   public void addReadyStateChangeListener(ReadyStateChangeListener readyStateChangeListener)

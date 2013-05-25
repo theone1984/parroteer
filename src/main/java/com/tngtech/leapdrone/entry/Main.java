@@ -81,6 +81,8 @@ public class Main implements ErrorListener, UIActionListener
     droneController.stop();
     leapMotionController.disconnect();
     //speechDetector.stop();
+
+    System.exit(0);
   }
 
   @Override

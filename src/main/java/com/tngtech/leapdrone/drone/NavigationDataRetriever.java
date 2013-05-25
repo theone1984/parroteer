@@ -76,7 +76,7 @@ public class NavigationDataRetriever implements Runnable
   public void stop()
   {
     logger.info("Stopping nav data thread");
-    threadComponent.stop();
+    threadComponent.stopAndWait();
   }
 
   public void addReadyStateChangeListener(ReadyStateChangeListener readyStateChangeListener)
