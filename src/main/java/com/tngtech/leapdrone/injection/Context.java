@@ -17,7 +17,6 @@ import com.tngtech.leapdrone.drone.components.ErrorListenerComponent;
 import com.tngtech.leapdrone.input.leapmotion.LeapMotionController;
 import com.tngtech.leapdrone.input.leapmotion.LeapMotionListener;
 import com.tngtech.leapdrone.input.speech.SpeechDetector;
-import com.tngtech.leapdrone.ui.SwingWindow;
 
 public class Context extends AbstractModule
 {
@@ -57,7 +56,6 @@ public class Context extends AbstractModule
 
     bind(SpeechDetector.class).in(Singleton.class);
 
-    bind(SwingWindow.class).in(Singleton.class);
     bind(DroneInputController.class).in(Singleton.class);
   }
 }
