@@ -50,7 +50,10 @@ public class VideoRetrieverH264 extends VideoRetrieverAbstract implements ImageL
     while (!isStopped())
     {
       videoDecoder.startDecoding(tcpComponent, this);
-      reconnectVideoPort();
+      if (!isStopped())
+      {
+        reconnectVideoPort();
+      }
     }
 
     disconnectFromVideoDataPort();

@@ -46,7 +46,7 @@ public class DroneController
 
   private final VideoRetrieverH264 videoRetrieverH264;
 
-  private final ExecutorService executor;
+  private ExecutorService executor;
 
   private Config config;
 
@@ -63,12 +63,15 @@ public class DroneController
     this.navigationDataRetriever = navigationDataRetriever;
     this.videoRetrieverP264 = videoRetrieverP264;
     this.videoRetrieverH264 = videoRetrieverH264;
-    executor = Executors.newFixedThreadPool(NUMBER_OF_THREADS);
+
   }
 
-  public Future startAsync(final Config config)
+  public void startAsync(final Config config)
   {
-    return executor.submit(new Runnable()
+    checkInitializationStateStarted();
+    initializeExecutor();
+
+    new Thread(new Runnable()
     {
       @Override
       public void run()
@@ -81,24 +84,32 @@ public class DroneController
           errorListenerComponent.emitError(e);
         }
       }
-    });
+    }).start();
   }
 
   public void start(Config config)
   {
     checkInitializationStateStarted();
+
     logger.info("Starting drone controller");
 
     this.config = config;
+
+    initializeExecutor();
     droneCoordinator.start(config);
     readyStateListenerComponent.emitReadyStateChange(ReadyStateChangeListener.ReadyState.READY);
   }
 
+  private void initializeExecutor()
+  {
+    executor = Executors.newFixedThreadPool(NUMBER_OF_THREADS);
+  }
+
   public void stop()
   {
-    checkInitializationState();
     logger.info("Stopping drone controller");
     droneCoordinator.stop();
+    executor.shutdownNow();
   }
 
   public boolean isInitialized()

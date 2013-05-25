@@ -4,18 +4,19 @@ import com.google.common.collect.Sets;
 import com.tngtech.leapdrone.drone.data.VideoData;
 import com.tngtech.leapdrone.drone.listeners.VideoDataListener;
 import com.tngtech.leapdrone.ui.data.UIAction;
-import com.tngtech.leapdrone.ui.helpers.ImageConverter;
 import com.tngtech.leapdrone.ui.listeners.UIActionListener;
+import javafx.embed.swing.SwingFXUtils;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.image.WritableImage;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 
 import java.awt.image.BufferedImage;
 import java.util.Set;
@@ -39,6 +40,8 @@ public class FxWindow implements VideoDataListener
   private Button buttonPlayFlightAnimation;
 
   private ImageView imageView;
+
+  private WritableImage image;
 
   public FxWindow()
   {
@@ -64,7 +67,7 @@ public class FxWindow implements VideoDataListener
   public void start(Stage primaryStage)
   {
     createWindow(primaryStage);
-    addEventListeners();
+    addEventListeners(primaryStage);
 
     primaryStage.show();
   }
@@ -112,7 +115,7 @@ public class FxWindow implements VideoDataListener
     primaryStage.titleProperty().set("Drone control");
   }
 
-  private void addEventListeners()
+  private void addEventListeners(Stage stage)
   {
     buttonTakeOff.setOnAction(new EventHandler<ActionEvent>()
     {
@@ -170,6 +173,14 @@ public class FxWindow implements VideoDataListener
         emitUIAction(UIAction.PLAY_FLIGHT_ANIMATION);
       }
     });
+    stage.setOnCloseRequest(new EventHandler<WindowEvent>()
+    {
+      @Override
+      public void handle(WindowEvent windowEvent)
+      {
+        emitUIAction(UIAction.CLOSE_APPLICATION);
+      }
+    });
   }
 
   private void emitUIAction(UIAction action)
@@ -192,7 +203,10 @@ public class FxWindow implements VideoDataListener
   @Override
   public void onVideoData(BufferedImage droneImage)
   {
-    Image image = ImageConverter.createFxImage(droneImage);
-    imageView.setImage(image);
+    image = SwingFXUtils.toFXImage(droneImage, image);
+    if (imageView.getImage() != image)
+    {
+      imageView.setImage(image);
+    }
   }
 }

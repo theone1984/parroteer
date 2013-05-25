@@ -8,10 +8,12 @@ import com.tngtech.leapdrone.drone.listeners.ErrorListener;
 import com.tngtech.leapdrone.input.leapmotion.LeapMotionController;
 import com.tngtech.leapdrone.input.speech.SpeechDetector;
 import com.tngtech.leapdrone.ui.FxWindow;
+import com.tngtech.leapdrone.ui.data.UIAction;
+import com.tngtech.leapdrone.ui.listeners.UIActionListener;
 import javafx.stage.Stage;
 import org.apache.log4j.Logger;
 
-public class Main implements ErrorListener
+public class Main implements ErrorListener, UIActionListener
 {
   private final Logger logger = Logger.getLogger(ErrorListener.class);
 
@@ -45,6 +47,7 @@ public class Main implements ErrorListener
   private void addEventListeners()
   {
     droneController.addErrorListener(this);
+    fxWindow.addUIActionListener(this);
 
     droneController.addVideoDataListener(fxWindow);
 
@@ -64,10 +67,26 @@ public class Main implements ErrorListener
     //speechDetector.start();
   }
 
+  public void stop()
+  {
+    droneController.stop();
+    leapMotionController.disconnect();
+    //speechDetector.stop();
+  }
+
   @Override
   public void onError(Throwable e)
   {
     logger.error("There was an error", e);
     System.exit(1);
+  }
+
+  @Override
+  public void onAction(UIAction action)
+  {
+    if (action == UIAction.CLOSE_APPLICATION)
+    {
+      stop();
+    }
   }
 }

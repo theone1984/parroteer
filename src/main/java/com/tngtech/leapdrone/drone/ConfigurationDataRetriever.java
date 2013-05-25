@@ -200,7 +200,7 @@ public class ConfigurationDataRetriever implements Runnable
 
   private void disconnectFromConfigDataPort()
   {
-    logger.info(String.format("Connecting to config data port %d", configDataPort));
+    logger.info(String.format("Disconnecting from config data port %d", configDataPort));
     tcpComponent.disconnect();
   }
 }
