@@ -1,7 +1,6 @@
 package com.tngtech.leapdrone.ui;
 
 import com.tngtech.leapdrone.drone.data.NavData;
-import com.tngtech.leapdrone.drone.data.VideoData;
 import com.tngtech.leapdrone.drone.listeners.NavDataListener;
 import com.tngtech.leapdrone.drone.listeners.VideoDataListener;
 
@@ -54,16 +53,6 @@ public class VideoPanel extends javax.swing.JPanel implements VideoDataListener,
   public Dimension getPreferredSize()
   {
     return new Dimension(DEFAULT_WIDTH, DEFAULT_HEIGHT);
-  }
-
-  @Override
-  public void onVideoData(VideoData videoData)
-  {
-    BufferedImage droneImage = new BufferedImage(videoData.getWidth(), videoData.getHeight(), BufferedImage.TYPE_INT_RGB);
-    droneImage.setRGB(0, 0, videoData.getWidth(), videoData.getHeight(), videoData.getPixelData(), 0, videoData.getWidth());
-
-    currentImage.set(droneImage);
-    repaint();
   }
 
   @Override

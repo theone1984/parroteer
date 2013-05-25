@@ -15,6 +15,8 @@ import com.tngtech.leapdrone.input.speech.data.SpeechData;
 import com.tngtech.leapdrone.input.speech.listeners.SpeechListener;
 import com.tngtech.leapdrone.ui.data.UIAction;
 import com.tngtech.leapdrone.ui.listeners.UIActionListener;
+import org.apache.log4j.Logger;
+
 
 public class DroneInputController implements NavDataListener, DetectionListener, GestureListener, SpeechListener, UIActionListener
 {
@@ -29,6 +31,8 @@ public class DroneInputController implements NavDataListener, DetectionListener,
 
   private static final float MOVE_THRESHOLD = 0.02f;
 
+  private final Logger logger = Logger.getLogger(DroneInputController.class.getSimpleName());
+
   private final DroneController droneController;
 
   private boolean navDataReceived = false;
@@ -36,6 +40,8 @@ public class DroneInputController implements NavDataListener, DetectionListener,
   private float currentHeight;
 
   private float lastRoll, lastPitch, lastYaw, lastHeight;
+
+  private boolean expertMode = false;
 
   @Inject
   public DroneInputController(DroneController droneController)
@@ -88,6 +94,14 @@ public class DroneInputController implements NavDataListener, DetectionListener,
       case PLAY_FLIGHT_ANIMATION:
         droneController.playFlightAnimation(PlayFlightAnimationCommand.FlightAnimation.YAW_SHAKE);
         break;
+      case ENABLE_EXPERT_MODE:
+        logger.warn("Enabling expert mode");
+        expertMode = true;
+        break;
+      case DISABLE_EXPERT_MODE:
+        logger.info("Disabling expert mode");
+        expertMode = false;
+        break;
     }
   }
 
@@ -103,8 +117,7 @@ public class DroneInputController implements NavDataListener, DetectionListener,
       droneController.land();
     }
 
-    move(PITCH_DECAY * data.getRoll(),
-            ROLL_DECAY * data.getPitch(), 0.0f, heightDelta);
+    move(PITCH_DECAY * data.getRoll(), ROLL_DECAY * data.getPitch(), data.getYaw(), heightDelta);
   }
 
   @Override
@@ -115,14 +128,16 @@ public class DroneInputController implements NavDataListener, DetectionListener,
 
   private void move(float roll, float pitch, float yaw, float height)
   {
+    float yawToUse = expertMode ? yaw : 0.0f;
+
     if (Math.abs(roll - lastRoll) > MOVE_THRESHOLD
             || Math.abs(pitch - lastPitch) > MOVE_THRESHOLD
-            || Math.abs(yaw - lastYaw) > MOVE_THRESHOLD
+            || Math.abs(yawToUse - lastYaw) > MOVE_THRESHOLD
             || Math.abs(height - lastHeight) > MOVE_THRESHOLD)
     {
       lastRoll = roll;
       lastPitch = pitch;
-      lastYaw = yaw;
+      lastYaw = yawToUse;
       lastHeight = height;
 
       droneController.move(-roll, pitch, yaw, height);

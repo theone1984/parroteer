@@ -6,11 +6,11 @@ import com.tngtech.leapdrone.drone.components.ErrorListenerComponent;
 import com.tngtech.leapdrone.drone.components.ReadyStateListenerComponent;
 import com.tngtech.leapdrone.drone.components.ThreadComponent;
 import com.tngtech.leapdrone.drone.components.UdpComponent;
-import com.tngtech.leapdrone.drone.data.VideoData;
 import com.tngtech.leapdrone.drone.listeners.VideoDataListener;
 import com.tngtech.leapdrone.drone.video.P264ImageDecoder;
 import org.apache.log4j.Logger;
 
+import java.awt.image.BufferedImage;
 import java.net.DatagramPacket;
 
 import static com.tngtech.leapdrone.drone.helpers.ThreadHelper.sleep;
@@ -85,24 +85,26 @@ public class VideoRetrieverP264 extends VideoRetrieverAbstract
 
   private void processData()
   {
-    VideoData videoData = getVideoData();
-    logger.trace(String.format("Received video data - width: %d, height: %d, bytes: %d", videoData.getWidth(), videoData.getHeight(),
-            videoData.getPixelData().length));
+    BufferedImage image = getImage();
+
+    logger.trace(String.format("Received video data - width: %d, height: %d", image.getWidth(), image.getHeight()));
 
     for (VideoDataListener listener : getVideoDataListeners())
     {
-      listener.onVideoData(videoData);
+      listener.onVideoData(image);
     }
   }
 
-  public VideoData getVideoData()
+  public BufferedImage getImage()
   {
     imageDecoder.determineImageFromStream(receivingBuffer, incomingDataPacket.getLength());
     int width = imageDecoder.getWidth();
     int height = imageDecoder.getHeight();
-    int[] pixelData = imageDecoder.getJavaPixelData();
 
-    return new VideoData(width, height, pixelData);
+    BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+    image.setRGB(0, 0, width, height, imageDecoder.getJavaPixelData(), 0, width);
+
+    return image;
   }
 
   private void disconnectFromVideoDataPort()

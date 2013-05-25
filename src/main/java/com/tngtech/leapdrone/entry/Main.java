@@ -60,6 +60,7 @@ public class Main implements ErrorListener, UIActionListener
     fxController.addUIActionListener(this);
 
     droneController.addVideoDataListener(fxController);
+    droneController.addNavDataListener(fxController);
 
     droneController.addNavDataListener(droneInputController);
     leapMotionController.addDetectionListener(droneInputController);
