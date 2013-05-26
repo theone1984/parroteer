@@ -15,7 +15,7 @@ import static com.tngtech.leapdrone.drone.helpers.ThreadHelper.sleep;
 
 public class CommandSenderCoordinator implements NavDataListener, DroneConfigurationListener
 {
-  private final int MAX_RETRIES = 5;
+  private static final int MAX_RETRIES = 5;
 
   private final Logger logger = Logger.getLogger(CommandSenderCoordinator.class);
 

@@ -4,30 +4,12 @@ import com.tngtech.leapdrone.drone.CommandSender;
 import com.tngtech.leapdrone.drone.CommandSenderCoordinator;
 import com.tngtech.leapdrone.drone.data.DroneConfiguration;
 import com.tngtech.leapdrone.drone.data.NavData;
+import com.tngtech.leapdrone.drone.data.enums.ControlDataMode;
 
 import static com.google.common.base.Preconditions.checkState;
 
 public class ControlDataATCommand extends ATCommandAbstract
 {
-  public enum ControlDataMode
-  {
-    IDLE(0),
-    GET_CONFIGURATION_DATA(4),
-    RESET_ACK_FLAG(5);
-
-    private final int controlModeCode;
-
-    ControlDataMode(int controlModeCode)
-    {
-      this.controlModeCode = controlModeCode;
-    }
-
-    private int getControlModeCode()
-    {
-      return controlModeCode;
-    }
-  }
-
   private final ControlDataMode controlDataMode;
 
   public ControlDataATCommand(ControlDataMode controlDataMode)

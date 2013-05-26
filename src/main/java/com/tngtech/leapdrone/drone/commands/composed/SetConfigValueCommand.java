@@ -5,6 +5,7 @@ import com.tngtech.leapdrone.drone.commands.Command;
 import com.tngtech.leapdrone.drone.commands.simple.ControlDataATCommand;
 import com.tngtech.leapdrone.drone.commands.simple.SetConfigValueATCommand;
 import com.tngtech.leapdrone.drone.data.LoginData;
+import com.tngtech.leapdrone.drone.data.enums.ControlDataMode;
 
 import java.util.Collection;
 
@@ -35,7 +36,7 @@ public class SetConfigValueCommand extends UnconditionalComposedCommandAbstract
   @Override
   public Collection<Command> getCommands()
   {
-    Command resetAckFlagCommand = new ControlDataATCommand(ControlDataATCommand.ControlDataMode.RESET_ACK_FLAG);
+    Command resetAckFlagCommand = new ControlDataATCommand(ControlDataMode.RESET_ACK_FLAG);
     Command setConfigValueCommand = getConfigValueCommand();
 
     return Lists.newArrayList(resetAckFlagCommand, setConfigValueCommand);

@@ -18,7 +18,7 @@ import static com.tngtech.leapdrone.drone.helpers.ThreadHelper.sleep;
 
 public class DroneStartupCoordinator implements ReadyStateChangeListener, NavDataListener, DroneConfigurationListener
 {
-  private static final int STOP_TIMEOUT = 1000;
+  private static final int STOP_TIMEOUT = 3000;
 
   private final Logger logger = Logger.getLogger(DroneStartupCoordinator.class);
 

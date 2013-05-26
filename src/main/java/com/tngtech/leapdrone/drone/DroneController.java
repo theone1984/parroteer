@@ -14,8 +14,12 @@ import com.tngtech.leapdrone.drone.components.ErrorListenerComponent;
 import com.tngtech.leapdrone.drone.components.ReadyStateListenerComponent;
 import com.tngtech.leapdrone.drone.data.Config;
 import com.tngtech.leapdrone.drone.data.DroneConfiguration;
+import com.tngtech.leapdrone.drone.data.enums.Camera;
 import com.tngtech.leapdrone.drone.data.enums.ControllerState;
 import com.tngtech.leapdrone.drone.data.enums.DroneVersion;
+import com.tngtech.leapdrone.drone.data.enums.FlightAnimation;
+import com.tngtech.leapdrone.drone.data.enums.FlightMode;
+import com.tngtech.leapdrone.drone.data.enums.LedAnimation;
 import com.tngtech.leapdrone.drone.listeners.ErrorListener;
 import com.tngtech.leapdrone.drone.listeners.NavDataListener;
 import com.tngtech.leapdrone.drone.listeners.ReadyStateChangeListener;
@@ -178,7 +182,7 @@ public class DroneController
     checkInitializationState();
 
     logger.debug("Taking off");
-    executeCommands(new FlightModeCommand(FlightModeCommand.FlightMode.TAKE_OFF));
+    executeCommands(new FlightModeCommand(FlightMode.TAKE_OFF));
   }
 
   public void land()
@@ -186,7 +190,7 @@ public class DroneController
     checkInitializationState();
 
     logger.debug("Landing");
-    executeCommands(new FlightModeCommand(FlightModeCommand.FlightMode.LAND));
+    executeCommands(new FlightModeCommand(FlightMode.LAND));
   }
 
   public void emergency()
@@ -194,7 +198,7 @@ public class DroneController
     checkInitializationState();
 
     logger.debug("Setting emergency");
-    executeCommands(new FlightModeCommand(FlightModeCommand.FlightMode.EMERGENCY));
+    executeCommands(new FlightModeCommand(FlightMode.EMERGENCY));
   }
 
   public void flatTrim()
@@ -213,7 +217,7 @@ public class DroneController
     executeCommands(new FlightMoveCommand(roll, pitch, yaw, gaz));
   }
 
-  public Future switchCamera(SwitchCameraCommand.Camera camera)
+  public Future switchCamera(Camera camera)
   {
     checkInitializationState();
 
@@ -221,7 +225,7 @@ public class DroneController
     return executeCommandsAsync(new SwitchCameraCommand(config.getLoginData(), camera), new GetConfigurationDataCommand());
   }
 
-  public Future playLedAnimation(PlayLedAnimationCommand.LedAnimation ledAnimation, float frequency, int durationSeconds)
+  public Future playLedAnimation(LedAnimation ledAnimation, float frequency, int durationSeconds)
   {
     checkInitializationState();
 
@@ -229,7 +233,7 @@ public class DroneController
     return executeCommandsAsync(new PlayLedAnimationCommand(config.getLoginData(), ledAnimation, frequency, durationSeconds));
   }
 
-  public Future playFlightAnimation(PlayFlightAnimationCommand.FlightAnimation animation)
+  public Future playFlightAnimation(FlightAnimation animation)
   {
     checkInitializationState();
 

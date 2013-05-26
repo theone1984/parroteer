@@ -1,27 +1,10 @@
 package com.tngtech.leapdrone.drone.commands.simple;
 
+import com.tngtech.leapdrone.drone.data.enums.FlightMode;
+
 public class FlightModeCommand extends ATCommandAbstract
 {
   private final FlightMode flightMode;
-
-  public enum FlightMode
-  {
-    TAKE_OFF(290718208),
-    LAND(290717696),
-    EMERGENCY(290717952);
-
-    private final int commandCode;
-
-    FlightMode(int commandCode)
-    {
-      this.commandCode = commandCode;
-    }
-
-    public int getCommandCode()
-    {
-      return commandCode;
-    }
-  }
 
   public FlightModeCommand(FlightMode flightMode)
   {

@@ -2,10 +2,10 @@ package com.tngtech.leapdrone.control;
 
 import com.google.inject.Inject;
 import com.tngtech.leapdrone.drone.DroneController;
-import com.tngtech.leapdrone.drone.commands.composed.PlayFlightAnimationCommand;
-import com.tngtech.leapdrone.drone.commands.composed.PlayLedAnimationCommand;
-import com.tngtech.leapdrone.drone.commands.composed.SwitchCameraCommand;
 import com.tngtech.leapdrone.drone.data.NavData;
+import com.tngtech.leapdrone.drone.data.enums.Camera;
+import com.tngtech.leapdrone.drone.data.enums.FlightAnimation;
+import com.tngtech.leapdrone.drone.data.enums.LedAnimation;
 import com.tngtech.leapdrone.drone.listeners.NavDataListener;
 import com.tngtech.leapdrone.input.leapmotion.data.DetectionData;
 import com.tngtech.leapdrone.input.leapmotion.data.GestureData;
@@ -86,13 +86,13 @@ public class DroneInputController implements NavDataListener, DetectionListener,
         droneController.emergency();
         break;
       case SWITCH_CAMERA:
-        droneController.switchCamera(SwitchCameraCommand.Camera.NEXT);
+        droneController.switchCamera(Camera.NEXT);
         break;
       case PLAY_LED_ANIMATION:
-        droneController.playLedAnimation(PlayLedAnimationCommand.LedAnimation.RED_SNAKE, 2.0f, 3);
+        droneController.playLedAnimation(LedAnimation.RED_SNAKE, 2.0f, 3);
         break;
       case PLAY_FLIGHT_ANIMATION:
-        droneController.playFlightAnimation(PlayFlightAnimationCommand.FlightAnimation.YAW_SHAKE);
+        droneController.playFlightAnimation(FlightAnimation.YAW_SHAKE);
         break;
       case ENABLE_EXPERT_MODE:
         logger.warn("Enabling expert mode");
