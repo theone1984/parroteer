@@ -5,6 +5,8 @@ import com.tngtech.leapdrone.drone.data.enums.ARDrone2VideoCodec;
 
 public final class Config
 {
+  private static final int NO_RETRIES = 0;
+
   public static final int WAIT_TIMEOUT = 15;
 
   public static final int REACHABLE_TIMEOUT = 1000;
@@ -12,6 +14,8 @@ public final class Config
   public static final String MIN_FIRMWARE_VERSION = "1.6.4";
 
   private final LoginData loginData;
+
+  private final int maxStartupRetries;
 
   private String droneIpAddress = "192.168.1.1";
 
@@ -31,12 +35,23 @@ public final class Config
 
   public Config(String applicationName, String profileName)
   {
+    this(applicationName, profileName, NO_RETRIES);
+  }
+
+  public Config(String applicationName, String profileName, int maxStartupRetries)
+  {
+    this.maxStartupRetries = maxStartupRetries;
     loginData = new LoginData(applicationName, profileName);
   }
 
   public LoginData getLoginData()
   {
     return loginData;
+  }
+
+  public int getMaxStartupRetries()
+  {
+    return maxStartupRetries;
   }
 
   public String getDroneIpAddress()

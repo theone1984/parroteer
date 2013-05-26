@@ -18,6 +18,8 @@ import static com.tngtech.leapdrone.drone.helpers.ThreadHelper.sleep;
 
 public class DroneStartupCoordinator implements ReadyStateChangeListener, NavDataListener, DroneConfigurationListener
 {
+  private static final int STOP_TIMEOUT = 1000;
+
   private final Logger logger = Logger.getLogger(DroneStartupCoordinator.class.getSimpleName());
 
   private final CommandSenderCoordinator commandSenderCoordinator;
@@ -77,6 +79,21 @@ public class DroneStartupCoordinator implements ReadyStateChangeListener, NavDat
 
   public void start(Config config)
   {
+    for (int currentTry = 0; currentTry <= config.getMaxStartupRetries(); currentTry++)
+    {
+      try
+      {
+        startConnecting(config);
+        break;
+      } catch (Exception e)
+      {
+        performStartupErrorActions(config, currentTry, e);
+      }
+    }
+  }
+
+  private void startConnecting(Config config)
+  {
     this.config = config;
 
     checkIfDroneIsReachable();
@@ -92,6 +109,20 @@ public class DroneStartupCoordinator implements ReadyStateChangeListener, NavDat
     startVideoRetriever();
     waitForState(ControllerState.READY);
     logger.info("Drone setup complete");
+  }
+
+  private void performStartupErrorActions(Config config, int currentTry, Exception e)
+  {
+    logger.warn("There was an error while connecting: " + e.getMessage());
+    stop();
+
+    if (currentTry == config.getMaxStartupRetries())
+    {
+      throw new IllegalStateException(e);
+    } else
+    {
+      sleep(STOP_TIMEOUT);
+    }
   }
 
   private void checkIfDroneIsReachable()

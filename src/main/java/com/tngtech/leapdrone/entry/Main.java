@@ -71,7 +71,7 @@ public class Main implements ErrorListener, UIActionListener
 
   private void startComponents()
   {
-    droneController.startAsync(new Config("com.tngtech.internal.leap-drone", "myProfile"));
+    droneController.startAsync(new Config("com.tngtech.internal.leap-drone", "myProfile", 2));
     leapMotionController.connect();
     //speechDetector.start();
   }
