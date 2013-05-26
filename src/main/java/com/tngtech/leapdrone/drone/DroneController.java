@@ -2,8 +2,10 @@ package com.tngtech.leapdrone.drone;
 
 import com.google.inject.Inject;
 import com.tngtech.leapdrone.drone.commands.Command;
+import com.tngtech.leapdrone.drone.commands.composed.GetConfigurationDataCommand;
 import com.tngtech.leapdrone.drone.commands.composed.PlayFlightAnimationCommand;
 import com.tngtech.leapdrone.drone.commands.composed.PlayLedAnimationCommand;
+import com.tngtech.leapdrone.drone.commands.composed.SetConfigValueCommand;
 import com.tngtech.leapdrone.drone.commands.composed.SwitchCameraCommand;
 import com.tngtech.leapdrone.drone.commands.simple.FlatTrimCommand;
 import com.tngtech.leapdrone.drone.commands.simple.FlightModeCommand;
@@ -176,7 +178,7 @@ public class DroneController
     checkInitializationState();
 
     logger.debug("Taking off");
-    executeCommand(new FlightModeCommand(FlightModeCommand.FlightMode.TAKE_OFF));
+    executeCommands(new FlightModeCommand(FlightModeCommand.FlightMode.TAKE_OFF));
   }
 
   public void land()
@@ -184,7 +186,7 @@ public class DroneController
     checkInitializationState();
 
     logger.debug("Landing");
-    executeCommand(new FlightModeCommand(FlightModeCommand.FlightMode.LAND));
+    executeCommands(new FlightModeCommand(FlightModeCommand.FlightMode.LAND));
   }
 
   public void emergency()
@@ -192,7 +194,7 @@ public class DroneController
     checkInitializationState();
 
     logger.debug("Setting emergency");
-    executeCommand(new FlightModeCommand(FlightModeCommand.FlightMode.EMERGENCY));
+    executeCommands(new FlightModeCommand(FlightModeCommand.FlightMode.EMERGENCY));
   }
 
   public void flatTrim()
@@ -200,7 +202,7 @@ public class DroneController
     checkInitializationState();
 
     logger.debug("Flat trim");
-    executeCommand(new FlatTrimCommand());
+    executeCommands(new FlatTrimCommand());
   }
 
   public void move(float roll, float pitch, float yaw, float gaz)
@@ -208,7 +210,7 @@ public class DroneController
     checkInitializationState();
 
     logger.trace(String.format("Moving - roll: %.2f, pitch: %.2f, yaw: %.2f, gaz: %.2f", roll, pitch, yaw, gaz));
-    executeCommand(new FlightMoveCommand(roll, pitch, yaw, gaz));
+    executeCommands(new FlightMoveCommand(roll, pitch, yaw, gaz));
   }
 
   public Future switchCamera(SwitchCameraCommand.Camera camera)
@@ -216,7 +218,7 @@ public class DroneController
     checkInitializationState();
 
     logger.debug(String.format("Changing camera to '%s'", camera.name()));
-    return executeCommandAsync(new SwitchCameraCommand(config.getLoginData(), camera));
+    return executeCommandsAsync(new SwitchCameraCommand(config.getLoginData(), camera), new GetConfigurationDataCommand());
   }
 
   public Future playLedAnimation(PlayLedAnimationCommand.LedAnimation ledAnimation, float frequency, int durationSeconds)
@@ -224,7 +226,7 @@ public class DroneController
     checkInitializationState();
 
     logger.debug(String.format("Playing LED animation '%s'", ledAnimation.name()));
-    return executeCommandAsync(new PlayLedAnimationCommand(config.getLoginData(), ledAnimation, frequency, durationSeconds));
+    return executeCommandsAsync(new PlayLedAnimationCommand(config.getLoginData(), ledAnimation, frequency, durationSeconds));
   }
 
   public Future playFlightAnimation(PlayFlightAnimationCommand.FlightAnimation animation)
@@ -232,22 +234,33 @@ public class DroneController
     checkInitializationState();
 
     logger.debug(String.format("Playing flight animation '%s'", animation.name()));
-    return executeCommandAsync(new PlayFlightAnimationCommand(config.getLoginData(), animation));
+    return executeCommandsAsync(new PlayFlightAnimationCommand(config.getLoginData(), animation));
   }
 
-  public void executeCommand(Command command)
+  public Future setConfigValue(String key, Object value)
   {
-    commandSender.executeCommand(command);
+    checkInitializationState();
+
+    logger.debug(String.format("Setting config value '%s' to '%s'", key, value.toString()));
+    return executeCommandsAsync(new SetConfigValueCommand(config.getLoginData(), key, value), new GetConfigurationDataCommand());
   }
 
-  public Future executeCommandAsync(final Command command)
+  public void executeCommands(Command... commands)
+  {
+    for (Command command : commands)
+    {
+      commandSender.executeCommand(command);
+    }
+  }
+
+  public Future executeCommandsAsync(final Command... commands)
   {
     return executor.submit(new Runnable()
     {
       @Override
       public void run()
       {
-        commandSender.executeCommand(command);
+        executeCommands(commands);
       }
     });
   }
