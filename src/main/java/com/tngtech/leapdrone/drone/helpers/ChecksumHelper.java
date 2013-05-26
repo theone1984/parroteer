@@ -22,7 +22,16 @@ public class ChecksumHelper
     Checksum checksumCreator = new CRC32();
     checksumCreator.update(bytes, 0, bytes.length);
     long checkSumValue = checksumCreator.getValue();
-    return Long.toHexString(checkSumValue);
+    return fixLength(Long.toHexString(checkSumValue));
+  }
+
+  private static String fixLength(String hexString)
+  {
+    while (hexString.length() != 8)
+    {
+      hexString = "0" + hexString;
+    }
+    return hexString;
   }
 
   public static String createRandomString()
