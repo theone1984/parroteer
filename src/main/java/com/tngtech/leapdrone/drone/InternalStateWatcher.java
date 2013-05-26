@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import com.tngtech.leapdrone.drone.commands.ATCommand;
 import com.tngtech.leapdrone.drone.commands.simple.FlatTrimCommand;
 import com.tngtech.leapdrone.drone.commands.simple.FlightModeCommand;
+import com.tngtech.leapdrone.drone.commands.simple.FlightMoveCommand;
 import com.tngtech.leapdrone.drone.data.InternalState;
 import com.tngtech.leapdrone.drone.data.NavData;
 import com.tngtech.leapdrone.drone.data.enums.FlightMode;
@@ -14,6 +15,8 @@ import java.util.Collection;
 
 public class InternalStateWatcher implements NavDataListener
 {
+  private static final float MOVE_THRESHOLD = 0.02f;
+
   private InternalState internalState;
 
   private NavData currentNavData;
@@ -57,12 +60,19 @@ public class InternalStateWatcher implements NavDataListener
     {
       commands.add(new FlatTrimCommand());
     }
+
+    if (internalState.isMoveRequested())
+    {
+      commands.add(new FlightMoveCommand(internalState.getRequestedRoll(), internalState.getRequestedPitch(),
+              internalState.getRequestedYaw(), internalState.getRequestedGaz()));
+    }
   }
 
   private void resetState()
   {
-    // Flat trim is a one-off command, so it is reset here
+    // Flat trim and move are one-off command, so it is reset here
     internalState.setFlatTrimRequested(false);
+    internalState.setMoveRequested(false);
 
     // Emergency state may reset itself
     // If it is set in nav data, there is no need for further checks
@@ -108,5 +118,20 @@ public class InternalStateWatcher implements NavDataListener
   public void onNavData(NavData navData)
   {
     currentNavData = navData;
+  }
+
+  public void requestMove(float roll, float pitch, float yaw, float gaz)
+  {
+    if (Math.abs(roll - internalState.getRequestedRoll()) > MOVE_THRESHOLD
+            || Math.abs(pitch - internalState.getRequestedPitch()) > MOVE_THRESHOLD
+            || Math.abs(yaw - internalState.getRequestedYaw()) > MOVE_THRESHOLD
+            || Math.abs(gaz - internalState.getRequestedGaz()) > MOVE_THRESHOLD)
+    {
+      internalState.setMoveRequested(true);
+      internalState.setRequestedRoll(roll);
+      internalState.setRequestedPitch(pitch);
+      internalState.setRequestedYaw(yaw);
+      internalState.setRequestedGaz(gaz);
+    }
   }
 }

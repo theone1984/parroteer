@@ -29,8 +29,6 @@ public class DroneInputController implements NavDataListener, DetectionListener,
 
   private static final float HEIGHT_THRESHOLD = 0.25f;
 
-  private static final float MOVE_THRESHOLD = 0.02f;
-
   private final Logger logger = Logger.getLogger(DroneInputController.class);
 
   private final DroneController droneController;
@@ -39,7 +37,7 @@ public class DroneInputController implements NavDataListener, DetectionListener,
 
   private float currentHeight;
 
-  private float lastRoll, lastPitch, lastYaw, lastHeight;
+  private boolean flying = false;
 
   private boolean expertMode = false;
 
@@ -55,10 +53,10 @@ public class DroneInputController implements NavDataListener, DetectionListener,
     String sentence = speechData.getSentence();
     if (sentence.endsWith("take off"))
     {
-      droneController.takeOff();
+      takeOff();
     } else if (sentence.endsWith("land"))
     {
-      droneController.land();
+      land();
     } else if (sentence.endsWith("emergency"))
     {
       droneController.emergency();
@@ -74,10 +72,10 @@ public class DroneInputController implements NavDataListener, DetectionListener,
     switch (action)
     {
       case TAKE_OFF:
-        droneController.takeOff();
+        takeOff();
         break;
       case LAND:
-        droneController.land();
+        land();
         break;
       case FLAT_TRIM:
         droneController.flatTrim();
@@ -114,34 +112,16 @@ public class DroneInputController implements NavDataListener, DetectionListener,
 
     if (desiredHeight <= HEIGHT_THRESHOLD)
     {
-      droneController.land();
+      land();
     }
 
-    move(PITCH_DECAY * data.getRoll(), ROLL_DECAY * data.getPitch(), data.getYaw(), heightDelta);
+    droneController.move(PITCH_DECAY * -data.getRoll(), ROLL_DECAY * data.getPitch(), expertMode ? data.getYaw() : 0.0f, heightDelta);
   }
 
   @Override
   public void onNoDetect()
   {
-    move(0.0f, 0.0f, 0.0f, 0.0f);
-  }
-
-  private void move(float roll, float pitch, float yaw, float height)
-  {
-    float yawToUse = expertMode ? yaw : 0.0f;
-
-    if (Math.abs(roll - lastRoll) > MOVE_THRESHOLD
-            || Math.abs(pitch - lastPitch) > MOVE_THRESHOLD
-            || Math.abs(yawToUse - lastYaw) > MOVE_THRESHOLD
-            || Math.abs(height - lastHeight) > MOVE_THRESHOLD)
-    {
-      lastRoll = roll;
-      lastPitch = pitch;
-      lastYaw = yawToUse;
-      lastHeight = height;
-
-      droneController.move(-roll, pitch, yaw, height);
-    }
+    droneController.move(0.0f, 0.0f, 0.0f, 0.0f);
   }
 
   private float calculateHeightDelta(float desiredHeight)
@@ -160,6 +140,24 @@ public class DroneInputController implements NavDataListener, DetectionListener,
   @Override
   public void onCircle(GestureData gestureData)
   {
-    droneController.takeOff();
+    takeOff();
+  }
+
+  private void takeOff()
+  {
+    if (!flying)
+    {
+      flying = true;
+      droneController.takeOff();
+    }
+  }
+
+  private void land()
+  {
+    if (flying)
+    {
+      flying = false;
+      droneController.land();
+    }
   }
 }

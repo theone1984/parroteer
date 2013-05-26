@@ -7,7 +7,6 @@ import com.tngtech.leapdrone.drone.commands.composed.PlayFlightAnimationCommand;
 import com.tngtech.leapdrone.drone.commands.composed.PlayLedAnimationCommand;
 import com.tngtech.leapdrone.drone.commands.composed.SetConfigValueCommand;
 import com.tngtech.leapdrone.drone.commands.composed.SwitchCameraCommand;
-import com.tngtech.leapdrone.drone.commands.simple.FlightMoveCommand;
 import com.tngtech.leapdrone.drone.components.ErrorListenerComponent;
 import com.tngtech.leapdrone.drone.components.ReadyStateListenerComponent;
 import com.tngtech.leapdrone.drone.data.Config;
@@ -213,7 +212,7 @@ public class DroneController
     checkInitializationState();
 
     logger.trace(String.format("Moving - roll: %.2f, pitch: %.2f, yaw: %.2f, gaz: %.2f", roll, pitch, yaw, gaz));
-    executeCommands(new FlightMoveCommand(roll, pitch, yaw, gaz));
+    internalStateWatcher.requestMove(roll, pitch, yaw, gaz);
   }
 
   public Future switchCamera(Camera camera)

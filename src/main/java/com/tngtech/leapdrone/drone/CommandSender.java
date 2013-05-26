@@ -171,10 +171,10 @@ public class CommandSender implements Runnable
     DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, address, commandPort);
 
     // For debugging purposes ... used very often
-    if (!commandText.startsWith("AT*COMWDG"))
+    /*if (!commandText.startsWith("AT*COMWDG"))
     {
       System.out.println(commandText);
-    }
+    }*/
 
     udpComponent.send(sendPacket);
   }
