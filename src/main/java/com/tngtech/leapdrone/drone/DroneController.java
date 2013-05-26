@@ -7,8 +7,6 @@ import com.tngtech.leapdrone.drone.commands.composed.PlayFlightAnimationCommand;
 import com.tngtech.leapdrone.drone.commands.composed.PlayLedAnimationCommand;
 import com.tngtech.leapdrone.drone.commands.composed.SetConfigValueCommand;
 import com.tngtech.leapdrone.drone.commands.composed.SwitchCameraCommand;
-import com.tngtech.leapdrone.drone.commands.simple.FlatTrimCommand;
-import com.tngtech.leapdrone.drone.commands.simple.FlightModeCommand;
 import com.tngtech.leapdrone.drone.commands.simple.FlightMoveCommand;
 import com.tngtech.leapdrone.drone.components.ErrorListenerComponent;
 import com.tngtech.leapdrone.drone.components.ReadyStateListenerComponent;
@@ -18,7 +16,6 @@ import com.tngtech.leapdrone.drone.data.enums.Camera;
 import com.tngtech.leapdrone.drone.data.enums.ControllerState;
 import com.tngtech.leapdrone.drone.data.enums.DroneVersion;
 import com.tngtech.leapdrone.drone.data.enums.FlightAnimation;
-import com.tngtech.leapdrone.drone.data.enums.FlightMode;
 import com.tngtech.leapdrone.drone.data.enums.LedAnimation;
 import com.tngtech.leapdrone.drone.listeners.ErrorListener;
 import com.tngtech.leapdrone.drone.listeners.NavDataListener;
@@ -52,6 +49,8 @@ public class DroneController
 
   private final VideoRetrieverH264 videoRetrieverH264;
 
+  private final InternalStateWatcher internalStateWatcher;
+
   private ExecutorService executor;
 
   private Config config;
@@ -60,7 +59,7 @@ public class DroneController
   public DroneController(ReadyStateListenerComponent readyStateListenerComponent, ErrorListenerComponent errorListenerComponent,
                          DroneStartupCoordinator droneStartupCoordinator, CommandSenderCoordinator commandSenderCoordinator,
                          NavigationDataRetriever navigationDataRetriever, VideoRetrieverP264 videoRetrieverP264,
-                         VideoRetrieverH264 videoRetrieverH264)
+                         VideoRetrieverH264 videoRetrieverH264, InternalStateWatcher internalStateWatcher)
   {
     this.readyStateListenerComponent = readyStateListenerComponent;
     this.errorListenerComponent = errorListenerComponent;
@@ -69,7 +68,7 @@ public class DroneController
     this.navigationDataRetriever = navigationDataRetriever;
     this.videoRetrieverP264 = videoRetrieverP264;
     this.videoRetrieverH264 = videoRetrieverH264;
-
+    this.internalStateWatcher = internalStateWatcher;
   }
 
   public void startAsync(final Config config)
@@ -182,7 +181,7 @@ public class DroneController
     checkInitializationState();
 
     logger.debug("Taking off");
-    executeCommands(new FlightModeCommand(FlightMode.TAKE_OFF));
+    internalStateWatcher.requestTakeOff();
   }
 
   public void land()
@@ -190,7 +189,7 @@ public class DroneController
     checkInitializationState();
 
     logger.debug("Landing");
-    executeCommands(new FlightModeCommand(FlightMode.LAND));
+    internalStateWatcher.requestLand();
   }
 
   public void emergency()
@@ -198,7 +197,7 @@ public class DroneController
     checkInitializationState();
 
     logger.debug("Setting emergency");
-    executeCommands(new FlightModeCommand(FlightMode.EMERGENCY));
+    internalStateWatcher.requestEmergency();
   }
 
   public void flatTrim()
@@ -206,7 +205,7 @@ public class DroneController
     checkInitializationState();
 
     logger.debug("Flat trim");
-    executeCommands(new FlatTrimCommand());
+    internalStateWatcher.requestEmergency();
   }
 
   public void move(float roll, float pitch, float yaw, float gaz)

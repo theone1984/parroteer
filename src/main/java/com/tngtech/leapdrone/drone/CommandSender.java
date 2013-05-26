@@ -33,6 +33,8 @@ public class CommandSender implements Runnable
 
   private final ErrorListenerComponent errorListenerComponent;
 
+  private final InternalStateWatcher internalStateWatcher;
+
   private ReadyStateChangeListener.ReadyState readyState = ReadyStateChangeListener.ReadyState.NOT_READY;
 
   private List<ATCommand> commandsToSend;
@@ -45,13 +47,15 @@ public class CommandSender implements Runnable
 
   @Inject
   public CommandSender(ThreadComponent threadComponent, AddressComponent addressComponent, UdpComponent udpComponent,
-                       ReadyStateListenerComponent readyStateListenerComponent, ErrorListenerComponent errorListenerComponent)
+                       ReadyStateListenerComponent readyStateListenerComponent, ErrorListenerComponent errorListenerComponent,
+                       InternalStateWatcher internalStateWatcher)
   {
     this.threadComponent = threadComponent;
     this.addressComponent = addressComponent;
     this.udpComponent = udpComponent;
     this.readyStateListenerComponent = readyStateListenerComponent;
     this.errorListenerComponent = errorListenerComponent;
+    this.internalStateWatcher = internalStateWatcher;
 
     commandsToSend = Lists.newArrayList();
   }
@@ -144,6 +148,7 @@ public class CommandSender implements Runnable
     {
       commands.add(new WatchDogCommand());
     }
+    commands.addAll(internalStateWatcher.getCommandsToUpholdInternalState());
 
     commandsToSend = Lists.newArrayList();
     return commands;
@@ -166,10 +171,10 @@ public class CommandSender implements Runnable
     DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, address, commandPort);
 
     // For debugging purposes ... used very often
-    /*if (!commandText.startsWith("AT*COMWDG"))
+    if (!commandText.startsWith("AT*COMWDG"))
     {
       System.out.println(commandText);
-    }*/
+    }
 
     udpComponent.send(sendPacket);
   }

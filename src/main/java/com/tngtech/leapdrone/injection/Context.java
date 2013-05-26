@@ -10,6 +10,7 @@ import com.tngtech.leapdrone.drone.CommandSenderCoordinator;
 import com.tngtech.leapdrone.drone.ConfigurationDataRetriever;
 import com.tngtech.leapdrone.drone.DroneController;
 import com.tngtech.leapdrone.drone.DroneStartupCoordinator;
+import com.tngtech.leapdrone.drone.InternalStateWatcher;
 import com.tngtech.leapdrone.drone.NavigationDataRetriever;
 import com.tngtech.leapdrone.drone.VideoRetrieverH264;
 import com.tngtech.leapdrone.drone.VideoRetrieverP264;
@@ -45,6 +46,7 @@ public class Context extends AbstractModule
     bind(DroneStartupCoordinator.class).in(Singleton.class);
     bind(CommandSender.class).in(Singleton.class);
     bind(CommandSenderCoordinator.class).in(Singleton.class);
+    bind(InternalStateWatcher.class).in(Singleton.class);
     bind(NavigationDataRetriever.class).in(Singleton.class);
     bind(VideoRetrieverH264.class).in(Singleton.class);
     bind(VideoRetrieverP264.class).in(Singleton.class);
