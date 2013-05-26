@@ -61,7 +61,8 @@ public class InitializeConfigurationCommand implements ComposedCommand
     String profileId = droneConfiguration.getConfig().get(DroneConfiguration.PROFILE_ID_KEY);
     String applicationId = droneConfiguration.getConfig().get(DroneConfiguration.APPLICATION_ID_KEY);
 
-    checkState(Objects.equals(loginData.getSessionChecksum(), sessionId), "The session ID was not set");
+    checkState(Objects.equals(loginData.getSessionChecksum(), sessionId),
+            String.format("The session ID was not set to '%s', but was '%s'", loginData.getSessionChecksum(), sessionId));
     checkState(Objects.equals(loginData.getProfileChecksum(), profileId), "The profile ID was not set");
     checkState(Objects.equals(loginData.getApplicationChecksum(), applicationId), "The application ID was not set");
 

@@ -10,10 +10,13 @@ import com.tngtech.leapdrone.drone.listeners.DroneConfigurationListener;
 import com.tngtech.leapdrone.drone.listeners.NavDataListener;
 import org.apache.log4j.Logger;
 
+import static com.google.common.base.Preconditions.checkState;
 import static com.tngtech.leapdrone.drone.helpers.ThreadHelper.sleep;
 
 public class CommandSenderCoordinator implements NavDataListener, DroneConfigurationListener
 {
+  private final int MAX_RETRIES = 5;
+
   private final Logger logger = Logger.getLogger(CommandSenderCoordinator.class.getSimpleName());
 
   private final CommandSender commandSender;
@@ -44,25 +47,29 @@ public class CommandSenderCoordinator implements NavDataListener, DroneConfigura
 
   private void executeSimpleCommand(SimpleCommand command)
   {
+    int currentTry = 0;
     do
     {
       command.execute(commandSender, this);
-      if (checkSuccessful(command))
+      if (checkSuccessful(command, currentTry))
       {
         break;
       }
+      currentTry++;
     } while (true);
   }
 
   private void executeComposedCommand(ComposedCommand command)
   {
+    int currentTry = 0;
     do
     {
       executeAllSubCommands(command);
-      if (checkSuccessful(command))
+      if (checkSuccessful(command, currentTry))
       {
         break;
       }
+      currentTry++;
     } while (true);
   }
 
@@ -74,7 +81,7 @@ public class CommandSenderCoordinator implements NavDataListener, DroneConfigura
     }
   }
 
-  private boolean checkSuccessful(Command command)
+  private boolean checkSuccessful(Command command, int currentTry)
   {
     waitFor(command);
 
@@ -84,9 +91,15 @@ public class CommandSenderCoordinator implements NavDataListener, DroneConfigura
       return true;
     } catch (Exception e)
     {
+      checkCurrentTry(currentTry, e);
       logger.debug(String.format("Command check failed: %s", e.getMessage()));
       return false;
     }
+  }
+
+  private void checkCurrentTry(int currentTry, Exception e)
+  {
+    checkState(currentTry <= MAX_RETRIES, "A check operation was not successful: " + e.getMessage());
   }
 
   private void waitFor(Command command)
