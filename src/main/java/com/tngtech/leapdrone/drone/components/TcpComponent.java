@@ -15,7 +15,7 @@ public class TcpComponent
 
   private static final int DEFAULT_TIMEOUT = 3000;
 
-  private final Logger logger = Logger.getLogger(UdpComponent.class.getSimpleName());
+  private final Logger logger = Logger.getLogger(UdpComponent.class);
 
   private Socket socket = null;
 

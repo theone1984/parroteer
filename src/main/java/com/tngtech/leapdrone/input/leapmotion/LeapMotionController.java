@@ -12,7 +12,7 @@ import org.apache.log4j.Logger;
 
 public class LeapMotionController
 {
-  private final Logger logger = Logger.getLogger(LeapMotionController.class.getSimpleName());
+  private final Logger logger = Logger.getLogger(LeapMotionController.class);
 
   private final LeapMotionListener listener;
 

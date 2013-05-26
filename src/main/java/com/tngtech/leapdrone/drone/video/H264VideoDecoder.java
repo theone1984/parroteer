@@ -19,7 +19,7 @@ import java.net.SocketTimeoutException;
 
 public class H264VideoDecoder
 {
-  private final Logger logger = Logger.getLogger(H264VideoDecoder.class.getSimpleName());
+  private final Logger logger = Logger.getLogger(H264VideoDecoder.class);
 
   private boolean stopped;
 

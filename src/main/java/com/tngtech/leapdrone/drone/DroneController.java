@@ -32,7 +32,7 @@ public class DroneController
 {
   private static final int NUMBER_OF_THREADS = 1;
 
-  private final Logger logger = Logger.getLogger(DroneController.class.getSimpleName());
+  private final Logger logger = Logger.getLogger(DroneController.class);
 
   private final ReadyStateListenerComponent readyStateListenerComponent;
 

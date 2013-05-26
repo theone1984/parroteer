@@ -17,7 +17,7 @@ import static com.tngtech.leapdrone.drone.helpers.ThreadHelper.sleep;
 
 public class VideoRetrieverP264 extends VideoRetrieverAbstract
 {
-  private final Logger logger = Logger.getLogger(VideoRetrieverP264.class.getSimpleName());
+  private final Logger logger = Logger.getLogger(VideoRetrieverP264.class);
 
   public static final int RECEIVING_BUFFER_SIZE = 1024000;
 

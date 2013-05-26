@@ -31,7 +31,7 @@ public class DroneInputController implements NavDataListener, DetectionListener,
 
   private static final float MOVE_THRESHOLD = 0.02f;
 
-  private final Logger logger = Logger.getLogger(DroneInputController.class.getSimpleName());
+  private final Logger logger = Logger.getLogger(DroneInputController.class);
 
   private final DroneController droneController;
 

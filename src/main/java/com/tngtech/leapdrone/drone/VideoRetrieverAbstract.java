@@ -15,7 +15,7 @@ import java.util.Set;
 
 public abstract class VideoRetrieverAbstract implements Runnable
 {
-  private final Logger logger = Logger.getLogger(VideoRetrieverAbstract.class.getSimpleName());
+  private final Logger logger = Logger.getLogger(VideoRetrieverAbstract.class);
 
   private final ThreadComponent threadComponent;
 

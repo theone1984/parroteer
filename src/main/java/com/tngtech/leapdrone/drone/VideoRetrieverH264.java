@@ -17,7 +17,7 @@ import static com.tngtech.leapdrone.drone.helpers.ThreadHelper.sleep;
 
 public class VideoRetrieverH264 extends VideoRetrieverAbstract implements ImageListener
 {
-  private final Logger logger = Logger.getLogger(VideoRetrieverP264.class.getSimpleName());
+  private final Logger logger = Logger.getLogger(VideoRetrieverP264.class);
 
   private final TcpComponent tcpComponent;
 

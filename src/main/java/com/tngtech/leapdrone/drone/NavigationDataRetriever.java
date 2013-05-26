@@ -23,7 +23,7 @@ public class NavigationDataRetriever implements Runnable
 {
   public static final int RECEIVING_BUFFER_SIZE = 10240;
 
-  private final Logger logger = Logger.getLogger(NavigationDataRetriever.class.getSimpleName());
+  private final Logger logger = Logger.getLogger(NavigationDataRetriever.class);
 
   private final ThreadComponent threadComponent;
 

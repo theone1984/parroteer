@@ -17,7 +17,7 @@ public class CommandSenderCoordinator implements NavDataListener, DroneConfigura
 {
   private final int MAX_RETRIES = 5;
 
-  private final Logger logger = Logger.getLogger(CommandSenderCoordinator.class.getSimpleName());
+  private final Logger logger = Logger.getLogger(CommandSenderCoordinator.class);
 
   private final CommandSender commandSender;
 

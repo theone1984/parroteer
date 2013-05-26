@@ -21,7 +21,7 @@ import static com.tngtech.leapdrone.drone.helpers.ThreadHelper.sleep;
 
 public class CommandSender implements Runnable
 {
-  private final Logger logger = Logger.getLogger(CommandSender.class.getSimpleName());
+  private final Logger logger = Logger.getLogger(CommandSender.class);
 
   private final ThreadComponent threadComponent;
 

@@ -24,7 +24,7 @@ public class ConfigurationDataRetriever implements Runnable
 {
   public static final String SEPARATOR = " = ";
 
-  private final Logger logger = Logger.getLogger(ConfigurationDataRetriever.class.getSimpleName());
+  private final Logger logger = Logger.getLogger(ConfigurationDataRetriever.class);
 
   private final ThreadComponent threadComponent;
 

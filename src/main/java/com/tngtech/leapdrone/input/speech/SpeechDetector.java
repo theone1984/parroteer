@@ -22,7 +22,7 @@ public class SpeechDetector implements Runnable
 
   private static final String MICROPHONE = "microphone";
 
-  private final Logger logger = Logger.getLogger(SpeechDetector.class.getSimpleName());
+  private final Logger logger = Logger.getLogger(SpeechDetector.class);
 
   private final ThreadComponent threadComponent;
 

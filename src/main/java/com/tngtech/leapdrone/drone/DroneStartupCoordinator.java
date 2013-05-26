@@ -20,7 +20,7 @@ public class DroneStartupCoordinator implements ReadyStateChangeListener, NavDat
 {
   private static final int STOP_TIMEOUT = 1000;
 
-  private final Logger logger = Logger.getLogger(DroneStartupCoordinator.class.getSimpleName());
+  private final Logger logger = Logger.getLogger(DroneStartupCoordinator.class);
 
   private final CommandSenderCoordinator commandSenderCoordinator;
 
