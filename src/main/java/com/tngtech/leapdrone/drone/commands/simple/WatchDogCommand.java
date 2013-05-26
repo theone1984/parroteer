@@ -1,6 +1,6 @@
-package com.tngtech.leapdrone.drone.commands;
+package com.tngtech.leapdrone.drone.commands.simple;
 
-public class WatchDogCommand extends CommandAbstract
+public class WatchDogCommand extends ATCommandAbstract
 {
   public WatchDogCommand()
   {

@@ -1,6 +1,6 @@
-package com.tngtech.leapdrone.drone.commands;
+package com.tngtech.leapdrone.drone.commands.simple;
 
-public class FlightModeCommand extends CommandAbstract
+public class FlightModeCommand extends ATCommandAbstract
 {
   private final FlightMode flightMode;
 

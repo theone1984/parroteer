@@ -1,100 +1,111 @@
 package com.tngtech.leapdrone.drone;
 
 import com.google.inject.Inject;
-import com.tngtech.leapdrone.drone.commands.ControlDataCommand;
-import com.tngtech.leapdrone.drone.commands.SetConfigValueCommand;
-import com.tngtech.leapdrone.drone.components.AddressComponent;
-import com.tngtech.leapdrone.drone.components.ErrorListenerComponent;
-import com.tngtech.leapdrone.drone.components.ReadyStateListenerComponent;
-import com.tngtech.leapdrone.drone.components.ThreadComponent;
-import com.tngtech.leapdrone.drone.components.UdpComponent;
-import com.tngtech.leapdrone.drone.data.Config;
+import com.tngtech.leapdrone.drone.commands.Command;
+import com.tngtech.leapdrone.drone.commands.ComposedCommand;
+import com.tngtech.leapdrone.drone.commands.SimpleCommand;
 import com.tngtech.leapdrone.drone.data.DroneConfiguration;
 import com.tngtech.leapdrone.drone.data.NavData;
 import com.tngtech.leapdrone.drone.listeners.DroneConfigurationListener;
 import com.tngtech.leapdrone.drone.listeners.NavDataListener;
+import org.apache.log4j.Logger;
 
 import static com.tngtech.leapdrone.drone.helpers.ThreadHelper.sleep;
 
-public class CommandSenderCoordinator extends CommandSender implements NavDataListener, DroneConfigurationListener
+public class CommandSenderCoordinator implements NavDataListener, DroneConfigurationListener
 {
+  private final Logger logger = Logger.getLogger(CommandSenderCoordinator.class.getSimpleName());
+
+  private final CommandSender commandSender;
+
   private NavData currentNavData;
 
-  private DroneConfiguration droneConfiguration;
+  private DroneConfiguration currentDroneConfiguration;
 
   @Inject
-  public CommandSenderCoordinator(ThreadComponent threadComponent, AddressComponent addressComponent, UdpComponent udpComponent,
-                                  ReadyStateListenerComponent readyStateListenerComponent, ErrorListenerComponent errorListenerComponent,
-                                  NavigationDataRetriever navigationDataRetriever, ConfigurationDataRetriever configurationDataRetriever)
+  public CommandSenderCoordinator(CommandSender commandSender, NavigationDataRetriever navigationDataRetriever,
+                                  ConfigurationDataRetriever configurationDataRetriever)
   {
-    super(threadComponent, addressComponent, udpComponent, readyStateListenerComponent, errorListenerComponent);
-
+    this.commandSender = commandSender;
     navigationDataRetriever.addNavDataListener(this);
     configurationDataRetriever.addDroneConfigurationListener(this);
   }
 
-  public void sendLogin(String sessionId, String profileId, String applicationId)
+  public void executeCommand(Command command)
   {
-    sendBareConfigCommand(new SetConfigValueCommand(sessionId, profileId, applicationId, DroneConfiguration.SESSION_ID_KEY, sessionId));
-    sendBareConfigCommand(new SetConfigValueCommand(sessionId, profileId, applicationId, DroneConfiguration.PROFILE_ID_KEY, profileId));
-    sendBareConfigCommand(new SetConfigValueCommand(sessionId, profileId, applicationId, DroneConfiguration.APPLICATION_ID_KEY, applicationId));
-  }
-
-  public void sendConfigCommand(SetConfigValueCommand configCommand)
-  {
-    sendBareConfigCommand(configCommand);
-    sendRefreshDroneConfigurationCommand();
-  }
-
-  public void sendBareConfigCommand(SetConfigValueCommand configCommand)
-  {
-    sendResetControlDataAcknowledgementFlagCommand();
-
-    sendCommand(configCommand);
-    waitForCommandAcknowledgeFlagToBe(true);
-  }
-
-  private void sendResetControlDataAcknowledgementFlagCommand()
-  {
-    sendCommand(new ControlDataCommand(ControlDataCommand.ControlDataMode.RESET_ACK_FLAG));
-    waitForCommandAcknowledgeFlagToBe(false);
-  }
-
-
-  private void waitForCommandAcknowledgeFlagToBe(boolean value)
-  {
-    while (currentNavData == null || currentNavData.getState().isControlReceived() != value)
+    if (command instanceof SimpleCommand)
     {
-      sleep(Config.WAIT_TIMEOUT);
+      executeSimpleCommand((SimpleCommand) command);
+    } else if (command instanceof ComposedCommand)
+    {
+      executeComposedCommand((ComposedCommand) command);
     }
   }
 
-  public void sendRefreshDroneConfigurationCommand()
+  private void executeSimpleCommand(SimpleCommand command)
   {
-    sendResetControlDataAcknowledgementFlagCommand();
-
-    resetConfigurationData();
-    sendCommand(new ControlDataCommand(ControlDataCommand.ControlDataMode.GET_CONFIGURATION_DATA));
-    waitForConfigurationData();
-  }
-
-  private void resetConfigurationData()
-  {
-    droneConfiguration = null;
-  }
-
-  private void waitForConfigurationData()
-  {
-    while (droneConfiguration == null)
+    do
     {
-      sleep(Config.WAIT_TIMEOUT);
+      command.execute(commandSender, this);
+      if (checkSuccessful(command))
+      {
+        break;
+      }
+    } while (true);
+  }
+
+  private void executeComposedCommand(ComposedCommand command)
+  {
+    do
+    {
+      executeAllSubCommands(command);
+      if (checkSuccessful(command))
+      {
+        break;
+      }
+    } while (true);
+  }
+
+  private void executeAllSubCommands(ComposedCommand command)
+  {
+    for (Command subCommand : command.getCommands())
+    {
+      executeCommand(subCommand);
     }
+  }
+
+  private boolean checkSuccessful(Command command)
+  {
+    waitFor(command);
+
+    try
+    {
+      command.checkSuccess(currentNavData, currentDroneConfiguration);
+      return true;
+    } catch (Exception e)
+    {
+      logger.debug(String.format("Command check failed: %s", e.getMessage()));
+      return false;
+    }
+  }
+
+  private void waitFor(Command command)
+  {
+    if (command.getTimeoutMillis() != Command.NO_TIMEOUT)
+    {
+      sleep(command.getTimeoutMillis());
+    }
+  }
+
+  public void resetConfiguration()
+  {
+    currentDroneConfiguration = null;
   }
 
   @Override
   public void onDroneConfiguration(DroneConfiguration configuration)
   {
-    droneConfiguration = configuration;
+    currentDroneConfiguration = configuration;
   }
 
   @Override

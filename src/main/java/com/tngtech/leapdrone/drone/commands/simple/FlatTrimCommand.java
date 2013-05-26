@@ -1,6 +1,6 @@
-package com.tngtech.leapdrone.drone.commands;
+package com.tngtech.leapdrone.drone.commands.simple;
 
-public class FlatTrimCommand extends CommandAbstract
+public class FlatTrimCommand extends ATCommandAbstract
 {
   public FlatTrimCommand()
   {

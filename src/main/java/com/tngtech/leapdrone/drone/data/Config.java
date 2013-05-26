@@ -2,7 +2,6 @@ package com.tngtech.leapdrone.drone.data;
 
 import com.tngtech.leapdrone.drone.data.enums.ARDrone1VideoCodec;
 import com.tngtech.leapdrone.drone.data.enums.ARDrone2VideoCodec;
-import com.tngtech.leapdrone.drone.helpers.ChecksumHelper;
 
 public final class Config
 {
@@ -12,11 +11,7 @@ public final class Config
 
   public static final String MIN_FIRMWARE_VERSION = "1.6.4";
 
-  private final String sessionChecksum;
-
-  private final String profileChecksum;
-
-  private final String applicationChecksum;
+  private final LoginData loginData;
 
   private String droneIpAddress = "192.168.1.1";
 
@@ -36,24 +31,12 @@ public final class Config
 
   public Config(String applicationName, String profileName)
   {
-    sessionChecksum = ChecksumHelper.createRandomCrc32Hex();
-    applicationChecksum = ChecksumHelper.createCrc32Hex(applicationName);
-    profileChecksum = ChecksumHelper.createCrc32Hex(profileName);
+    loginData = new LoginData(applicationName, profileName);
   }
 
-  public String getSessionChecksum()
+  public LoginData getLoginData()
   {
-    return sessionChecksum;
-  }
-
-  public String getProfileChecksum()
-  {
-    return profileChecksum;
-  }
-
-  public String getApplicationChecksum()
-  {
-    return applicationChecksum;
+    return loginData;
   }
 
   public String getDroneIpAddress()

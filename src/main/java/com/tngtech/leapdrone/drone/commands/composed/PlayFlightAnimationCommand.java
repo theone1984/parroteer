@@ -1,6 +1,9 @@
-package com.tngtech.leapdrone.drone.commands;
+package com.tngtech.leapdrone.drone.commands.composed;
 
+import com.tngtech.leapdrone.drone.commands.Command;
+import com.tngtech.leapdrone.drone.commands.simple.SetConfigValueATCommand;
 import com.tngtech.leapdrone.drone.data.DroneConfiguration;
+import com.tngtech.leapdrone.drone.data.LoginData;
 
 public class PlayFlightAnimationCommand extends SetConfigValueCommand
 {
@@ -50,16 +53,16 @@ public class PlayFlightAnimationCommand extends SetConfigValueCommand
 
   private final FlightAnimation animation;
 
-  public PlayFlightAnimationCommand(String sessionId, String profileId, String applicationId, FlightAnimation animation)
+  public PlayFlightAnimationCommand(LoginData loginData, FlightAnimation animation)
   {
-    super(sessionId, profileId, applicationId);
+    super(loginData);
     this.animation = animation;
   }
 
   @Override
-  protected String getCommand(int sequenceNumber)
+  protected Command getConfigValueCommand()
   {
-    return String.format("AT*CONFIG=%d,\"%s\",\"%s\"", sequenceNumber, DroneConfiguration.FLIGHT_ANIMATION_KEY, getAnimationValuesText());
+    return new SetConfigValueATCommand(getLoginData(), DroneConfiguration.FLIGHT_ANIMATION_KEY, getAnimationValuesText());
   }
 
   private String getAnimationValuesText()

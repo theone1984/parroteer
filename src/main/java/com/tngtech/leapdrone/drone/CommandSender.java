@@ -2,8 +2,9 @@ package com.tngtech.leapdrone.drone;
 
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
+import com.tngtech.leapdrone.drone.commands.ATCommand;
 import com.tngtech.leapdrone.drone.commands.Command;
-import com.tngtech.leapdrone.drone.commands.WatchDogCommand;
+import com.tngtech.leapdrone.drone.commands.simple.WatchDogCommand;
 import com.tngtech.leapdrone.drone.components.AddressComponent;
 import com.tngtech.leapdrone.drone.components.ErrorListenerComponent;
 import com.tngtech.leapdrone.drone.components.ReadyStateListenerComponent;
@@ -34,7 +35,7 @@ public class CommandSender implements Runnable
 
   private ReadyStateChangeListener.ReadyState readyState = ReadyStateChangeListener.ReadyState.NOT_READY;
 
-  private List<Command> commandsToSend;
+  private List<ATCommand> commandsToSend;
 
   private int sequenceNumber = 1;
 
@@ -80,12 +81,12 @@ public class CommandSender implements Runnable
     readyStateListenerComponent.addReadyStateChangeListener(readyStateChangeListener);
   }
 
-  public void sendCommand(Command command)
+  public void sendCommand(ATCommand command)
   {
     queue(command);
   }
 
-  private Command queue(Command command)
+  private Command queue(ATCommand command)
   {
     commandsToSend.add(command);
     return command;
@@ -127,8 +128,8 @@ public class CommandSender implements Runnable
 
   private int sendPendingCommands(int count)
   {
-    List<Command> commands = getCommands(count);
-    for (Command command : commands)
+    List<ATCommand> commands = getCommands(count);
+    for (ATCommand command : commands)
     {
       send(command);
     }
@@ -136,9 +137,9 @@ public class CommandSender implements Runnable
     return count + 1;
   }
 
-  private List<Command> getCommands(int count)
+  private List<ATCommand> getCommands(int count)
   {
-    List<Command> commands = commandsToSend;
+    List<ATCommand> commands = commandsToSend;
     if (count % 10 == 1)
     {
       commands.add(new WatchDogCommand());
@@ -148,7 +149,7 @@ public class CommandSender implements Runnable
     return commands;
   }
 
-  private void send(Command command)
+  private void send(ATCommand command)
   {
     if (command.isPreparationCommandNeeded())
     {
@@ -163,6 +164,12 @@ public class CommandSender implements Runnable
     byte[] sendData = commandText.getBytes();
     InetAddress address = addressComponent.getInetAddress(droneIpAddress);
     DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, address, commandPort);
+
+    // For debugging purposes ... used very often
+    /*if (!commandText.startsWith("AT*COMWDG"))
+    {
+      System.out.println(commandText);
+    }*/
 
     udpComponent.send(sendPacket);
   }

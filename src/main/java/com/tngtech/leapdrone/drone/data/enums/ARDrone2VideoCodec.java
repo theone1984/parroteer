@@ -12,7 +12,7 @@ public enum ARDrone2VideoCodec
     this.codecValue = codecValue;
   }
 
-  public int getCodecValue()
+  public int getCodecCode()
   {
     return codecValue;
   }

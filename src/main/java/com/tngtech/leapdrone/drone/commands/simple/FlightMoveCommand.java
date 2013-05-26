@@ -1,8 +1,8 @@
-package com.tngtech.leapdrone.drone.commands;
+package com.tngtech.leapdrone.drone.commands.simple;
 
 import static com.tngtech.leapdrone.drone.helpers.BinaryDataHelper.getNormalizedIntValue;
 
-public class FlightMoveCommand extends CommandAbstract
+public class FlightMoveCommand extends ATCommandAbstract
 {
   private final float roll;
 

@@ -1,33 +1,32 @@
 package com.tngtech.leapdrone.drone;
 
 import com.google.inject.Inject;
-import com.tngtech.leapdrone.drone.commands.SetConfigValueCommand;
+import com.tngtech.leapdrone.drone.commands.composed.InitializeConfigurationCommand;
 import com.tngtech.leapdrone.drone.components.AddressComponent;
 import com.tngtech.leapdrone.drone.data.Config;
 import com.tngtech.leapdrone.drone.data.DroneConfiguration;
 import com.tngtech.leapdrone.drone.data.NavData;
 import com.tngtech.leapdrone.drone.data.enums.ControllerState;
 import com.tngtech.leapdrone.drone.data.enums.DroneVersion;
-import com.tngtech.leapdrone.drone.helpers.VersionHelper;
 import com.tngtech.leapdrone.drone.listeners.DroneConfigurationListener;
 import com.tngtech.leapdrone.drone.listeners.NavDataListener;
 import com.tngtech.leapdrone.drone.listeners.ReadyStateChangeListener;
 import org.apache.log4j.Logger;
 
-import java.util.Objects;
-
 import static com.google.common.base.Preconditions.checkState;
 import static com.tngtech.leapdrone.drone.helpers.ThreadHelper.sleep;
 
-public class DroneCoordinator implements ReadyStateChangeListener, NavDataListener, DroneConfigurationListener
+public class DroneStartupCoordinator implements ReadyStateChangeListener, NavDataListener, DroneConfigurationListener
 {
-  private final Logger logger = Logger.getLogger(DroneCoordinator.class.getSimpleName());
+  private final Logger logger = Logger.getLogger(DroneStartupCoordinator.class.getSimpleName());
+
+  private final CommandSenderCoordinator commandSenderCoordinator;
 
   private final AddressComponent addressComponent;
 
   private final VersionReader versionReader;
 
-  private final CommandSenderCoordinator commandSender;
+  private final CommandSender commandSender;
 
   private final NavigationDataRetriever navigationDataRetriever;
 
@@ -46,10 +45,12 @@ public class DroneCoordinator implements ReadyStateChangeListener, NavDataListen
   private DroneConfiguration droneConfiguration;
 
   @Inject
-  public DroneCoordinator(AddressComponent addressComponent, VersionReader versionReader, CommandSenderCoordinator commandSender,
-                          NavigationDataRetriever navigationDataRetriever, VideoRetrieverP264 videoRetrieverP264,
-                          VideoRetrieverH264 videoRetrieverH264, ConfigurationDataRetriever configurationDataRetriever)
+  public DroneStartupCoordinator(CommandSenderCoordinator commandSenderCoordinator, AddressComponent addressComponent, VersionReader versionReader,
+                                 CommandSender commandSender, NavigationDataRetriever navigationDataRetriever,
+                                 VideoRetrieverP264 videoRetrieverP264, VideoRetrieverH264 videoRetrieverH264,
+                                 ConfigurationDataRetriever configurationDataRetriever)
   {
+    this.commandSenderCoordinator = commandSenderCoordinator;
     this.addressComponent = addressComponent;
     this.versionReader = versionReader;
     this.commandSender = commandSender;
@@ -77,6 +78,7 @@ public class DroneCoordinator implements ReadyStateChangeListener, NavDataListen
   public void start(Config config)
   {
     this.config = config;
+
     checkIfDroneIsReachable();
     determineDroneVersion();
 
@@ -85,12 +87,9 @@ public class DroneCoordinator implements ReadyStateChangeListener, NavDataListen
     logger.info("Workers are ready to be used");
 
     login();
+    logger.info("Logged in successfully");
+
     startVideoRetriever();
-    determineConfiguration();
-    logger.info("Got configuration data");
-
-    checkConfiguration();
-
     waitForState(ControllerState.READY);
     logger.info("Drone setup complete");
   }
@@ -115,31 +114,24 @@ public class DroneCoordinator implements ReadyStateChangeListener, NavDataListen
 
   private void login()
   {
-    commandSender.sendLogin(config.getSessionChecksum(), config.getProfileChecksum(), config.getApplicationChecksum());
-    commandSender.sendBareConfigCommand(getSetConfigCommand(DroneConfiguration.ENABLE_NAV_DATA_KEY, "TRUE"));
+    if (droneVersion == DroneVersion.AR_DRONE_1)
+    {
+      commandSenderCoordinator.executeCommand(new InitializeConfigurationCommand(config.getLoginData(), config.getArDrone1VideoCodec()));
+    } else
+    {
+      commandSenderCoordinator.executeCommand(new InitializeConfigurationCommand(config.getLoginData(), config.getArDrone2VideoCodec()));
+    }
   }
 
   private void startVideoRetriever()
   {
     if (droneVersion == DroneVersion.AR_DRONE_1)
     {
-      commandSender.sendBareConfigCommand(getSetConfigCommand(DroneConfiguration.VIDEO_CODEC_KEY, config.getArDrone1VideoCodec()));
       videoRetrieverP264.start(config.getDroneIpAddress(), config.getVideoDataPort());
     } else
     {
-      commandSender.sendBareConfigCommand(getSetConfigCommand(DroneConfiguration.VIDEO_CODEC_KEY, config.getArDrone2VideoCodec()));
       videoRetrieverH264.start(config.getDroneIpAddress(), config.getVideoDataPort());
     }
-  }
-
-  private SetConfigValueCommand getSetConfigCommand(String key, Object value)
-  {
-    return new SetConfigValueCommand(config.getSessionChecksum(), config.getProfileChecksum(), config.getApplicationChecksum(), key, value);
-  }
-
-  private void determineConfiguration()
-  {
-    commandSender.sendRefreshDroneConfigurationCommand();
   }
 
   private void waitForState(ControllerState state)
@@ -150,23 +142,9 @@ public class DroneCoordinator implements ReadyStateChangeListener, NavDataListen
     }
   }
 
-  private void checkConfiguration()
-  {
-    String firmwareVersion = droneConfiguration.getConfig().get(DroneConfiguration.FIRMWARE_VERSION_KEY);
-    String sessionId = droneConfiguration.getConfig().get(DroneConfiguration.SESSION_ID_KEY);
-    String applicationId = droneConfiguration.getConfig().get(DroneConfiguration.APPLICATION_ID_KEY);
-    String profileId = droneConfiguration.getConfig().get(DroneConfiguration.PROFILE_ID_KEY);
-
-    checkState(Objects.equals(config.getSessionChecksum(), sessionId), "Session ID checksums do not match");
-    checkState(Objects.equals(config.getProfileChecksum(), profileId), "Profile ID checksums do not match");
-    checkState(Objects.equals(config.getApplicationChecksum(), applicationId), "Application ID checksums do not match");
-    checkState(VersionHelper.compareVersions(firmwareVersion, Config.MIN_FIRMWARE_VERSION) >= 0, "The firmware version used is too old");
-  }
-
   public void stop()
   {
     currentState = ControllerState.STOPPED;
-
 
     configurationDataRetriever.stop();
     navigationDataRetriever.stop();

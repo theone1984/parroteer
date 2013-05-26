@@ -9,7 +9,7 @@ import com.tngtech.leapdrone.drone.CommandSender;
 import com.tngtech.leapdrone.drone.CommandSenderCoordinator;
 import com.tngtech.leapdrone.drone.ConfigurationDataRetriever;
 import com.tngtech.leapdrone.drone.DroneController;
-import com.tngtech.leapdrone.drone.DroneCoordinator;
+import com.tngtech.leapdrone.drone.DroneStartupCoordinator;
 import com.tngtech.leapdrone.drone.NavigationDataRetriever;
 import com.tngtech.leapdrone.drone.VideoRetrieverH264;
 import com.tngtech.leapdrone.drone.VideoRetrieverP264;
@@ -42,7 +42,7 @@ public class Context extends AbstractModule
   protected void configure()
   {
     bind(DroneController.class).in(Singleton.class);
-    bind(DroneCoordinator.class).in(Singleton.class);
+    bind(DroneStartupCoordinator.class).in(Singleton.class);
     bind(CommandSender.class).in(Singleton.class);
     bind(CommandSenderCoordinator.class).in(Singleton.class);
     bind(NavigationDataRetriever.class).in(Singleton.class);

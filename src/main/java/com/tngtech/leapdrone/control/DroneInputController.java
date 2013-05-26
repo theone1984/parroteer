@@ -2,9 +2,9 @@ package com.tngtech.leapdrone.control;
 
 import com.google.inject.Inject;
 import com.tngtech.leapdrone.drone.DroneController;
-import com.tngtech.leapdrone.drone.commands.PlayFlightAnimationCommand;
-import com.tngtech.leapdrone.drone.commands.PlayLedAnimationCommand;
-import com.tngtech.leapdrone.drone.commands.SwitchCameraCommand;
+import com.tngtech.leapdrone.drone.commands.composed.PlayFlightAnimationCommand;
+import com.tngtech.leapdrone.drone.commands.composed.PlayLedAnimationCommand;
+import com.tngtech.leapdrone.drone.commands.composed.SwitchCameraCommand;
 import com.tngtech.leapdrone.drone.data.NavData;
 import com.tngtech.leapdrone.drone.listeners.NavDataListener;
 import com.tngtech.leapdrone.input.leapmotion.data.DetectionData;

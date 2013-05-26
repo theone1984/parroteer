@@ -4,6 +4,8 @@ public class NavData
 {
   private NavDataState state;
 
+  private boolean onlyHeaderPresent;
+
   private int batteryLevel;
 
   private int sequenceNumber;
@@ -21,6 +23,21 @@ public class NavData
   private float speedY;
 
   private float speedZ;
+
+  public NavData()
+  {
+    onlyHeaderPresent = true;
+  }
+
+  public boolean isOnlyHeaderPresent()
+  {
+    return onlyHeaderPresent;
+  }
+
+  public void setOnlyHeaderPresent(boolean onlyHeaderPresent)
+  {
+    this.onlyHeaderPresent = onlyHeaderPresent;
+  }
 
   public void setSequenceNumber(int sequenceNumber)
   {

@@ -1,10 +1,17 @@
 package com.tngtech.leapdrone.drone.commands;
 
+import com.tngtech.leapdrone.drone.data.DroneConfiguration;
+import com.tngtech.leapdrone.drone.data.NavData;
+
 public interface Command
 {
-  String getCommandText(int sequenceNumber);
+  int NO_TIMEOUT = 0;
 
-  String getPreparationCommandText(int sequenceNumber);
+  int DEFAULT_NAVDATA_TIMEOUT = 100;
 
-  boolean isPreparationCommandNeeded();
+  int DEFAULT_CONFIGURATION_TIMEOUT = 1250;
+
+  int getTimeoutMillis();
+
+  void checkSuccess(NavData navData, DroneConfiguration droneConfiguration);
 }

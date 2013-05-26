@@ -1,6 +1,7 @@
-package com.tngtech.leapdrone.drone.commands;
+package com.tngtech.leapdrone.drone.commands.composed;
 
 import com.tngtech.leapdrone.drone.data.DroneConfiguration;
+import com.tngtech.leapdrone.drone.data.LoginData;
 
 public class SwitchCameraCommand extends SetConfigValueCommand
 {
@@ -25,8 +26,8 @@ public class SwitchCameraCommand extends SetConfigValueCommand
     }
   }
 
-  public SwitchCameraCommand(String sessionId, String profileId, String applicationId, Camera camera)
+  public SwitchCameraCommand(LoginData loginData, Camera camera)
   {
-    super(sessionId, profileId, applicationId, DroneConfiguration.VIDEO_CHANNEL_KEY, camera.getCameraCode());
+    super(loginData, DroneConfiguration.VIDEO_CHANNEL_KEY, camera.getCameraCode());
   }
 }

@@ -1,6 +1,9 @@
-package com.tngtech.leapdrone.drone.commands;
+package com.tngtech.leapdrone.drone.commands.composed;
 
+import com.tngtech.leapdrone.drone.commands.Command;
+import com.tngtech.leapdrone.drone.commands.simple.SetConfigValueATCommand;
 import com.tngtech.leapdrone.drone.data.DroneConfiguration;
+import com.tngtech.leapdrone.drone.data.LoginData;
 
 import static com.tngtech.leapdrone.drone.helpers.BinaryDataHelper.getNormalizedIntValue;
 
@@ -49,10 +52,9 @@ public class PlayLedAnimationCommand extends SetConfigValueCommand
 
   private final int durationSeconds;
 
-  public PlayLedAnimationCommand(String sessionId, String profileId, String applicationId, LedAnimation animation, float frequency,
-                                 int durationSeconds)
+  public PlayLedAnimationCommand(LoginData loginData, LedAnimation animation, float frequency, int durationSeconds)
   {
-    super(sessionId, profileId, applicationId);
+    super(loginData);
 
     this.animation = animation;
     this.frequency = frequency;
@@ -60,9 +62,9 @@ public class PlayLedAnimationCommand extends SetConfigValueCommand
   }
 
   @Override
-  protected String getCommand(int sequenceNumber)
+  protected Command getConfigValueCommand()
   {
-    return String.format("AT*CONFIG=%d,\"%s\",\"%s\"", sequenceNumber, DroneConfiguration.LED_ANIMATION_KEY, getAnimationValuesText());
+    return new SetConfigValueATCommand(getLoginData(), DroneConfiguration.LED_ANIMATION_KEY, getAnimationValuesText());
   }
 
   private String getAnimationValuesText()

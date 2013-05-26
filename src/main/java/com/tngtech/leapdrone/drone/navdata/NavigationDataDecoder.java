@@ -1,8 +1,8 @@
 package com.tngtech.leapdrone.drone.navdata;
 
-import com.tngtech.leapdrone.drone.data.enums.ControlAlgorithm;
 import com.tngtech.leapdrone.drone.data.NavData;
 import com.tngtech.leapdrone.drone.data.NavDataState;
+import com.tngtech.leapdrone.drone.data.enums.ControlAlgorithm;
 
 import static com.google.common.base.Preconditions.checkState;
 import static com.tngtech.leapdrone.drone.helpers.BinaryDataHelper.flagSet;
@@ -115,6 +115,7 @@ public class NavigationDataDecoder
   {
     if (tag == NAV_DATA_TAG)
     {
+      currentNavData.setOnlyHeaderPresent(false);
       processNavData();
     } else if (tag == NAV_DATA_TAG_CHECKSUM)
     {

@@ -19,7 +19,6 @@ public class ThreadComponent
 
   public void stop()
   {
-    checkState(!stopped, "Already stopped");
     stopped = true;
   }
 
@@ -28,7 +27,10 @@ public class ThreadComponent
     try
     {
       stop();
-      currentThread.join();
+      if (currentThread != null)
+      {
+        currentThread.join();
+      }
     } catch (InterruptedException e)
     {
       throw new IllegalStateException("Joining threads was interrupted", e);

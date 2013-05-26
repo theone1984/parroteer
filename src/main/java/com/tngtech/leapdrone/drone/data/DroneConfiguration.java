@@ -20,9 +20,9 @@ public class DroneConfiguration
 
   public static final String VIDEO_CHANNEL_KEY = "video:video_channel";
 
-  public static final Object LED_ANIMATION_KEY = "leds:leds_anim";
+  public static final String LED_ANIMATION_KEY = "leds:leds_anim";
 
-  public static final Object FLIGHT_ANIMATION_KEY = "control:flight_anim";
+  public static final String FLIGHT_ANIMATION_KEY = "control:flight_anim";
 
   private Map<String, String> config;
 

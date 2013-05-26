@@ -1,13 +1,13 @@
 package com.tngtech.leapdrone.drone;
 
 import com.google.inject.Inject;
-import com.tngtech.leapdrone.drone.commands.FlatTrimCommand;
-import com.tngtech.leapdrone.drone.commands.FlightModeCommand;
-import com.tngtech.leapdrone.drone.commands.FlightMoveCommand;
-import com.tngtech.leapdrone.drone.commands.PlayFlightAnimationCommand;
-import com.tngtech.leapdrone.drone.commands.PlayLedAnimationCommand;
-import com.tngtech.leapdrone.drone.commands.SetConfigValueCommand;
-import com.tngtech.leapdrone.drone.commands.SwitchCameraCommand;
+import com.tngtech.leapdrone.drone.commands.Command;
+import com.tngtech.leapdrone.drone.commands.simple.FlatTrimCommand;
+import com.tngtech.leapdrone.drone.commands.simple.FlightModeCommand;
+import com.tngtech.leapdrone.drone.commands.simple.FlightMoveCommand;
+import com.tngtech.leapdrone.drone.commands.composed.PlayFlightAnimationCommand;
+import com.tngtech.leapdrone.drone.commands.composed.PlayLedAnimationCommand;
+import com.tngtech.leapdrone.drone.commands.composed.SwitchCameraCommand;
 import com.tngtech.leapdrone.drone.components.ErrorListenerComponent;
 import com.tngtech.leapdrone.drone.components.ReadyStateListenerComponent;
 import com.tngtech.leapdrone.drone.data.Config;
@@ -36,7 +36,7 @@ public class DroneController
 
   private final ErrorListenerComponent errorListenerComponent;
 
-  private final DroneCoordinator droneCoordinator;
+  private final DroneStartupCoordinator droneStartupCoordinator;
 
   private final CommandSenderCoordinator commandSender;
 
@@ -52,14 +52,14 @@ public class DroneController
 
   @Inject
   public DroneController(ReadyStateListenerComponent readyStateListenerComponent, ErrorListenerComponent errorListenerComponent,
-                         DroneCoordinator droneCoordinator, CommandSenderCoordinator commandSender,
+                         DroneStartupCoordinator droneStartupCoordinator, CommandSenderCoordinator commandSenderCoordinator,
                          NavigationDataRetriever navigationDataRetriever, VideoRetrieverP264 videoRetrieverP264,
                          VideoRetrieverH264 videoRetrieverH264)
   {
     this.readyStateListenerComponent = readyStateListenerComponent;
     this.errorListenerComponent = errorListenerComponent;
-    this.droneCoordinator = droneCoordinator;
-    this.commandSender = commandSender;
+    this.droneStartupCoordinator = droneStartupCoordinator;
+    this.commandSender = commandSenderCoordinator;
     this.navigationDataRetriever = navigationDataRetriever;
     this.videoRetrieverP264 = videoRetrieverP264;
     this.videoRetrieverH264 = videoRetrieverH264;
@@ -71,7 +71,7 @@ public class DroneController
     checkInitializationStateStarted();
     initializeExecutor();
 
-    new Thread(new Runnable()
+    executor.submit(new Runnable()
     {
       @Override
       public void run()
@@ -84,7 +84,7 @@ public class DroneController
           errorListenerComponent.emitError(e);
         }
       }
-    }).start();
+    });
   }
 
   public void start(Config config)
@@ -96,7 +96,7 @@ public class DroneController
     this.config = config;
 
     initializeExecutor();
-    droneCoordinator.start(config);
+    droneStartupCoordinator.start(config);
     readyStateListenerComponent.emitReadyStateChange(ReadyStateChangeListener.ReadyState.READY);
   }
 
@@ -108,13 +108,13 @@ public class DroneController
   public void stop()
   {
     logger.info("Stopping drone controller");
-    droneCoordinator.stop();
+    droneStartupCoordinator.stop();
     executor.shutdownNow();
   }
 
   public boolean isInitialized()
   {
-    return droneCoordinator.getState() == ControllerState.READY;
+    return droneStartupCoordinator.getState() == ControllerState.READY;
   }
 
   public void addReadyStateChangeListener(ReadyStateChangeListener readyStateChangeListener)
@@ -162,43 +162,13 @@ public class DroneController
   public DroneVersion getDroneVersion()
   {
     checkInitializationState();
-    return droneCoordinator.getDroneVersion();
+    return droneStartupCoordinator.getDroneVersion();
   }
 
   public DroneConfiguration getDroneConfiguration()
   {
     checkInitializationState();
-    return droneCoordinator.getDroneConfiguration();
-  }
-
-  public Future setConfigurationValue(String key, Object value)
-  {
-    checkInitializationState();
-
-    logger.debug(String.format("Setting config setting '%s' to '%s'", key, value.toString()));
-    return sendAsyncConfigCommand(new SetConfigValueCommand(config.getSessionChecksum(), config.getProfileChecksum(),
-            config.getApplicationChecksum(), key, value));
-  }
-
-  public Future switchCamera(SwitchCameraCommand.Camera camera)
-  {
-    checkInitializationState();
-
-    logger.debug(String.format("Changing camera to '%s'", camera.name()));
-    return sendAsyncConfigCommand(new SwitchCameraCommand(config.getSessionChecksum(), config.getProfileChecksum(),
-            config.getApplicationChecksum(), camera));
-  }
-
-  public Future sendAsyncConfigCommand(final SetConfigValueCommand configCommand)
-  {
-    return executor.submit(new Runnable()
-    {
-      @Override
-      public void run()
-      {
-        commandSender.sendConfigCommand(configCommand);
-      }
-    });
+    return droneStartupCoordinator.getDroneConfiguration();
   }
 
   public void takeOff()
@@ -206,7 +176,7 @@ public class DroneController
     checkInitializationState();
 
     logger.debug("Taking off");
-    commandSender.sendCommand(new FlightModeCommand(FlightModeCommand.FlightMode.TAKE_OFF));
+    executeCommand(new FlightModeCommand(FlightModeCommand.FlightMode.TAKE_OFF));
   }
 
   public void land()
@@ -214,7 +184,7 @@ public class DroneController
     checkInitializationState();
 
     logger.debug("Landing");
-    commandSender.sendCommand(new FlightModeCommand(FlightModeCommand.FlightMode.LAND));
+    executeCommand(new FlightModeCommand(FlightModeCommand.FlightMode.LAND));
   }
 
   public void emergency()
@@ -222,7 +192,7 @@ public class DroneController
     checkInitializationState();
 
     logger.debug("Setting emergency");
-    commandSender.sendCommand(new FlightModeCommand(FlightModeCommand.FlightMode.EMERGENCY));
+    executeCommand(new FlightModeCommand(FlightModeCommand.FlightMode.EMERGENCY));
   }
 
   public void flatTrim()
@@ -230,7 +200,7 @@ public class DroneController
     checkInitializationState();
 
     logger.debug("Flat trim");
-    commandSender.sendCommand(new FlatTrimCommand());
+    executeCommand(new FlatTrimCommand());
   }
 
   public void move(float roll, float pitch, float yaw, float gaz)
@@ -238,19 +208,48 @@ public class DroneController
     checkInitializationState();
 
     logger.trace(String.format("Moving - roll: %.2f, pitch: %.2f, yaw: %.2f, gaz: %.2f", roll, pitch, yaw, gaz));
-    commandSender.sendCommand(new FlightMoveCommand(roll, pitch, yaw, gaz));
+    executeCommand(new FlightMoveCommand(roll, pitch, yaw, gaz));
   }
 
-  public void playLedAnimation(PlayLedAnimationCommand.LedAnimation ledAnimation, float frequency, int durationSeconds)
+  public Future switchCamera(SwitchCameraCommand.Camera camera)
   {
-    commandSender.sendCommand(new PlayLedAnimationCommand(config.getSessionChecksum(), config.getProfileChecksum(),
-            config.getApplicationChecksum(), ledAnimation, frequency, durationSeconds));
+    checkInitializationState();
+
+    logger.debug(String.format("Changing camera to '%s'", camera.name()));
+    return executeCommandAsync(new SwitchCameraCommand(config.getLoginData(), camera));
   }
 
-  public void playFlightAnimation(PlayFlightAnimationCommand.FlightAnimation animation)
+  public Future playLedAnimation(PlayLedAnimationCommand.LedAnimation ledAnimation, float frequency, int durationSeconds)
   {
-    commandSender.sendCommand(new PlayFlightAnimationCommand(config.getSessionChecksum(), config.getProfileChecksum(),
-            config.getApplicationChecksum(), animation));
+    checkInitializationState();
+
+    logger.debug(String.format("Playing LED animation '%s'", ledAnimation.name()));
+    return executeCommandAsync(new PlayLedAnimationCommand(config.getLoginData(), ledAnimation, frequency, durationSeconds));
+  }
+
+  public Future playFlightAnimation(PlayFlightAnimationCommand.FlightAnimation animation)
+  {
+    checkInitializationState();
+
+    logger.debug(String.format("Playing flight animation '%s'", animation.name()));
+    return executeCommandAsync(new PlayFlightAnimationCommand(config.getLoginData(), animation));
+  }
+
+  public void executeCommand(Command command)
+  {
+    commandSender.executeCommand(command);
+  }
+
+  public Future executeCommandAsync(final Command command)
+  {
+    return executor.submit(new Runnable()
+    {
+      @Override
+      public void run()
+      {
+        commandSender.executeCommand(command);
+      }
+    });
   }
 
   private void checkInitializationState()
@@ -260,6 +259,6 @@ public class DroneController
 
   private void checkInitializationStateStarted()
   {
-    checkState(droneCoordinator.getState() == ControllerState.STARTED, "The drone controller has already been initialized");
+    checkState(droneStartupCoordinator.getState() == ControllerState.STARTED, "The drone controller has already been initialized");
   }
 }
