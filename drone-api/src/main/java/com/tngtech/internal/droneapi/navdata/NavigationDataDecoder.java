@@ -79,7 +79,7 @@ public class NavigationDataDecoder
     state.setFlying(flagSet(stateFlags, 0));
     state.setVideoEnabled(flagSet(stateFlags, 1));
     state.setVisionEnabled(flagSet(stateFlags, 2));
-    state.setControlAlgorithm(flagSet(stateFlags, 3) ? ControlAlgorithm.ANGULAR_SPEED_CONTROL : ControlAlgorithm.EULER_ANGELS_CONTROL);
+    state.setControlAlgorithm(flagSet(stateFlags, 3) ? ControlAlgorithm.ANGULAR_SPEED_CONTROL : ControlAlgorithm.EULER_ANGLES_CONTROL);
     state.setAltitudeControlActive(flagSet(stateFlags, 4));
     state.setUserFeedbackOn(flagSet(stateFlags, 5));
     state.setControlReceived(flagSet(stateFlags, 6));
@@ -94,7 +94,7 @@ public class NavigationDataDecoder
     state.setBatteryTooHigh(flagSet(stateFlags, 16));
     state.setTimerElapsed(flagSet(stateFlags, 17));
     state.setNotEnoughPower(flagSet(stateFlags, 18));
-    state.setAnglesOutOufRange(flagSet(stateFlags, 19));
+    state.setAnglesOutOfRange(flagSet(stateFlags, 19));
     state.setTooMuchWind(flagSet(stateFlags, 20));
     state.setUltrasonicSensorDeaf(flagSet(stateFlags, 21));
     state.setCutoutSystemDetected(flagSet(stateFlags, 22));

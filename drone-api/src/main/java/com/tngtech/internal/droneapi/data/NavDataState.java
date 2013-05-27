@@ -40,7 +40,7 @@ public class NavDataState
 
   private boolean notEnoughPower;
 
-  private boolean anglesOutOufRange;
+  private boolean anglesOutOfRange;
 
   private boolean tooMuchWind;
 
@@ -246,14 +246,14 @@ public class NavDataState
     return notEnoughPower;
   }
 
-  public void setAnglesOutOufRange(boolean anglesOutOufRange)
+  public void setAnglesOutOfRange(boolean anglesOutOfRange)
   {
-    this.anglesOutOufRange = anglesOutOufRange;
+    this.anglesOutOfRange = anglesOutOfRange;
   }
 
-  public boolean isAnglesOutOufRange()
+  public boolean isAnglesOutOfRange()
   {
-    return anglesOutOufRange;
+    return anglesOutOfRange;
   }
 
   public void setTooMuchWind(boolean tooMuchWind)
