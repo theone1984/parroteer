@@ -90,7 +90,7 @@ public class DroneInputController implements NavDataListener, DetectionListener,
         droneController.playLedAnimation(LedAnimation.RED_SNAKE, 2.0f, 3);
         break;
       case PLAY_FLIGHT_ANIMATION:
-        droneController.playFlightAnimation(FlightAnimation.YAW_SHAKE);
+        droneController.playFlightAnimation(FlightAnimation.FLIP_LEFT);
         break;
       case ENABLE_EXPERT_MODE:
         logger.warn("Enabling expert mode");
@@ -138,9 +138,17 @@ public class DroneInputController implements NavDataListener, DetectionListener,
   }
 
   @Override
-  public void onCircle(GestureData gestureData)
+  public void onGesture(GestureData gestureData)
   {
-    takeOff();
+    switch (gestureData.getGestureType())
+    {
+      case TYPE_CIRCLE:
+        takeOff();
+        break;
+      case TYPE_SWIPE:
+        // TODO Now we could do the flip animation
+        break;
+    }
   }
 
   private void takeOff()

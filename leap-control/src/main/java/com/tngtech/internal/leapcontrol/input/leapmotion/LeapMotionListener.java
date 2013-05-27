@@ -83,14 +83,22 @@ public class LeapMotionListener extends Listener
 
   private void processGestureEvent(Gesture gesture)
   {
-    if (gesture.type().equals(Gesture.Type.TYPE_CIRCLE) && gesture.id() > currentGestureId)
+    if (gesture.id() <= currentGestureId)
     {
-      currentGestureId = gesture.id();
-      logger.info(String.format("Circle Gesture detected with id [%s].", gesture.id()));
-      for (GestureListener listener : gestureListeners)
-      {
-        listener.onCircle(new GestureData(gesture.id()));
-      }
+      return;
+    }
+
+    currentGestureId = gesture.id();
+
+    logger.info(String.format("Gesture '%s' detected.", gesture.type().name()));
+    emitGestureEvent(gesture.id(), Gesture.Type.TYPE_CIRCLE);
+  }
+
+  private void emitGestureEvent(int eventId, Gesture.Type gestureType)
+  {
+    for (GestureListener listener : gestureListeners)
+    {
+      listener.onGesture(new GestureData(eventId, gestureType));
     }
   }
 

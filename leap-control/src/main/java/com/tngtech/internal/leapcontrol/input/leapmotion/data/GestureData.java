@@ -1,13 +1,26 @@
 package com.tngtech.internal.leapcontrol.input.leapmotion.data;
 
-public class GestureData {
-	private final int eventId;
+import com.leapmotion.leap.Gesture;
 
-	public GestureData(int id) {
-		this.eventId = id;
-	}
+public class GestureData
+{
+  private final int eventId;
 
-	public int getId() {
-		return eventId;
-	}
+  private final Gesture.Type gestureType;
+
+  public GestureData(int id, Gesture.Type gestureType)
+  {
+    this.eventId = id;
+    this.gestureType = gestureType;
+  }
+
+  public int getId()
+  {
+    return eventId;
+  }
+
+  public Gesture.Type getGestureType()
+  {
+    return gestureType;
+  }
 }
