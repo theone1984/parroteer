@@ -15,6 +15,7 @@ import javafx.scene.control.Label;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.WritableImage;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Paint;
 
 import java.awt.image.BufferedImage;
 import java.util.Set;
@@ -131,10 +132,23 @@ public class FxController implements VideoDataListener, NavDataListener
       @Override
       public void run()
       {
-        String batteryLevelText = "Battery: " + navData.getBatteryLevel() + "%";
-        labelBattery.setText(batteryLevelText);
+        setBatteryLabel(navData);
       }
     });
+  }
+
+  public void setBatteryLabel(NavData navData)
+  {
+    String batteryLevelText = "Battery: " + navData.getBatteryLevel() + "%";
+    labelBattery.setText(batteryLevelText);
+
+    if (navData.getState().isBatteryTooLow())
+    {
+      labelBattery.setTextFill(Paint.valueOf("red"));
+    } else
+    {
+      labelBattery.setTextFill(Paint.valueOf("white"));
+    }
   }
 
   @Override
