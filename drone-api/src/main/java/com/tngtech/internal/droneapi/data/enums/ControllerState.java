@@ -22,7 +22,7 @@ public enum ControllerState
       case WORKERS_READY:
         return READY;
       default:
-        throw new IllegalStateException(String.format("There is no follow-up state for state '%s'", this.name()));
+         return this;
     }
   }
 }

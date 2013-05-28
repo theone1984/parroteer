@@ -117,6 +117,7 @@ public class DroneController
 
   public void stop()
   {
+    readyStateListenerComponent.emitReadyStateChange(ReadyStateChangeListener.ReadyState.NOT_READY);
     logger.info("Stopping drone controller");
     droneStartupCoordinator.stop();
     executor.shutdownNow();
@@ -210,7 +211,7 @@ public class DroneController
     checkInitializationState();
 
     logger.debug("Flat trim");
-    internalStateWatcher.requestEmergency();
+    internalStateWatcher.requestFlatTrim();
   }
 
   public void move(float roll, float pitch, float yaw, float gaz)

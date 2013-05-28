@@ -24,6 +24,7 @@
         <CheckBox onAction="#onCheckBoxExpertModeAction" GridPane.columnIndex="0" GridPane.rowIndex="2" text="Expert mode"/>
         <Label fx:id="labelBattery" text="Battery: N/A %" GridPane.columnIndex="3" GridPane.rowIndex="2"/>
     </GridPane>
-
-    <ImageView fx:id="imageView" preserveRatio="true" VBox.vgrow="ALWAYS"/>
+    <GridPane alignment="center" hgap="1" vgap="1">
+		<ImageView fx:id="imageView" preserveRatio="true" VBox.vgrow="ALWAYS"/>
+    </GridPane>
 </VBox>

@@ -7,6 +7,7 @@ import com.tngtech.internal.droneapi.data.enums.Camera;
 import com.tngtech.internal.droneapi.data.enums.FlightAnimation;
 import com.tngtech.internal.droneapi.data.enums.LedAnimation;
 import com.tngtech.internal.droneapi.listeners.NavDataListener;
+import com.tngtech.internal.droneapi.listeners.ReadyStateChangeListener;
 import com.tngtech.internal.leapcontrol.input.leapmotion.data.DetectionData;
 import com.tngtech.internal.leapcontrol.input.leapmotion.data.GestureData;
 import com.tngtech.internal.leapcontrol.input.leapmotion.listeners.DetectionListener;
@@ -18,7 +19,8 @@ import com.tngtech.internal.leapcontrol.ui.listeners.UIActionListener;
 import org.apache.log4j.Logger;
 
 
-public class DroneInputController implements NavDataListener, DetectionListener, GestureListener, SpeechListener, UIActionListener
+public class DroneInputController
+        implements ReadyStateChangeListener, NavDataListener, DetectionListener, GestureListener, SpeechListener, UIActionListener
 {
   private static final float PITCH_DECAY = 0.5f;
 
@@ -41,6 +43,8 @@ public class DroneInputController implements NavDataListener, DetectionListener,
 
   private boolean expertMode = false;
 
+  private boolean ready = false;
+
   @Inject
   public DroneInputController(DroneController droneController)
   {
@@ -59,10 +63,10 @@ public class DroneInputController implements NavDataListener, DetectionListener,
       land();
     } else if (sentence.endsWith("emergency"))
     {
-      droneController.emergency();
+      emergency();
     } else if (sentence.endsWith("flat trim"))
     {
-      droneController.flatTrim();
+      flatTrim();
     }
   }
 
@@ -78,19 +82,19 @@ public class DroneInputController implements NavDataListener, DetectionListener,
         land();
         break;
       case FLAT_TRIM:
-        droneController.flatTrim();
+        flatTrim();
         break;
       case EMERGENCY:
-        droneController.emergency();
+        emergency();
         break;
       case SWITCH_CAMERA:
-        droneController.switchCamera(Camera.NEXT);
+        switchCamera();
         break;
       case PLAY_LED_ANIMATION:
-        droneController.playLedAnimation(LedAnimation.RED_SNAKE, 2.0f, 3);
+        playLedAnimation();
         break;
       case PLAY_FLIGHT_ANIMATION:
-        droneController.playFlightAnimation(FlightAnimation.FLIP_LEFT);
+        playFlightAnimation();
         break;
       case ENABLE_EXPERT_MODE:
         logger.warn("Enabling expert mode");
@@ -115,13 +119,14 @@ public class DroneInputController implements NavDataListener, DetectionListener,
       land();
     }
 
-    droneController.move(PITCH_DECAY * -data.getRoll(), ROLL_DECAY * data.getPitch(), expertMode ? data.getYaw() : 0.0f, heightDelta);
+    move(PITCH_DECAY * -data.getRoll(), ROLL_DECAY * data.getPitch(), expertMode ? data.getYaw() : 0.0f, heightDelta);
+
   }
 
   @Override
   public void onNoDetect()
   {
-    droneController.move(0.0f, 0.0f, 0.0f, 0.0f);
+    move(0.0f, 0.0f, 0.0f, 0.0f);
   }
 
   private float calculateHeightDelta(float desiredHeight)
@@ -153,7 +158,7 @@ public class DroneInputController implements NavDataListener, DetectionListener,
 
   private void takeOff()
   {
-    if (!flying)
+    if (ready && !flying)
     {
       flying = true;
       droneController.takeOff();
@@ -162,10 +167,70 @@ public class DroneInputController implements NavDataListener, DetectionListener,
 
   private void land()
   {
-    if (flying)
+    if (ready && flying)
     {
       flying = false;
       droneController.land();
+    }
+  }
+
+  private void flatTrim()
+  {
+    if (ready)
+    {
+      droneController.flatTrim();
+    }
+  }
+
+  private void emergency()
+  {
+    if (ready)
+    {
+      droneController.emergency();
+    }
+  }
+
+  private void switchCamera()
+  {
+    if (ready)
+    {
+      droneController.switchCamera(Camera.NEXT);
+    }
+  }
+
+  private void playLedAnimation()
+  {
+    if (ready)
+    {
+      droneController.playLedAnimation(LedAnimation.RED_SNAKE, 2.0f, 3);
+    }
+  }
+
+  private void playFlightAnimation()
+  {
+    if (ready)
+    {
+      droneController.playFlightAnimation(FlightAnimation.FLIP_LEFT);
+    }
+  }
+
+  private void move(float roll, float pitch, float yaw, float gaz)
+  {
+    if (ready)
+    {
+      droneController.move(roll, pitch, yaw, gaz);
+    }
+  }
+
+  @Override
+  public void onReadyStateChange(ReadyState readyState)
+  {
+    if (readyState == ReadyState.READY)
+    {
+      ready = true;
+    } else if (readyState == ReadyState.NOT_READY)
+    {
+      ready = false;
     }
   }
 }
