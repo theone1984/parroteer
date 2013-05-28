@@ -8,15 +8,25 @@ public class RaceTimer
 
   private Date endTime;
 
+  private boolean stopped = true;
+
   public void start()
   {
-    startTime = new Date();
-    endTime = null;
+    if (stopped)
+    {
+      stopped = false;
+      startTime = new Date();
+      endTime = null;
+    }
   }
 
   public void stop()
   {
-    endTime = new Date();
+    if (!stopped)
+    {
+      stopped = true;
+      endTime = new Date();
+    }
   }
 
   public long getElapsedTime()

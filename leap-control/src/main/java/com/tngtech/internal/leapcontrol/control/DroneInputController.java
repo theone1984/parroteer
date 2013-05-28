@@ -144,6 +144,7 @@ public class DroneInputController
     navDataReceived = true;
     currentHeight = navData.getAltitude() < HEIGHT_THRESHOLD ? 0.0f
             : navData.getAltitude();
+    flying = navData.getState().isFlying();
   }
 
   @Override
@@ -162,10 +163,8 @@ public class DroneInputController
 
   private void takeOff()
   {
-    if (ready)
+    if (ready && !flying)
     {
-      flying = true;
-
       raceTimer.start();
       droneController.takeOff();
     }
@@ -175,8 +174,6 @@ public class DroneInputController
   {
     if (ready && flying)
     {
-      flying = false;
-
       raceTimer.stop();
       droneController.land();
     }
