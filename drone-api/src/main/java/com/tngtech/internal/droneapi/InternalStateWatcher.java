@@ -106,6 +106,8 @@ public class InternalStateWatcher implements NavDataListener
 
   public void requestEmergency()
   {
+    internalState.setLandRequested(false);
+    internalState.setTakeOffRequested(false);
     internalState.setEmergencyRequested(true);
   }
 

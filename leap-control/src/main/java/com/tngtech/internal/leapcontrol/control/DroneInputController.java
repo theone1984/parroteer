@@ -158,7 +158,7 @@ public class DroneInputController
 
   private void takeOff()
   {
-    if (ready && !flying)
+    if (ready)
     {
       flying = true;
       droneController.takeOff();
