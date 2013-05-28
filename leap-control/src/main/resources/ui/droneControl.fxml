@@ -6,6 +6,7 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 <VBox fx:id="vbox" fx:controller="com.tngtech.internal.leapcontrol.ui.FxController" xmlns:fx="http://javafx.com/fxml">
     <padding>
@@ -22,6 +23,7 @@
         <Button text="Flight animation" onAction="#onButtonFlightAnimationAction" maxWidth="Infinity" GridPane.columnIndex="2" GridPane.rowIndex="1"/>
 
         <CheckBox onAction="#onCheckBoxExpertModeAction" GridPane.columnIndex="0" GridPane.rowIndex="2" text="Expert mode"/>
+        <Label fx:id="timer" GridPane.columnIndex="1" GridPane.rowIndex="2" text="Time: 00:00:00"/>
         <Label fx:id="labelBattery" text="Battery: N/A %" GridPane.columnIndex="3" GridPane.rowIndex="2"/>
     </GridPane>
     <GridPane alignment="center" hgap="1" vgap="1">
