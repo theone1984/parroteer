@@ -1,5 +1,7 @@
 package com.tngtech.internal.leapcontrol.ui;
 
+import com.google.inject.Inject;
+import com.tngtech.internal.leapcontrol.helpers.RaceTimer;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.event.EventHandler;
@@ -16,6 +18,14 @@ import java.net.URL;
 
 public class FxWindow
 {
+  private RaceTimer raceTimer;
+
+  @Inject
+  public FxWindow(RaceTimer raceTimer)
+  {
+    this.raceTimer = raceTimer;
+  }
+
   public FxController start(Stage primaryStage)
   {
     FXMLLoader loader = getLoader();
@@ -25,6 +35,7 @@ public class FxWindow
     showStage(primaryStage, scene);
 
     FxController controller = loader.getController();
+    controller.setRaceTimer(raceTimer);
     attachCloseEventHandler(primaryStage, controller);
 
     addTimer(controller);
