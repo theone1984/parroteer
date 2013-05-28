@@ -2,7 +2,7 @@ package com.tngtech.internal.leapcontrol.helpers;
 
 import java.util.Date;
 
-public class Timer
+public class RaceTimer
 {
   private Date startTime;
 

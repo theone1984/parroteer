@@ -6,6 +6,9 @@ import com.tngtech.internal.droneapi.listeners.NavDataListener;
 import com.tngtech.internal.droneapi.listeners.VideoDataListener;
 import com.tngtech.internal.leapcontrol.ui.data.UIAction;
 import com.tngtech.internal.leapcontrol.ui.listeners.UIActionListener;
+
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.event.ActionEvent;
@@ -25,42 +28,35 @@ public class FxController implements VideoDataListener, NavDataListener, EventHa
 {
   private final Set<UIActionListener> uiActionListeners;
 
-  @FXML
-  private ImageView imageView;
+	@FXML
+	private ImageView imageView;
 
-  @FXML
-  private VBox vbox;
+	@FXML
+	private VBox vbox;
 
-  @FXML
-  private Label labelBattery;
+	@FXML
+	private Label labelBattery;
 
-  private WritableImage image;
+	@FXML
+	private Label timer;
 
-  public FxController()
-  {
-    uiActionListeners = Sets.newHashSet();
-  }
+	private WritableImage image;
 
-  public void addUIActionListener(UIActionListener uiActionlistener)
-  {
-    if (!uiActionListeners.contains(uiActionlistener))
-    {
-      uiActionListeners.add(uiActionlistener);
-    }
-  }
+	public FxController() {
+		uiActionListeners = Sets.newHashSet();
+	}
 
-  public void removeUIActionListener(UIActionListener uiActionlistener)
-  {
-    if (uiActionListeners.contains(uiActionlistener))
-    {
-      uiActionListeners.remove(uiActionlistener);
-    }
-  }
+	public void addUIActionListener(UIActionListener uiActionlistener) {
+		if (!uiActionListeners.contains(uiActionlistener)) {
+			uiActionListeners.add(uiActionlistener);
+		}
+	}
 
-  protected void onApplicationClose()
-  {
-    emitUIAction(UIAction.CLOSE_APPLICATION);
-  }
+	public void removeUIActionListener(UIActionListener uiActionlistener) {
+		if (uiActionListeners.contains(uiActionlistener)) {
+			uiActionListeners.remove(uiActionlistener);
+		}
+	}
 
   @FXML
   protected void onButtonTakeOffAction(ActionEvent event)
