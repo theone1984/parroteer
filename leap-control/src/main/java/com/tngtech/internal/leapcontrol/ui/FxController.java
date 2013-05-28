@@ -9,6 +9,7 @@ import com.tngtech.internal.leapcontrol.ui.listeners.UIActionListener;
 import javafx.application.Platform;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
@@ -20,7 +21,7 @@ import javafx.scene.paint.Paint;
 import java.awt.image.BufferedImage;
 import java.util.Set;
 
-public class FxController implements VideoDataListener, NavDataListener
+public class FxController implements VideoDataListener, NavDataListener, EventHandler<ActionEvent>
 {
   private final Set<UIActionListener> uiActionListeners;
 
@@ -169,5 +170,12 @@ public class FxController implements VideoDataListener, NavDataListener
         }
       }
     });
+  }
+  
+  // Timer event
+  @Override
+  public void handle(ActionEvent actionEvent)
+  {
+    System.out.println("Event!");
   }
 }

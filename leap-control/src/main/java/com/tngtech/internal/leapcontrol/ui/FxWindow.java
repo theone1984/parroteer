@@ -1,5 +1,7 @@
 package com.tngtech.internal.leapcontrol.ui;
 
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.JavaFXBuilderFactory;
@@ -7,6 +9,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
+import javafx.util.Duration;
 
 import java.io.IOException;
 import java.net.URL;
@@ -23,6 +26,8 @@ public class FxWindow
 
     FxController controller = loader.getController();
     attachCloseEventHandler(primaryStage, controller);
+
+    addTimer(controller);
 
     return controller;
   }
@@ -87,5 +92,13 @@ public class FxWindow
         controller.onApplicationClose();
       }
     });
+  }
+
+  private void addTimer(FxController controller)
+  {
+    Timeline timeline = new Timeline();
+    timeline.setCycleCount(Timeline.INDEFINITE);
+    timeline.getKeyFrames().add(new KeyFrame(Duration.millis(25), controller));
+    timeline.playFromStart();
   }
 }

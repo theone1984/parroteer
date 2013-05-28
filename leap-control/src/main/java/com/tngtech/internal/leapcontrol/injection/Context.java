@@ -7,6 +7,7 @@ import com.google.inject.Singleton;
 import com.tngtech.internal.droneapi.DroneController;
 import com.tngtech.internal.leapcontrol.control.DroneInputController;
 import com.tngtech.internal.leapcontrol.entry.Main;
+import com.tngtech.internal.leapcontrol.helpers.Timer;
 import com.tngtech.internal.leapcontrol.input.leapmotion.LeapMotionController;
 import com.tngtech.internal.leapcontrol.input.leapmotion.LeapMotionListener;
 import com.tngtech.internal.leapcontrol.input.speech.SpeechDetector;
@@ -46,5 +47,6 @@ public class Context extends AbstractModule
     bind(LeapMotionListener.class).in(Singleton.class);
 
     bind(SpeechDetector.class).in(Singleton.class);
+    bind(Timer.class).in(Singleton.class);
   }
 }
