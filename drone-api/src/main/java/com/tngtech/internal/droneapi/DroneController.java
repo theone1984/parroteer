@@ -211,7 +211,7 @@ public class DroneController
     checkInitializationState();
 
     logger.debug("Flat trim");
-    internalStateWatcher.requestEmergency();
+    internalStateWatcher.requestFlatTrim();
   }
 
   public void move(float roll, float pitch, float yaw, float gaz)
