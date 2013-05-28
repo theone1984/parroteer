@@ -4,11 +4,9 @@ import com.google.common.collect.Sets;
 import com.tngtech.internal.droneapi.data.NavData;
 import com.tngtech.internal.droneapi.listeners.NavDataListener;
 import com.tngtech.internal.droneapi.listeners.VideoDataListener;
+import com.tngtech.internal.leapcontrol.helpers.RaceTimer;
 import com.tngtech.internal.leapcontrol.ui.data.UIAction;
 import com.tngtech.internal.leapcontrol.ui.listeners.UIActionListener;
-
-import javafx.animation.KeyFrame;
-import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.event.ActionEvent;
@@ -28,35 +26,47 @@ public class FxController implements VideoDataListener, NavDataListener, EventHa
 {
   private final Set<UIActionListener> uiActionListeners;
 
-	@FXML
-	private ImageView imageView;
+  @FXML
+  private ImageView imageView;
 
-	@FXML
-	private VBox vbox;
+  @FXML
+  private VBox vbox;
 
-	@FXML
-	private Label labelBattery;
+  @FXML
+  private Label labelBattery;
 
-	@FXML
-	private Label timer;
+  @FXML
+  private Label labelTimer;
 
-	private WritableImage image;
+  private WritableImage image;
 
-	public FxController() {
-		uiActionListeners = Sets.newHashSet();
-	}
+  private RaceTimer raceTimer;
 
-	public void addUIActionListener(UIActionListener uiActionlistener) {
-		if (!uiActionListeners.contains(uiActionlistener)) {
-			uiActionListeners.add(uiActionlistener);
-		}
-	}
+  public FxController()
+  {
+    uiActionListeners = Sets.newHashSet();
+  }
 
-	public void removeUIActionListener(UIActionListener uiActionlistener) {
-		if (uiActionListeners.contains(uiActionlistener)) {
-			uiActionListeners.remove(uiActionlistener);
-		}
-	}
+  public void addUIActionListener(UIActionListener uiActionlistener)
+  {
+    if (!uiActionListeners.contains(uiActionlistener))
+    {
+      uiActionListeners.add(uiActionlistener);
+    }
+  }
+
+  public void removeUIActionListener(UIActionListener uiActionlistener)
+  {
+    if (uiActionListeners.contains(uiActionlistener))
+    {
+      uiActionListeners.remove(uiActionlistener);
+    }
+  }
+
+  public void onApplicationClose()
+  {
+    emitUIAction(UIAction.CLOSE_APPLICATION);
+  }
 
   @FXML
   protected void onButtonTakeOffAction(ActionEvent event)
@@ -167,11 +177,25 @@ public class FxController implements VideoDataListener, NavDataListener, EventHa
       }
     });
   }
-  
+
   // Timer event
   @Override
   public void handle(ActionEvent actionEvent)
   {
-    System.out.println("Event!");
+    if (raceTimer != null)
+    {
+      long totalMillis = raceTimer.getElapsedTime();
+      long seconds = totalMillis / 1000;
+      long millis = totalMillis % 1000;
+
+      labelTimer.setText(String.format("Time: %d,%03d", seconds, millis));
+    }
   }
+
+  public void setRaceTimer(RaceTimer raceTimer)
+  {
+    this.raceTimer = raceTimer;
+  }
+
+
 }

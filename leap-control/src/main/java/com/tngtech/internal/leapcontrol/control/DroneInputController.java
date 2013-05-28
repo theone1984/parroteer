@@ -8,6 +8,7 @@ import com.tngtech.internal.droneapi.data.enums.FlightAnimation;
 import com.tngtech.internal.droneapi.data.enums.LedAnimation;
 import com.tngtech.internal.droneapi.listeners.NavDataListener;
 import com.tngtech.internal.droneapi.listeners.ReadyStateChangeListener;
+import com.tngtech.internal.leapcontrol.helpers.RaceTimer;
 import com.tngtech.internal.leapcontrol.input.leapmotion.data.DetectionData;
 import com.tngtech.internal.leapcontrol.input.leapmotion.data.GestureData;
 import com.tngtech.internal.leapcontrol.input.leapmotion.listeners.DetectionListener;
@@ -35,6 +36,8 @@ public class DroneInputController
 
   private final DroneController droneController;
 
+  private final RaceTimer raceTimer;
+
   private boolean navDataReceived = false;
 
   private float currentHeight;
@@ -46,9 +49,10 @@ public class DroneInputController
   private boolean ready = false;
 
   @Inject
-  public DroneInputController(DroneController droneController)
+  public DroneInputController(DroneController droneController, RaceTimer raceTimer)
   {
     this.droneController = droneController;
+    this.raceTimer = raceTimer;
   }
 
   @Override
@@ -158,10 +162,13 @@ public class DroneInputController
 
   private void takeOff()
   {
+    ready = true;
     if (ready && !flying)
     {
       flying = true;
-      droneController.takeOff();
+
+      raceTimer.start();
+      //droneController.takeOff();
     }
   }
 
@@ -170,7 +177,9 @@ public class DroneInputController
     if (ready && flying)
     {
       flying = false;
-      droneController.land();
+
+      raceTimer.stop();
+      //droneController.land();
     }
   }
 

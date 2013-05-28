@@ -19,7 +19,7 @@ public class RaceTimer
     endTime = new Date();
   }
 
-  public long getElapsedSeconds()
+  public long getElapsedTime()
   {
     if (startTime == null)
     {
