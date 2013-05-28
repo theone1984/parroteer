@@ -54,7 +54,7 @@ public class InternalStateWatcher implements NavDataListener
     }
     if (internalState.isEmergencyRequested() && currentNavData.getState().isEmergency())
     {
-      commands.add(new FlightModeCommand(FlightMode.LAND));
+      commands.add(new FlightModeCommand(FlightMode.EMERGENCY));
     }
     if (internalState.isFlatTrimRequested())
     {
