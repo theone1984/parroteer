@@ -117,6 +117,7 @@ public class DroneController
 
   public void stop()
   {
+    readyStateListenerComponent.emitReadyStateChange(ReadyStateChangeListener.ReadyState.NOT_READY);
     logger.info("Stopping drone controller");
     droneStartupCoordinator.stop();
     executor.shutdownNow();
