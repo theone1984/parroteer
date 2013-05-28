@@ -145,6 +145,11 @@ public class DroneInputController
     currentHeight = navData.getAltitude() < HEIGHT_THRESHOLD ? 0.0f
             : navData.getAltitude();
     flying = navData.getState().isFlying();
+
+    if (navData.getState().isEmergency())
+    {
+      raceTimer.stop();
+    }
   }
 
   @Override
