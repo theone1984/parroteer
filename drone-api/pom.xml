@@ -40,7 +40,7 @@
 		<dependency>
 			<groupId>xuggle</groupId>
 			<artifactId>xuggle-xuggler</artifactId>
-			<version>5.4</version>
+			<version>5.4.1</version>
 		</dependency>
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
@@ -90,8 +90,8 @@
 	</build>
 	<repositories>
 		<repository>
-			<id>tng</id>
-			<url>http://development1.int.tngtech.com/nexus/content/repositories/thirdparty</url>
+			<id>mozquitobytes</id>
+			<url>http://www.mozquitobytes.com:8081/nexus/content/repositories/thirdparty/</url>
 		</repository>
 	</repositories>
 </project>
