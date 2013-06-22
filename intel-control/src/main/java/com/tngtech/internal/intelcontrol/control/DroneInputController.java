@@ -12,6 +12,7 @@ import com.tngtech.internal.intelcontrol.helpers.RaceTimer;
 import com.tngtech.internal.intelcontrol.ui.data.UIAction;
 import com.tngtech.internal.intelcontrol.ui.listeners.UIActionListener;
 import com.tngtech.internal.perceptual.data.events.GestureData;
+import com.tngtech.internal.perceptual.listeners.DetectionListener;
 import com.tngtech.internal.perceptual.listeners.GestureListener;
 
 import org.apache.log4j.Logger;
