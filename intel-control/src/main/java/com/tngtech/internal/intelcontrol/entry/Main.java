@@ -10,7 +10,6 @@ import com.tngtech.internal.intelcontrol.ui.FxWindow;
 import com.tngtech.internal.intelcontrol.ui.data.UIAction;
 import com.tngtech.internal.intelcontrol.ui.listeners.UIActionListener;
 import com.tngtech.internal.perceptual.PerceptualController;
-
 import javafx.stage.Stage;
 import org.apache.log4j.Logger;
 
@@ -22,7 +21,7 @@ public class Main implements ErrorListener, UIActionListener {
     private final DroneController droneController;
 
     private final DroneInputController droneInputController;
-    
+
     private final PerceptualController perceptualController;
 
     private FxController fxController;
@@ -55,9 +54,9 @@ public class Main implements ErrorListener, UIActionListener {
 
         droneController.addNavDataListener(droneInputController);
         droneController.addReadyStateChangeListener(droneInputController);
-        
+
         perceptualController.addGestureListener(droneInputController);
-        
+
         fxController.addUIActionListener(droneInputController);
     }
 
@@ -68,6 +67,8 @@ public class Main implements ErrorListener, UIActionListener {
 
     public void stop() {
         droneController.stop();
+        perceptualController.disconnect();
+
         System.exit(0);
     }
 

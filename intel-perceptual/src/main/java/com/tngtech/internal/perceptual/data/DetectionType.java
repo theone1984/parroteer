@@ -1,10 +1,10 @@
-package com.tngtech.internal.perceptual;
+package com.tngtech.internal.perceptual.data;
 
 import com.tngtech.internal.perceptual.data.body.BodyPart;
-import com.tngtech.internal.perceptual.data.body.Hand;
+import com.tngtech.internal.perceptual.data.body.Hands;
 
 public class DetectionType<T extends BodyPart> {
-    private static DetectionType<Hand> HANDS = new DetectionType<>(Hand.class);
+    public static DetectionType<Hands> HANDS = new DetectionType<>(Hands.class);
 
     private Class<T> bodyPartClass;
 
