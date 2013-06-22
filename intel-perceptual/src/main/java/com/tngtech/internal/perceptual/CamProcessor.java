@@ -2,9 +2,9 @@ package com.tngtech.internal.perceptual;
 
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
-import com.tngtech.internal.perceptual.components.PerceptualQueryComponent;
 import com.tngtech.internal.perceptual.components.DetectionComponent;
 import com.tngtech.internal.perceptual.components.GestureComponent;
+import com.tngtech.internal.perceptual.components.PerceptualQueryComponent;
 
 import java.util.Collection;
 
@@ -47,6 +47,13 @@ public class CamProcessor implements Runnable {
 
         for (PerceptualQueryComponent component : components) {
             component.processFeatures();
+        }
+    }
+
+    private void sleep(int milliSeconds) {
+        try {
+            Thread.sleep(milliSeconds);
+        } catch (InterruptedException e) {
         }
     }
 }
