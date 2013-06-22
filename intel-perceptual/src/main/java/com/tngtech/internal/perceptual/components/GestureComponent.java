@@ -8,7 +8,11 @@ import intel.pcsdk.PXCMGesture;
 
 import java.util.Set;
 
+import org.apache.log4j.Logger;
+
 public class GestureComponent implements PerceptualQueryComponent {
+	private final Logger logger = Logger.getLogger(GestureComponent.class);
+	
     private Set<GestureListener> gestureListeners = Sets.newHashSet();
 
     private PXCMGesture.Gesture gesture = null;
@@ -24,9 +28,12 @@ public class GestureComponent implements PerceptualQueryComponent {
     public void processFeatures() {
         if (gesture.active) {
             if (gesture.label == PXCMGesture.Gesture.LABEL_POSE_THUMB_UP) {
-                invokeGestureListeners(new GestureData(GestureData.GestureType.THUMBS_UP));
+            	logger.info(String.format("Thump up with confidence [%s]", gesture.confidence));
+            	invokeGestureListeners(new GestureData(GestureData.GestureType.THUMBS_UP));
             }
+            
             if (gesture.label == PXCMGesture.Gesture.LABEL_POSE_THUMB_DOWN) {
+            	logger.info(String.format("Thump down with confidence [%s]", gesture.confidence));
                 invokeGestureListeners(new GestureData(GestureData.GestureType.THUMBS_DOWN));
             }
         }

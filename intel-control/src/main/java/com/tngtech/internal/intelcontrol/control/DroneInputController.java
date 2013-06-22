@@ -8,14 +8,17 @@ import com.tngtech.internal.droneapi.data.enums.FlightAnimation;
 import com.tngtech.internal.droneapi.data.enums.LedAnimation;
 import com.tngtech.internal.droneapi.listeners.NavDataListener;
 import com.tngtech.internal.droneapi.listeners.ReadyStateChangeListener;
+import com.tngtech.internal.intelcontrol.helpers.Coordinate;
 import com.tngtech.internal.intelcontrol.helpers.RaceTimer;
 import com.tngtech.internal.intelcontrol.ui.data.UIAction;
 import com.tngtech.internal.intelcontrol.ui.listeners.UIActionListener;
+import com.tngtech.internal.perceptual.data.body.Hand;
 import com.tngtech.internal.perceptual.data.body.Hands;
 import com.tngtech.internal.perceptual.data.events.DetectionData;
 import com.tngtech.internal.perceptual.data.events.GestureData;
 import com.tngtech.internal.perceptual.data.events.HandsDetectionData;
 import com.tngtech.internal.perceptual.data.events.GestureData.GestureType;
+import com.tngtech.internal.perceptual.debug.DebugHelper;
 import com.tngtech.internal.perceptual.listeners.DetectionListener;
 import com.tngtech.internal.perceptual.listeners.GestureListener;
 
@@ -47,6 +50,10 @@ public class DroneInputController implements ReadyStateChangeListener, NavDataLi
 	private boolean expertMode = false;
 
 	private boolean ready = false;
+	
+	private Coordinate leftHandReferenceCoordinates;
+	
+	private Coordinate rightHandReferenceCoordinates;
 
 	@Inject
 	public DroneInputController(DroneController droneController, RaceTimer raceTimer) {
@@ -167,9 +174,11 @@ public class DroneInputController implements ReadyStateChangeListener, NavDataLi
 	public void onGesture(GestureData gestureData) {
 		switch (gestureData.getGestureType()) {
 		case THUMBS_UP:
+			logger.info("Thumbs up detected.");
 			takeOff();
 			break;
 		case THUMBS_DOWN:
+			logger.info("Thumbs down detected.");
 			land();
 			break;
 		}
@@ -179,8 +188,41 @@ public class DroneInputController implements ReadyStateChangeListener, NavDataLi
 	public void onDetection(DetectionData<Hands> handsDetectionData ) {
 		HandsDetectionData data = (HandsDetectionData) handsDetectionData;
 		
-		if ( data.getRightHand().isActive() ) {
-			System.out.println("--->" + data.getRightHand().getZ());
+		Hand leftHand = data.getLeftHand();		
+		Hand rightHand = data.getRightHand();
+		
+		if ( leftHand.isActive() && rightHand.isActive() ) {
+			logger.debug(String.format("Right X: [%s], Left X: [%s]", rightHand.getX(), leftHand.getX()));
+			
+			// As long as the drone is not in the air save last coordinates as reference
+			// This will stop, when the THUMBS_UP gesture is recognized
+			if ( ready && !flying ) {
+				rightHandReferenceCoordinates = new Coordinate(rightHand.getX(), rightHand.getY(), rightHand.getZ());
+				leftHandReferenceCoordinates = new Coordinate(leftHand.getX(), leftHand.getY(), leftHand.getZ());
+			}
+			
+			float roll = leftHand.getY()-rightHand.getY();
+			roll = roll * Math.abs(roll);
+			roll = roll/0.04f;
+			
+			float pitch = ((leftHand.getZ()-leftHandReferenceCoordinates.getZ())+(rightHand.getZ()-rightHandReferenceCoordinates.z))/2;
+			//pitch = pitch * Math.abs(pitch);
+			pitch = pitch/0.2f;
+			
+			float yaw = rightHand.getZ()-leftHand.getZ();
+			yaw = yaw * Math.abs(yaw);
+			yaw = yaw/0.02f;
+			
+			float height = (leftHand.getY() + rightHand.getY())/2;
+			height = height/0.15f;
+			
+			if ( Math.abs(yaw) > 0.3 ) {
+				move(roll, 0, yaw, height);
+			} else {
+				move(roll, pitch, yaw, height);
+			}
+			
+			logger.debug(String.format("Roll: [%s], Pitch: [%s], Yaw: [%s], Height: [%s]", roll, pitch, yaw, height));
 		}
 	}
 }
