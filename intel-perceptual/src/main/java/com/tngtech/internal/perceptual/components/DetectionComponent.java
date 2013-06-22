@@ -42,7 +42,6 @@ public class DetectionComponent implements PerceptualQueryComponent {
     }
 
     public <T extends BodyPart> void addDetectionListener(DetectionType<T> detectionType, DetectionListener<T> listener) {
-
         if (!detectionListeners.containsKey(detectionType)) {
             detectionListeners.put(detectionType, Sets.<DetectionListener<?>>newLinkedHashSet());
         }
@@ -55,7 +54,6 @@ public class DetectionComponent implements PerceptualQueryComponent {
     }
 
     public <T extends BodyPart> void removeDetectionListener(DetectionType<T> detectionType, DetectionListener<T> listener) {
-
         if (!detectionListeners.containsKey(detectionType)) {
             return;
         }
@@ -72,11 +70,11 @@ public class DetectionComponent implements PerceptualQueryComponent {
             return;
         }
 
-        //noinspection unchecked
-        //Set<DetectionListener<T>> listeners = (Set<DetectionListener<T>>) detectionListeners.get(detectionType);
+        Set<DetectionListener<?>> listeners = detectionListeners.get(detectionType);
 
-        //for (DetectionListener<T> detectionListener : listeners) {
-        //    detectionListener.onDetection(data);
-        //}
+        for (DetectionListener<?> detectionListener : listeners) {
+        	DetectionListener<T> specificListener = (DetectionListener<T>) detectionListener;
+            specificListener.onDetection(data);
+        }
     }
 }

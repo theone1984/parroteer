@@ -10,6 +10,8 @@ import com.tngtech.internal.intelcontrol.ui.FxWindow;
 import com.tngtech.internal.intelcontrol.ui.data.UIAction;
 import com.tngtech.internal.intelcontrol.ui.listeners.UIActionListener;
 import com.tngtech.internal.perceptual.PerceptualController;
+import com.tngtech.internal.perceptual.data.DetectionType;
+
 import javafx.stage.Stage;
 import org.apache.log4j.Logger;
 
@@ -56,6 +58,7 @@ public class Main implements ErrorListener, UIActionListener {
         droneController.addReadyStateChangeListener(droneInputController);
 
         perceptualController.addGestureListener(droneInputController);
+        perceptualController.addDetectionListener(DetectionType.HANDS, droneInputController);
 
         fxController.addUIActionListener(droneInputController);
     }
