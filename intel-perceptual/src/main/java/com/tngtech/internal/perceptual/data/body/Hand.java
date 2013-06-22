@@ -5,21 +5,10 @@ import intel.pcsdk.PXCMPoint3DF32;
 
 public class Hand implements BodyPart {
 
-    public enum HandType {
-        LEFT_HAND,
-        RIGHT_HAND
-    }
-
-    private HandType handType;
-
     private GeoNode geoData;
 
-    public Hand(HandType handType, GeoNode geoNode) {
+    public Hand(GeoNode geoNode) {
         this.geoData = geoNode;
-    }
-
-    public HandType getHandType() {
-        return handType;
     }
 
     public float getX() {
@@ -51,6 +40,6 @@ public class Hand implements BodyPart {
     }
 
     private PXCMPoint3DF32 getPositionWorld() {
-        return geoData.positionWorld;
+        return this.geoData.positionWorld;
     }
 }

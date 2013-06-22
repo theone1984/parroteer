@@ -9,6 +9,8 @@ import com.tngtech.internal.intelcontrol.ui.FxController;
 import com.tngtech.internal.intelcontrol.ui.FxWindow;
 import com.tngtech.internal.intelcontrol.ui.data.UIAction;
 import com.tngtech.internal.intelcontrol.ui.listeners.UIActionListener;
+import com.tngtech.internal.perceptual.PerceptualController;
+
 import javafx.stage.Stage;
 import org.apache.log4j.Logger;
 
@@ -20,14 +22,17 @@ public class Main implements ErrorListener, UIActionListener {
     private final DroneController droneController;
 
     private final DroneInputController droneInputController;
+    
+    private final PerceptualController perceptualController;
 
     private FxController fxController;
 
     @Inject
-    public Main(FxWindow fxWindow, DroneController droneController, DroneInputController droneInputController) {
+    public Main(FxWindow fxWindow, DroneController droneController, DroneInputController droneInputController, PerceptualController perceptualController) {
         this.fxWindow = fxWindow;
         this.droneController = droneController;
         this.droneInputController = droneInputController;
+        this.perceptualController = perceptualController;
     }
 
     public void start(Stage primaryStage) {
@@ -50,11 +55,15 @@ public class Main implements ErrorListener, UIActionListener {
 
         droneController.addNavDataListener(droneInputController);
         droneController.addReadyStateChangeListener(droneInputController);
+        
+        perceptualController.addGestureListener(droneInputController);
+        
         fxController.addUIActionListener(droneInputController);
     }
 
     private void startComponents() {
         droneController.startAsync(new Config("com.tngtech.internal.leap-drone", "myProfile", 2));
+        perceptualController.connect();
     }
 
     public void stop() {
