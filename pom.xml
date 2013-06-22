@@ -12,5 +12,7 @@
     <modules>
         <module>drone-api</module>
         <module>leap-control</module>
+        <module>intel-control</module>
+        <module>intel-perceptual</module>
     </modules>
 </project>
