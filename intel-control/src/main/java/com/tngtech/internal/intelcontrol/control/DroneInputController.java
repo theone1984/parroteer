@@ -50,9 +50,9 @@ public class DroneInputController implements ReadyStateChangeListener, NavDataLi
 	private boolean expertMode = false;
 
 	private boolean ready = false;
-	
+
 	private Coordinate leftHandReferenceCoordinates;
-	
+
 	private Coordinate rightHandReferenceCoordinates;
 
 	@Inject
@@ -181,47 +181,52 @@ public class DroneInputController implements ReadyStateChangeListener, NavDataLi
 			logger.info("Thumbs down detected.");
 			land();
 			break;
+		case BIG_FIVE:
+			logger.info("Big Five detected.");
+			emergency();
+			break;
 		}
 	}
 
 	@Override
-	public void onDetection(DetectionData<Hands> handsDetectionData ) {
+	public void onDetection(DetectionData<Hands> handsDetectionData) {
 		HandsDetectionData data = (HandsDetectionData) handsDetectionData;
-		
-		Hand leftHand = data.getLeftHand();		
+
+		Hand leftHand = data.getLeftHand();
 		Hand rightHand = data.getRightHand();
-		
-		if ( leftHand.isActive() && rightHand.isActive() ) {
+
+		if (leftHand.isActive() && rightHand.isActive()) {
 			logger.debug(String.format("Right X: [%s], Left X: [%s]", rightHand.getX(), leftHand.getX()));
-			
-			// As long as the drone is not in the air save last coordinates as reference
+
+			// As long as the drone is not in the air save last coordinates as
+			// reference
 			// This will stop, when the THUMBS_UP gesture is recognized
-			if ( ready && !flying ) {
+			if (ready && !flying) {
 				rightHandReferenceCoordinates = new Coordinate(rightHand.getX(), rightHand.getY(), rightHand.getZ());
 				leftHandReferenceCoordinates = new Coordinate(leftHand.getX(), leftHand.getY(), leftHand.getZ());
 			}
-			
-			float roll = leftHand.getY()-rightHand.getY();
+
+			float roll = leftHand.getY() - rightHand.getY();
 			roll = roll * Math.abs(roll);
-			roll = roll/0.04f;
-			
-			float pitch = ((leftHand.getZ()-leftHandReferenceCoordinates.getZ())+(rightHand.getZ()-rightHandReferenceCoordinates.z))/2;
-			//pitch = pitch * Math.abs(pitch);
-			pitch = pitch/0.2f;
-			
-			float yaw = rightHand.getZ()-leftHand.getZ();
+			roll = roll / 0.04f;
+
+			float pitch = ((leftHand.getZ() - leftHandReferenceCoordinates.getZ()) + (rightHand.getZ() - rightHandReferenceCoordinates.z)) / 2;
+			// pitch = pitch * Math.abs(pitch);
+			pitch = pitch / 0.04f;
+
+			float yaw = rightHand.getZ() - leftHand.getZ();
 			yaw = yaw * Math.abs(yaw);
-			yaw = yaw/0.02f;
-			
-			float height = (leftHand.getY() + rightHand.getY())/2;
-			height = height/0.15f;
-			
-			if ( Math.abs(yaw) > 0.3 ) {
+			yaw = yaw / 0.02f;
+
+			float height = (leftHand.getY() + rightHand.getY()) / 2;
+			height = height / 0.15f;
+
+			if (Math.abs(yaw) > 0.3) {
 				move(roll, 0, yaw, height);
 			} else {
 				move(roll, pitch, yaw, height);
 			}
-			
+
 			logger.debug(String.format("Roll: [%s], Pitch: [%s], Yaw: [%s], Height: [%s]", roll, pitch, yaw, height));
 		}
 	}

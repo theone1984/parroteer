@@ -27,6 +27,7 @@ public class GestureComponent implements PerceptualQueryComponent {
         put(PXCMGesture.Gesture.LABEL_ANY, GestureData.GestureType.NONE);
         put(PXCMGesture.Gesture.LABEL_POSE_THUMB_UP, GestureData.GestureType.THUMBS_UP);
         put(PXCMGesture.Gesture.LABEL_POSE_THUMB_DOWN, GestureData.GestureType.THUMBS_DOWN);
+        put(PXCMGesture.Gesture.LABEL_POSE_BIG5, GestureData.GestureType.BIG_FIVE);
     }};
 
     public GestureComponent() {
