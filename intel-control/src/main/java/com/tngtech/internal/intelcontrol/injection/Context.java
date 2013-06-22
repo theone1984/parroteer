@@ -9,6 +9,7 @@ import com.tngtech.internal.intelcontrol.control.DroneInputController;
 import com.tngtech.internal.intelcontrol.entry.Main;
 import com.tngtech.internal.intelcontrol.helpers.RaceTimer;
 import com.tngtech.internal.intelcontrol.ui.FxWindow;
+import com.tngtech.internal.perceptual.PerceptualController;
 
 
 public class Context extends AbstractModule {
@@ -34,6 +35,7 @@ public class Context extends AbstractModule {
         bind(FxWindow.class).in(Singleton.class);
 
         bind(DroneController.class).toProvider(DroneControllerProvider.class);
+        bind(PerceptualController.class).toProvider(PerceptualControllerProvider.class);
 
         bind(RaceTimer.class).in(Singleton.class);
     }

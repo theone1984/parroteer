@@ -11,11 +11,13 @@ import com.tngtech.internal.droneapi.listeners.ReadyStateChangeListener;
 import com.tngtech.internal.intelcontrol.helpers.RaceTimer;
 import com.tngtech.internal.intelcontrol.ui.data.UIAction;
 import com.tngtech.internal.intelcontrol.ui.listeners.UIActionListener;
+import com.tngtech.internal.perceptual.data.events.GestureData;
+import com.tngtech.internal.perceptual.listeners.GestureListener;
+
 import org.apache.log4j.Logger;
 
-
 public class DroneInputController
-        implements ReadyStateChangeListener, NavDataListener, UIActionListener {
+        implements ReadyStateChangeListener, NavDataListener, UIActionListener, GestureListener {
     private static final float PITCH_DECAY = 0.5f;
 
     private static final float ROLL_DECAY = 0.5f;
@@ -156,4 +158,9 @@ public class DroneInputController
             ready = false;
         }
     }
+
+	@Override
+	public void onGesture(GestureData gestureData) {
+		System.out.println("Gesture detected!");
+	}
 }

@@ -1,4 +1,4 @@
-package com.tngtech.internal.perceptual.body;
+package com.tngtech.internal.perceptual.data.body;
 
 import intel.pcsdk.PXCMGesture.GeoNode;
 import intel.pcsdk.PXCMPoint3DF32;
