@@ -21,7 +21,7 @@ import java.util.Set;
 public class DetectionComponent implements PerceptualQueryComponent {
 
     private List<Coordinate> coordinates;
-    private List<Float> coordinateWeights = Lists.newArrayList(1.0f, 0.5f, 0.5f);
+    private List<Float> coordinateWeights = Lists.newArrayList(1.0f, 1.0f, 1.0f);
 
     private Map<DetectionType<?>, Set<DetectionListener<?>>> detectionListeners;
     private PXCMGesture.GeoNode leftHandGeoNode;
@@ -59,6 +59,10 @@ public class DetectionComponent implements PerceptualQueryComponent {
     }
 
     private Coordinate getSmoothedCoordinate(PXCMGesture.GeoNode handGeoNode) {
+        if (handGeoNode.positionWorld == null) {
+            return CoordinateHelper.getIdentity();
+        }
+
         coordinates.add(getCoordinate(handGeoNode));
         if (coordinates.size() > coordinateWeights.size()) {
             coordinates.remove(0);
@@ -67,12 +71,14 @@ public class DetectionComponent implements PerceptualQueryComponent {
         Coordinate currentCoordinate = CoordinateHelper.getIdentity();
         float sumOfWeights = 0.0f;
         for (int i = 0; i < coordinates.size(); i++) {
-            float weight = coordinateWeights.get(i);
-            currentCoordinate = CoordinateHelper.add(currentCoordinate, CoordinateHelper.multiply(coordinates.get(i), weight));
-            sumOfWeights += weight;
+            if (!CoordinateHelper.isIdentity(coordinates.get(i))) {
+                float weight = coordinateWeights.get(i);
+                currentCoordinate = CoordinateHelper.add(currentCoordinate, CoordinateHelper.multiply(coordinates.get(i), weight));
+                sumOfWeights += weight;
+            }
         }
 
-        return CoordinateHelper.divide(currentCoordinate, sumOfWeights);
+        return sumOfWeights > 0.0f ? CoordinateHelper.divide(currentCoordinate, sumOfWeights) : CoordinateHelper.getIdentity();
     }
 
     private Coordinate getCoordinate(PXCMGesture.GeoNode handGeoNode) {
@@ -84,7 +90,7 @@ public class DetectionComponent implements PerceptualQueryComponent {
     }
 
     private boolean isActive(PXCMGesture.GeoNode handGeoNode) {
-        return handGeoNode.positionWorld == null;
+        return handGeoNode.positionWorld != null;
     }
 
     public <T extends BodyPart> void addDetectionListener(DetectionType<T> detectionType, DetectionListener<T> listener) {
