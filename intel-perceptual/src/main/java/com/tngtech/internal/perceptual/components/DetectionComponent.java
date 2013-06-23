@@ -76,7 +76,11 @@ public class DetectionComponent implements PerceptualQueryComponent {
     }
 
     private Coordinate getCoordinate(PXCMGesture.GeoNode handGeoNode) {
-        return new Coordinate(handGeoNode.positionWorld.x, handGeoNode.positionWorld.z, handGeoNode.positionWorld.y);
+        if (handGeoNode.positionWorld != null) {
+            return new Coordinate(handGeoNode.positionWorld.x, handGeoNode.positionWorld.z, handGeoNode.positionWorld.y);
+        } else {
+            return CoordinateHelper.getIdentity();
+        }
     }
 
     private boolean isActive(PXCMGesture.GeoNode handGeoNode) {
