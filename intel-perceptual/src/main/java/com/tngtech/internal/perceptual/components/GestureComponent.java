@@ -1,5 +1,7 @@
 package com.tngtech.internal.perceptual.components;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.tngtech.internal.perceptual.PerceptualPipeline;
 import com.tngtech.internal.perceptual.data.events.GestureData;
@@ -7,15 +9,20 @@ import com.tngtech.internal.perceptual.listeners.GestureListener;
 import intel.pcsdk.PXCMGesture;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 public class GestureComponent implements PerceptualQueryComponent {
+    private int GESTURE_NUBMER_THRESHOLD = 5;
+
+    private int NUMBER_OF_GESTURE_SAMPLES = 15000;
+
     private Set<GestureListener> gestureListeners = Sets.newHashSet();
 
     private PXCMGesture.Gesture gesture;
 
-    private boolean activeBefore = false, activeBeforeLastTime = false;
+    private List<Integer> lastGestureLabels = Lists.newArrayList();
 
     private GestureData.GestureType currentlyActiveGestureType;
 
@@ -37,22 +44,62 @@ public class GestureComponent implements PerceptualQueryComponent {
 
     @Override
     public void processFeatures() {
+        addLabelToLastGestureLabels();
+        Map<Integer, Integer> labelCountMap = determineLabelCountMap();
+        Integer detectedLabel = getDetectedLabel(labelCountMap);
 
-        if ((!gesture.active && (activeBefore || activeBeforeLastTime)) || !gestureTypeMap.containsKey(gesture.label)) {
-            activeBeforeLastTime = activeBefore;
-            activeBefore = gesture.active;
+        if (!gestureTypeMap.containsKey(detectedLabel)) {
             return;
         }
+        GestureData.GestureType gestureType = gestureTypeMap.get(detectedLabel);
+        invokeGesture(gestureType);
+    }
 
-        GestureData.GestureType gestureType = gestureTypeMap.get(gesture.label);
+    private void addLabelToLastGestureLabels() {
+        lastGestureLabels.add(gesture.label);
+        while (lastGestureLabels.size() > NUMBER_OF_GESTURE_SAMPLES) {
+            lastGestureLabels.remove(0);
+        }
+    }
 
+    private Map<Integer, Integer> determineLabelCountMap() {
+        Map<Integer, Integer> gestureLabelCount = Maps.newHashMap();
+        for (Integer label : lastGestureLabels) {
+            if (label == PXCMGesture.Gesture.LABEL_ANY) {
+                continue;
+            }
+
+            if (!gestureLabelCount.containsKey(label)) {
+                gestureLabelCount.put(label, 0);
+            }
+
+            int oldCount = gestureLabelCount.get(label);
+            gestureLabelCount.put(label, oldCount + 1);
+        }
+        return gestureLabelCount;
+    }
+
+    private Integer getDetectedLabel(Map<Integer, Integer> gestureLabelCount) {
+        Integer labelWithHighestEntryCount = PXCMGesture.Gesture.LABEL_ANY;
+        Integer maxCount = 0;
+        for (Map.Entry<Integer, Integer> entry : gestureLabelCount.entrySet()) {
+            int currentLabel = entry.getKey();
+            int currentCount = entry.getValue();
+
+            if (currentCount > maxCount) {
+                labelWithHighestEntryCount = currentLabel;
+                maxCount = currentCount;
+            }
+        }
+
+        return maxCount > GESTURE_NUBMER_THRESHOLD ? labelWithHighestEntryCount : PXCMGesture.Gesture.LABEL_ANY;
+    }
+
+    private void invokeGesture(GestureData.GestureType gestureType) {
         if (currentlyActiveGestureType != gestureType) {
             currentlyActiveGestureType = gestureType;
             invokeGestureListeners(new GestureData(gestureType));
         }
-
-        activeBeforeLastTime = activeBefore;
-        activeBefore = gesture.active;
     }
 
     public void addGestureListener(GestureListener gestureListener) {
