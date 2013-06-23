@@ -214,8 +214,8 @@ public class DroneInputController implements ReadyStateChangeListener, NavDataLi
 				float yaw = getYaw(leftHand, rightHand);
 				float height = getHeight(leftHand, rightHand);
 
-				if (Math.abs(yaw) > 0.2) {
-					move(roll, 0, yaw, height);
+				if (Math.abs(yaw) > 0.1) {
+					move(0, 0, yaw, height);
 				} else {
 					move(roll, pitch, yaw, height);
 				}
@@ -236,7 +236,7 @@ public class DroneInputController implements ReadyStateChangeListener, NavDataLi
 		float yaw = rightHand.getZ() - leftHand.getZ();
 		yaw = yaw * Math.abs(yaw);
 		yaw = yaw / 0.03f;
-		if (Math.abs(yaw) <= 0.2f) {
+		if (Math.abs(yaw) <= 0.1f) {
 			yaw = 0;
 		}
 		return yaw;
@@ -246,7 +246,7 @@ public class DroneInputController implements ReadyStateChangeListener, NavDataLi
 		float pitch = ((leftHand.getZ() - leftHandReferenceCoordinates.getZ()) + (rightHand.getZ() - rightHandReferenceCoordinates.z)) / 2;
 		// pitch = pitch * Math.abs(pitch);
 		pitch = pitch / 0.4f;
-		if (Math.abs(pitch) <= 0.2f) {
+		if (Math.abs(pitch) <= 0.1f) {
 			pitch = 0;
 		}
 		return pitch;
@@ -256,7 +256,7 @@ public class DroneInputController implements ReadyStateChangeListener, NavDataLi
 		float roll = leftHand.getY() - rightHand.getY();
 		roll = roll * Math.abs(roll);
 		roll = roll / 0.015f;
-		if (Math.abs(roll) <= 0.2f) {
+		if (Math.abs(roll) <= 0.1) {
 			roll = 0;
 		}
 		return roll;
