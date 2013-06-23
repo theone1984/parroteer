@@ -38,6 +38,15 @@ public class DetectionComponent implements PerceptualQueryComponent {
         Hand rightHand = new Hand(rightHandGeoNode);
         Hand leftHand = new Hand(leftHandGeoNode);
 
+        //Sometimes Hands are mixed up. Switch them in case that x-position of right hand is greater than left hands x-position
+        if ( rightHand.isActive() && leftHand.isActive() ) {
+        	if ( rightHand.getX() > leftHand.getX() ) {
+            	Hand temporaryRightHand = rightHand;
+            	rightHand = leftHand;
+            	leftHand = temporaryRightHand;
+            }
+        }
+        
         invokeDetectionListeners(DetectionType.HANDS, new HandsDetectionData(leftHand, rightHand));
     }
 
