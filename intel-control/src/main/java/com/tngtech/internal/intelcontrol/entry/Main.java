@@ -64,12 +64,12 @@ public class Main implements ErrorListener, UIActionListener {
     }
 
     private void startComponents() {
-        //droneController.startAsync(new Config("com.tngtech.internal.leap-drone", "myProfile", 2));
+        droneController.startAsync(new Config("com.tngtech.internal.leap-drone", "myProfile", 2));
         perceptualController.connect();
     }
 
     public void stop() {
-        //droneController.stop();
+        droneController.stop();
         perceptualController.disconnect();
 
         System.exit(0);
