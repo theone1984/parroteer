@@ -11,7 +11,6 @@ import com.tngtech.internal.intelcontrol.ui.data.UIAction;
 import com.tngtech.internal.intelcontrol.ui.listeners.UIActionListener;
 import com.tngtech.internal.perceptual.PerceptualController;
 import com.tngtech.internal.perceptual.data.DetectionType;
-
 import javafx.stage.Stage;
 import org.apache.log4j.Logger;
 
