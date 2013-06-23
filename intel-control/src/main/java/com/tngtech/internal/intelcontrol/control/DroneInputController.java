@@ -24,6 +24,10 @@ import org.apache.log4j.Logger;
 public class DroneInputController implements ReadyStateChangeListener, NavDataListener, UIActionListener,
         DetectionListener<Hands>, GestureListener {
 
+    private static final float MAX_HEIGHT = 2.0f;
+
+    private static final float HEIGHT_THRESHOLD = 0.25f;
+
     private final Logger logger = Logger.getLogger(DroneInputController.class);
 
     private final DroneController droneController;
@@ -33,6 +37,8 @@ public class DroneInputController implements ReadyStateChangeListener, NavDataLi
     private boolean flying = false;
 
     private boolean ready = false;
+
+    private float currentHeight;
 
     private Coordinate leftHandReferenceCoordinates;
 
@@ -76,6 +82,7 @@ public class DroneInputController implements ReadyStateChangeListener, NavDataLi
     @Override
     public void onNavData(NavData navData) {
         flying = navData.getState().isFlying();
+        currentHeight = navData.getAltitude() < HEIGHT_THRESHOLD ? 0.0f : navData.getAltitude();
 
         if (navData.getState().isEmergency()) {
             raceTimer.stop();
@@ -181,16 +188,17 @@ public class DroneInputController implements ReadyStateChangeListener, NavDataLi
                 float roll = getRoll(leftHand, rightHand);
                 float pitch = getPitch(leftHand, rightHand);
                 float yaw = getYaw(leftHand, rightHand);
-                float height = getHeight(leftHand, rightHand);
+                float desiredHeight = getDesiredHeight(leftHand, rightHand);
+                float heightDelta = calculateHeightDelta(desiredHeight);
 
                 if (Math.abs(yaw) > 0.1) {
-                    move(0, 0, yaw, height);
+                    move(0, 0, yaw, heightDelta);
                 } else {
-                    move(roll, pitch, yaw, height);
+                    move(roll, pitch, yaw, heightDelta);
                 }
 
                 logger.debug(String
-                        .format("Roll: [%s], Pitch: [%s], Yaw: [%s], Height: [%s]", roll, pitch, yaw, height));
+                        .format("Roll: [%s], Pitch: [%s], Yaw: [%s], Height: [%s]", roll, pitch, yaw, heightDelta));
             }
         } else if ((System.currentTimeMillis() - lastCommandTimestamp) >= 50) {
             // Failsafe - If no information about hands is available don't move
@@ -198,10 +206,13 @@ public class DroneInputController implements ReadyStateChangeListener, NavDataLi
         }
     }
 
-    private float getHeight(Hand leftHand, Hand rightHand) {
+    private float getDesiredHeight(Hand leftHand, Hand rightHand) {
         float height = (leftHand.getCoordinate().getY() + rightHand.getCoordinate().getY()) / 2;
-        height = height / 0.15f;
-        return height;
+        return (height / 0.15f + 0.3f) * MAX_HEIGHT;
+    }
+
+    private float calculateHeightDelta(float desiredHeight) {
+        return 3 * (desiredHeight - currentHeight) / MAX_HEIGHT;
     }
 
     private float getYaw(Hand leftHand, Hand rightHand) {
