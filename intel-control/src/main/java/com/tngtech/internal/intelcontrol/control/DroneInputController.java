@@ -57,6 +57,8 @@ public class DroneInputController implements ReadyStateChangeListener, NavDataLi
 	private Coordinate3D leftHandReferenceCoordinates;
 
 	private Coordinate3D rightHandReferenceCoordinates;
+	
+	private long lastCommandTimestamp;
 
 	@Inject
 	public DroneInputController(DroneController droneController, RaceTimer raceTimer) {
@@ -200,6 +202,7 @@ public class DroneInputController implements ReadyStateChangeListener, NavDataLi
 		Hand rightHand = data.getRightHand();
 
 		if (leftHand.isActive() && rightHand.isActive()) {
+			lastCommandTimestamp = System.currentTimeMillis();
 			// As long as the drone is not in the air save last coordinates as
 			// reference
 			// This will stop, when the THUMBS_UP gesture is recognized
@@ -223,6 +226,9 @@ public class DroneInputController implements ReadyStateChangeListener, NavDataLi
 				logger.debug(String
 						.format("Roll: [%s], Pitch: [%s], Yaw: [%s], Height: [%s]", roll, pitch, yaw, height));
 			}
+		} else if ( (System.currentTimeMillis() - lastCommandTimestamp) >= 50 ) {
+			// Failsafe - If no information about hands is available don't move 
+			move(0, 0, 0, 0);
 		}
 	}
 
