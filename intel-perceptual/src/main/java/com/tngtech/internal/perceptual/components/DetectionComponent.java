@@ -21,7 +21,7 @@ import java.util.Set;
 public class DetectionComponent implements PerceptualQueryComponent {
 
     private List<Coordinate> coordinates;
-    private List<Float> coordinateWeights = Lists.newArrayList(1.0f, 0.5f, 0.2f);
+    private List<Float> coordinateWeights = Lists.newArrayList(1.0f, 0.0f, 0.0f);
 
     private Map<DetectionType<?>, Set<DetectionListener<?>>> detectionListeners;
     private PXCMGesture.GeoNode leftHandGeoNode;

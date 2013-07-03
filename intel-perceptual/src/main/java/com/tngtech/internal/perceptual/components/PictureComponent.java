@@ -5,10 +5,8 @@ import com.tngtech.internal.perceptual.PerceptualPipeline;
 import com.tngtech.internal.perceptual.data.events.PictureData;
 import com.tngtech.internal.perceptual.listeners.PictureListener;
 
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
+import java.awt.*;
+import java.awt.image.*;
 import java.util.Set;
 
 public class PictureComponent implements PerceptualQueryComponent {
@@ -46,14 +44,10 @@ public class PictureComponent implements PerceptualQueryComponent {
     private void querySize(PerceptualPipeline pipeline) {
 
         pictureAvailable = pipeline.QueryRGBSize(pictureDimensions);
-
-        System.out.println("size");
     }
 
     private void queryPicture(PerceptualPipeline pipeline) {
         pictureAvailable = pipeline.QueryRGB(pictureBuffer);
-
-        System.out.println("picture");
     }
 
     private boolean isPictureNeeded() {
@@ -87,12 +81,11 @@ public class PictureComponent implements PerceptualQueryComponent {
     }
 
     private BufferedImage getBufferedImage(int[] pictureBuffer) {
-        BufferedImage image = new BufferedImage(pictureDimensions[0], pictureDimensions[1], BufferedImage.TYPE_INT_RGB);
-        for (int x = 0; x < pictureDimensions[0]; x++) {
-            for (int y = 0; y < pictureDimensions[1]; y++) {
-                image.setRGB(x, y, pictureBuffer[y * pictureDimensions[0] + x]);
-            }
-        }
+        int[] bitMasks = new int[]{0xFF0000, 0xFF00, 0xFF, 0xFF000000};
+        SinglePixelPackedSampleModel sm = new SinglePixelPackedSampleModel(DataBuffer.TYPE_INT, pictureDimensions[0], pictureDimensions[1], bitMasks);
+        DataBufferInt db = new DataBufferInt(pictureBuffer, pictureBuffer.length);
+        WritableRaster wr = Raster.createWritableRaster(sm, db, new Point());
+        BufferedImage image = new BufferedImage(ColorModel.getRGBdefault(), wr, false, null);
 
         return image;
     }

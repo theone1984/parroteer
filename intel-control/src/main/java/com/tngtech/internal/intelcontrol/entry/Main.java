@@ -63,6 +63,7 @@ public class Main implements ErrorListener, UIActionListener {
         droneController.addReadyStateChangeListener(droneInputController);
 
         perceptualController.addPictureListener(swingWindow);
+        perceptualController.addDetectionListener(DetectionType.HANDS, swingWindow);
         perceptualController.addGestureListener(droneInputController);
         perceptualController.addDetectionListener(DetectionType.HANDS, droneInputController);
 
