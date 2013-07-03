@@ -2,11 +2,11 @@ package com.tngtech.internal.intelcontrol.entry;
 
 import com.google.inject.Inject;
 import com.tngtech.internal.droneapi.DroneController;
-import com.tngtech.internal.droneapi.data.Config;
 import com.tngtech.internal.droneapi.listeners.ErrorListener;
 import com.tngtech.internal.intelcontrol.control.DroneInputController;
 import com.tngtech.internal.intelcontrol.ui.FxController;
 import com.tngtech.internal.intelcontrol.ui.FxWindow;
+import com.tngtech.internal.intelcontrol.ui.SwingWindow;
 import com.tngtech.internal.intelcontrol.ui.data.UIAction;
 import com.tngtech.internal.intelcontrol.ui.listeners.UIActionListener;
 import com.tngtech.internal.perceptual.PerceptualController;
@@ -19,6 +19,8 @@ public class Main implements ErrorListener, UIActionListener {
 
     private final FxWindow fxWindow;
 
+    private final SwingWindow swingWindow;
+
     private final DroneController droneController;
 
     private final DroneInputController droneInputController;
@@ -28,8 +30,10 @@ public class Main implements ErrorListener, UIActionListener {
     private FxController fxController;
 
     @Inject
-    public Main(FxWindow fxWindow, DroneController droneController, DroneInputController droneInputController, PerceptualController perceptualController) {
+    public Main(FxWindow fxWindow, SwingWindow swingWindow, DroneController droneController,
+                DroneInputController droneInputController, PerceptualController perceptualController) {
         this.fxWindow = fxWindow;
+        this.swingWindow = swingWindow;
         this.droneController = droneController;
         this.droneInputController = droneInputController;
         this.perceptualController = perceptualController;
@@ -44,6 +48,8 @@ public class Main implements ErrorListener, UIActionListener {
 
     private void startWindow(Stage primaryStage) {
         fxController = fxWindow.start(primaryStage);
+
+        swingWindow.start();
     }
 
     private void addEventListeners() {
@@ -56,6 +62,7 @@ public class Main implements ErrorListener, UIActionListener {
         droneController.addNavDataListener(droneInputController);
         droneController.addReadyStateChangeListener(droneInputController);
 
+        perceptualController.addPictureListener(swingWindow);
         perceptualController.addGestureListener(droneInputController);
         perceptualController.addDetectionListener(DetectionType.HANDS, droneInputController);
 
@@ -63,12 +70,12 @@ public class Main implements ErrorListener, UIActionListener {
     }
 
     private void startComponents() {
-        droneController.startAsync(new Config("com.tngtech.internal.leap-drone", "myProfile", 2));
+        //droneController.startAsync(new Config("com.tngtech.internal.leap-drone", "myProfile", 2));
         perceptualController.connect();
     }
 
     public void stop() {
-        droneController.stop();
+        //droneController.stop();
         perceptualController.disconnect();
 
         System.exit(0);

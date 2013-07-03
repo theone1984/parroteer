@@ -5,6 +5,7 @@ import com.google.inject.Inject;
 import com.tngtech.internal.perceptual.components.DetectionComponent;
 import com.tngtech.internal.perceptual.components.GestureComponent;
 import com.tngtech.internal.perceptual.components.PerceptualQueryComponent;
+import com.tngtech.internal.perceptual.components.PictureComponent;
 
 import java.util.Collection;
 
@@ -17,11 +18,11 @@ public class CamProcessor implements Runnable {
     private boolean stopped;
 
     @Inject
-    public CamProcessor(PerceptualPipeline pipeline, GestureComponent gestureComponent,
-                        DetectionComponent detectionComponent) {
+    public CamProcessor(PerceptualPipeline pipeline, PictureComponent pictureComponent,
+                        GestureComponent gestureComponent, DetectionComponent detectionComponent) {
         this.pipeline = pipeline;
 
-        components = Lists.newArrayList(gestureComponent, detectionComponent);
+        components = Lists.newArrayList(pictureComponent, gestureComponent, detectionComponent);
         stopped = false;
     }
 
@@ -37,7 +38,7 @@ public class CamProcessor implements Runnable {
     }
 
     public void queryFrame() {
-        pipeline.AcquireFrame(false);
+        pipeline.AcquireFrame(true);
 
         for (PerceptualQueryComponent component : components) {
             component.queryFeatures(pipeline);
