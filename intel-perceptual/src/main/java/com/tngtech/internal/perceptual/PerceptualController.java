@@ -3,11 +3,13 @@ package com.tngtech.internal.perceptual;
 import com.google.inject.Inject;
 import com.tngtech.internal.perceptual.components.DetectionComponent;
 import com.tngtech.internal.perceptual.components.GestureComponent;
+import com.tngtech.internal.perceptual.components.PictureComponent;
 import com.tngtech.internal.perceptual.data.DetectionType;
 import com.tngtech.internal.perceptual.data.body.BodyPart;
 import com.tngtech.internal.perceptual.injection.Context;
 import com.tngtech.internal.perceptual.listeners.DetectionListener;
 import com.tngtech.internal.perceptual.listeners.GestureListener;
+import com.tngtech.internal.perceptual.listeners.PictureListener;
 import intel.pcsdk.PXCUPipelineJNI;
 import org.apache.log4j.Logger;
 
@@ -18,6 +20,7 @@ public class PerceptualController {
 
     private final CamProcessor camProcessor;
 
+    private final PictureComponent pictureComponent;
     private final DetectionComponent detectionComponent;
     private final GestureComponent gestureComponent;
 
@@ -27,9 +30,10 @@ public class PerceptualController {
 
     @Inject
     public PerceptualController(PerceptualPipeline pipeline, CamProcessor listener,
-                                DetectionComponent detectionComponent, GestureComponent gestureComponent) {
+                                PictureComponent pictureComponent, DetectionComponent detectionComponent, GestureComponent gestureComponent) {
         this.pipeline = pipeline;
         this.camProcessor = listener;
+        this.pictureComponent = pictureComponent;
         this.detectionComponent = detectionComponent;
         this.gestureComponent = gestureComponent;
     }
@@ -48,6 +52,14 @@ public class PerceptualController {
 
     public void disconnect() {
         camProcessor.stop();
+    }
+
+    public void addPictureListener(PictureListener listener) {
+        pictureComponent.addPictureListener(listener);
+    }
+
+    public void removePictureListener(PictureListener listener) {
+        pictureComponent.removePictureListener(listener);
     }
 
     public void addGestureListener(GestureListener listener) {
