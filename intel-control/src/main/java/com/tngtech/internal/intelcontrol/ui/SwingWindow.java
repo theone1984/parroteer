@@ -5,26 +5,45 @@ import com.tngtech.internal.perceptual.listeners.PictureListener;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 
 public class SwingWindow implements PictureListener {
 
-    private static class ImagePanel extends JPanel {
-        BufferedImage image;
+    public class ImagePanel extends JPanel {
+        private BufferedImage img = null;
 
-        public void paintComponent(Graphics graphics) {
-            if (image == null) {
-                return;
-            }
+        public ImagePanel() {
+            setSize(640, 480);
 
-            super.paintComponent(graphics);
-            Graphics2D g2d = (Graphics2D) graphics;
-            g2d.drawImage(image, null, 0, 0);
+            Timer time = new Timer(60, new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent arg0) {
+                    setSize(640, 480);
+                    repaint();
+                }
+            });
+
+            time.start();
         }
 
         public void setImage(BufferedImage image) {
-            this.image = image;
-            repaint();
+            img = image;
+        }
+
+        public void paintComponent(Graphics g) {
+            super.paintComponent(g);
+            Image drawImage;
+            if (img != null) {
+                drawImage = img.getScaledInstance(-1, this.getHeight() - 4, BufferedImage.SCALE_DEFAULT);
+
+                int xPos = (getWidth() / 2) - (drawImage.getWidth(null) / 2);
+                g.drawImage(drawImage, xPos, 2, null);
+            } else {
+                g.setColor(Color.BLACK);
+                g.fillRect(0, 0, getWidth(), getHeight());
+            }
         }
     }
 
@@ -32,11 +51,11 @@ public class SwingWindow implements PictureListener {
 
     public void start() {
         JFrame frame = new JFrame();
-        frame.getContentPane().setLayout(new FlowLayout());
+        frame.getContentPane().setLayout(new BorderLayout(0, 0));
         panel = new ImagePanel();
         frame.getContentPane().add(panel);
 
-        frame.setSize(800, 600);
+        frame.setSize(panel.getWidth(), panel.getHeight());
         frame.show();
     }
 

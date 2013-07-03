@@ -5,7 +5,10 @@ import com.tngtech.internal.perceptual.PerceptualPipeline;
 import com.tngtech.internal.perceptual.data.events.PictureData;
 import com.tngtech.internal.perceptual.listeners.PictureListener;
 
+import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.util.Set;
 
 public class PictureComponent implements PerceptualQueryComponent {
@@ -16,11 +19,15 @@ public class PictureComponent implements PerceptualQueryComponent {
     private int[] pictureDimensions;
     private int[] pictureBuffer;
 
+    private short[] depth;
+
     public PictureComponent() {
         pictureListeners = Sets.newLinkedHashSet();
 
         pictureDimensions = new int[2];
         pictureBuffer = null;
+
+        depth = new short[640 * 480];
     }
 
     @Override
@@ -86,6 +93,7 @@ public class PictureComponent implements PerceptualQueryComponent {
                 image.setRGB(x, y, pictureBuffer[y * pictureDimensions[0] + x]);
             }
         }
+
         return image;
     }
 

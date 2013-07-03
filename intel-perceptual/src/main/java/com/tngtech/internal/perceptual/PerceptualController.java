@@ -40,7 +40,7 @@ public class PerceptualController {
 
     public void connect() {
         logger.info("Connecting to intel perceptual programming creative controller");
-        pipeline.Init(PXCUPipelineJNI.GESTURE);
+        pipeline.Init(PXCUPipelineJNI.GESTURE | PXCUPipelineJNI.COLOR_VGA);
         logger.info("Connection successfully established!");
 
         startCamProcessorThread();
