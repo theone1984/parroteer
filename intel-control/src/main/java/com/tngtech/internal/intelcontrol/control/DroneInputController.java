@@ -24,7 +24,9 @@ import org.apache.log4j.Logger;
 public class DroneInputController implements ReadyStateChangeListener, NavDataListener, UIActionListener,
         DetectionListener<Hands>, GestureListener {
 
-    private static final float MAX_HEIGHT = 2.0f;
+    private static final double MIN_YAW = 0.2;
+
+	private static final float MAX_HEIGHT = 1.0f;
 
     private static final float HEIGHT_THRESHOLD = 0.25f;
 
@@ -45,6 +47,14 @@ public class DroneInputController implements ReadyStateChangeListener, NavDataLi
     private Coordinate rightHandReferenceCoordinates;
 
     private long lastCommandTimestamp;
+    
+    private float securityScaleBuffer = 0.8f;
+    
+    private float maxRoll = 0.2f*securityScaleBuffer;
+    
+    private float maxPitch = 0.2f*securityScaleBuffer;
+    
+    private float maxYaw = 0.2f*securityScaleBuffer;
 
     @Inject
     public DroneInputController(DroneController droneController, RaceTimer raceTimer) {
@@ -169,11 +179,11 @@ public class DroneInputController implements ReadyStateChangeListener, NavDataLi
 
     @Override
     public void onDetection(DetectionData<Hands> handsDetectionData) {
-        HandsDetectionData data = (HandsDetectionData) handsDetectionData;
+    	HandsDetectionData data = (HandsDetectionData) handsDetectionData;
 
         Hand leftHand = data.getLeftHand();
         Hand rightHand = data.getRightHand();
-
+        
         if (leftHand.isActive() && rightHand.isActive()) {
             lastCommandTimestamp = System.currentTimeMillis();
             // As long as the drone is not in the air save last coordinates as
@@ -184,21 +194,21 @@ public class DroneInputController implements ReadyStateChangeListener, NavDataLi
                 leftHandReferenceCoordinates = leftHand.getCoordinate();
             }
 
-            if (ready && flying) {
+            if (ready && flying ) {
                 float roll = getRoll(leftHand, rightHand);
                 float pitch = getPitch(leftHand, rightHand);
                 float yaw = getYaw(leftHand, rightHand);
                 float desiredHeight = getDesiredHeight(leftHand, rightHand);
                 float heightDelta = calculateHeightDelta(desiredHeight);
 
-                if (Math.abs(yaw) > 0.1) {
+                //When changing the yaw stop rolling and pitching
+                if (Math.abs(yaw) > MIN_YAW) {
                     move(0, 0, yaw, heightDelta);
                 } else {
-                    move(roll, pitch, yaw, heightDelta);
+                    move(roll, pitch, 0, heightDelta);
                 }
 
-                logger.debug(String
-                        .format("Roll: [%s], Pitch: [%s], Yaw: [%s], Height: [%s]", roll, pitch, yaw, heightDelta));
+                logger.debug(String.format("Roll: [%2.3f], Pitch: [%2.3f], Yaw: [%2.3f], Height: [%2.3f]", roll, pitch, yaw, heightDelta));
             }
         } else if ((System.currentTimeMillis() - lastCommandTimestamp) >= 50) {
             // Failsafe - If no information about hands is available don't move
@@ -217,32 +227,67 @@ public class DroneInputController implements ReadyStateChangeListener, NavDataLi
 
     private float getYaw(Hand leftHand, Hand rightHand) {
         float yaw = rightHand.getCoordinate().getZ() - leftHand.getCoordinate().getZ();
-        yaw = yaw * Math.abs(yaw);
-        yaw = yaw / 0.03f;
-        if (Math.abs(yaw) <= 0.1f) {
-            yaw = 0;
+        
+        float tmp = yaw;
+        
+        if ( Math.abs(yaw) >= Math.abs(maxYaw) ) {
+        	maxYaw= Math.abs(yaw);
         }
+        
+        //Scale pitch using maxPitch
+        yaw = yaw/maxYaw;
+
+        if (Math.abs(yaw) <= MIN_YAW) {
+        	yaw = 0;
+        }
+
+        //logger.debug(String.format("Yaw-Max: [%2.3f], Yaw-In: [%2.3f], Yaw-Out: [%2.3f]", maxYaw, tmp, yaw));
+        
         return yaw;
     }
 
     private float getPitch(Hand leftHand, Hand rightHand) {
         float pitch = ((leftHand.getCoordinate().getZ() - leftHandReferenceCoordinates.getZ()) +
                 (rightHand.getCoordinate().getZ() - rightHandReferenceCoordinates.z)) / 2;
-        // pitch = pitch * Math.abs(pitch);
-        pitch = pitch / 0.4f;
-        if (Math.abs(pitch) <= 0.1f) {
-            pitch = 0;
+
+        float tmp = pitch;
+        
+        if ( Math.abs(pitch) >= Math.abs(maxPitch) ) {
+        	maxPitch = Math.abs(pitch);
         }
+        
+        //Scale pitch using maxPitch
+        pitch = pitch/maxPitch;
+        //pitch = pitch * Math.abs(pitch);
+
+        if (Math.abs(pitch) <= 0.2) {
+        	pitch = 0;
+        }
+        
+        //logger.debug(String.format("Pitch-Max: [%2.3f], Pitch-In: [%2.3f], Pitch-Out: [%2.3f]", maxPitch, tmp, pitch));
+        
         return pitch;
     }
 
     private float getRoll(Hand leftHand, Hand rightHand) {
         float roll = leftHand.getCoordinate().getY() - rightHand.getCoordinate().getY();
-        roll = roll * Math.abs(roll);
-        roll = roll / 0.015f;
-        if (Math.abs(roll) <= 0.1) {
+        
+        float tmp = roll;
+        
+        if ( Math.abs(roll) >= Math.abs(maxRoll) ) {
+        	maxRoll = Math.abs(roll);
+        }
+        
+        //Scale roll using maxRoll
+        roll = roll / maxRoll;
+        //roll = roll * Math.abs(roll);
+
+        if (Math.abs(roll) <= 0.2) {
             roll = 0;
         }
+        
+        //logger.debug(String.format("Roll-Max: [%2.3f], Roll-In: [%2.3f], Roll-Out: [%2.3f]", maxRoll, tmp, roll));
+
         return roll;
     }
 }
