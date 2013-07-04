@@ -55,12 +55,10 @@ public class SwingWindow implements PictureListener, DetectionListener<Hands> {
         }
 
         private void drawBackground(Graphics graphics) {
-            Image drawImage;
+            //
+            // Image drawImage;
             if (image != null) {
-                drawImage = image.getScaledInstance(-1, this.getHeight() - 4, BufferedImage.SCALE_DEFAULT);
-
-                int xPos = (getWidth() / 2) - (drawImage.getWidth(null) / 2);
-                graphics.drawImage(drawImage, xPos, 2, null);
+                graphics.drawImage(image, 0, 0, null);
             } else {
                 graphics.setColor(Color.BLACK);
                 graphics.fillRect(0, 0, getWidth(), getHeight());
@@ -85,6 +83,8 @@ public class SwingWindow implements PictureListener, DetectionListener<Hands> {
 
     private ImagePanel panel;
 
+    private BufferedImage image;
+
     private Map<Color, Coordinate> coordinates;
 
     public SwingWindow() {
@@ -103,19 +103,24 @@ public class SwingWindow implements PictureListener, DetectionListener<Hands> {
 
     @Override
     public void onImage(PictureData data) {
-        panel.setData(data.getImage(), coordinates);
+        if (data.getImage() != null) {
+            this.image = data.getImage();
+            panel.setData(data.getImage(), coordinates);
+        }
     }
 
     @Override
     public void onDetection(DetectionData<Hands> data) {
         HandsDetectionData handsDetectionData = (HandsDetectionData) data;
 
-        coordinates = Maps.newLinkedHashMap();
+        //coordinates = Maps.newLinkedHashMap();
         if (handsDetectionData.getLeftHand().isActive()) {
             coordinates.put(Color.BLUE, handsDetectionData.getLeftHand().getCoordinate());
         }
         if (handsDetectionData.getRightHand().isActive()) {
             coordinates.put(Color.RED, handsDetectionData.getRightHand().getCoordinate());
         }
+
+        panel.setData(image, coordinates);
     }
 }
