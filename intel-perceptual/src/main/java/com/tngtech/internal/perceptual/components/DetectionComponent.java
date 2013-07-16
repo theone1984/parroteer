@@ -3,7 +3,9 @@ package com.tngtech.internal.perceptual.components;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import com.google.inject.Inject;
 import com.tngtech.internal.perceptual.PerceptualPipeline;
+import com.tngtech.internal.perceptual.components.filters.Filter;
 import com.tngtech.internal.perceptual.data.DetectionType;
 import com.tngtech.internal.perceptual.data.body.BodyPart;
 import com.tngtech.internal.perceptual.data.body.Coordinate;
@@ -20,15 +22,15 @@ import java.util.Set;
 
 public class DetectionComponent implements PerceptualQueryComponent {
 
-    private List<Coordinate> coordinates;
-    private List<Float> coordinateWeights = Lists.newArrayList(1.0f, 0.0f, 0.0f);
+    private final Filter filter;
 
     private Map<DetectionType<?>, Set<DetectionListener<?>>> detectionListeners;
     private PXCMGesture.GeoNode leftHandGeoNode;
     private PXCMGesture.GeoNode rightHandGeoNode;
 
-    public DetectionComponent() {
-        coordinates = Lists.newArrayList();
+    @Inject
+    public DetectionComponent(Filter filter) {
+        this.filter = filter;
         detectionListeners = Maps.newHashMap();
     }
 
@@ -59,26 +61,7 @@ public class DetectionComponent implements PerceptualQueryComponent {
     }
 
     private Coordinate getSmoothedCoordinate(PXCMGesture.GeoNode handGeoNode) {
-        if (handGeoNode.positionWorld == null) {
-            return CoordinateHelper.getIdentity();
-        }
-
-        coordinates.add(getCoordinate(handGeoNode));
-        if (coordinates.size() > coordinateWeights.size()) {
-            coordinates.remove(0);
-        }
-
-        Coordinate currentCoordinate = CoordinateHelper.getIdentity();
-        float sumOfWeights = 0.0f;
-        for (int i = 0; i < coordinates.size(); i++) {
-            if (!CoordinateHelper.isIdentity(coordinates.get(i))) {
-                float weight = coordinateWeights.get(i);
-                currentCoordinate = CoordinateHelper.add(currentCoordinate, CoordinateHelper.multiply(coordinates.get(i), weight));
-                sumOfWeights += weight;
-            }
-        }
-
-        return sumOfWeights > 0.0f ? CoordinateHelper.divide(currentCoordinate, sumOfWeights) : CoordinateHelper.getIdentity();
+        return filter.getFilteredCoordinate(getCoordinate(handGeoNode), isActive(handGeoNode));
     }
 
     private Coordinate getCoordinate(PXCMGesture.GeoNode handGeoNode) {
