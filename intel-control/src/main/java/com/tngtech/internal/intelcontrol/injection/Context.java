@@ -10,6 +10,8 @@ import com.tngtech.internal.intelcontrol.entry.Main;
 import com.tngtech.internal.intelcontrol.helpers.RaceTimer;
 import com.tngtech.internal.intelcontrol.ui.FxWindow;
 import com.tngtech.internal.perceptual.PerceptualController;
+import com.tngtech.internal.perceptual.helpers.CoordinateCalculator;
+import com.tngtech.internal.perceptual.helpers.CoordinateListener;
 
 
 public class Context extends AbstractModule {
@@ -38,5 +40,7 @@ public class Context extends AbstractModule {
         bind(PerceptualController.class).toProvider(PerceptualControllerProvider.class);
 
         bind(RaceTimer.class).in(Singleton.class);
+        
+        bind(CoordinateCalculator.class).in(Singleton.class);
     }
 }

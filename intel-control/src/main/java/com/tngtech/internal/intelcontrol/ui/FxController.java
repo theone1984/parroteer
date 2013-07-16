@@ -7,6 +7,7 @@ import com.tngtech.internal.droneapi.listeners.VideoDataListener;
 import com.tngtech.internal.intelcontrol.helpers.RaceTimer;
 import com.tngtech.internal.intelcontrol.ui.data.UIAction;
 import com.tngtech.internal.intelcontrol.ui.listeners.UIActionListener;
+import com.tngtech.internal.perceptual.helpers.CoordinateListener;
 
 import javafx.application.Platform;
 import javafx.embed.swing.SwingFXUtils;
@@ -25,7 +26,7 @@ import java.awt.image.BufferedImage;
 import java.util.Set;
 
 public class FxController implements VideoDataListener, NavDataListener,
-		EventHandler<ActionEvent> {
+		EventHandler<ActionEvent>, CoordinateListener {
 	private final Set<UIActionListener> uiActionListeners;
 
 	@FXML
@@ -184,5 +185,18 @@ public class FxController implements VideoDataListener, NavDataListener,
 
 	public void setRaceTimer(RaceTimer raceTimer) {
 		this.raceTimer = raceTimer;
+	}
+
+	@Override
+	public void onCoordinate(final float roll, final float pitch, final float yaw, float heightDelta) {
+		//Slider einstellen
+		runOnFxThread(new Runnable() {
+			@Override
+			public void run() {
+				slideRoll.setValue(roll);
+				slidePitch.setValue(pitch);
+				slideYaw.setValue(yaw);
+			}
+		});
 	}
 }
