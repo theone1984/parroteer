@@ -77,7 +77,7 @@ public class SwingWindow implements PictureListener, DetectionListener<Hands> {
             int x = this.getWidth() / 2 + (int) Math.round((Math.toDegrees(Math.atan(coordinate.getX() / coordinate.getZ())) / OPEN_FACTOR_X) * this.getWidth());
             int y = this.getHeight() / 2 - (int) Math.round((Math.toDegrees(Math.atan(coordinate.getY() / coordinate.getZ())) / OPEN_FACTOR_Y) * this.getHeight());
 
-            graphics.fillArc(x + CIRCLE_DIAMETER / 2, y + CIRCLE_DIAMETER / 2, CIRCLE_DIAMETER, CIRCLE_DIAMETER, 0, 360);
+            graphics.drawArc(x + CIRCLE_DIAMETER / 2, y + CIRCLE_DIAMETER / 2, CIRCLE_DIAMETER, CIRCLE_DIAMETER, 0, 360);
         }
     }
 

@@ -4,8 +4,8 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 import com.tngtech.internal.perceptual.PerceptualPipeline;
+import com.tngtech.internal.perceptual.components.filters.BilateralFilter;
 import com.tngtech.internal.perceptual.components.filters.Filter;
-import com.tngtech.internal.perceptual.components.filters.SimpleFilter;
 import com.tngtech.internal.perceptual.data.DetectionType;
 import com.tngtech.internal.perceptual.data.body.BodyPart;
 import com.tngtech.internal.perceptual.data.body.Coordinate;
@@ -29,7 +29,7 @@ public class DetectionComponent implements PerceptualQueryComponent {
     private PXCMGesture.GeoNode rightHandGeoNode;
 
     @Inject
-    public DetectionComponent(SimpleFilter leftHandFilter, SimpleFilter rightHandFilter) {
+    public DetectionComponent(BilateralFilter leftHandFilter, BilateralFilter rightHandFilter) {
         this.leftHandFilter = leftHandFilter;
         this.rightHandFilter = rightHandFilter;
 

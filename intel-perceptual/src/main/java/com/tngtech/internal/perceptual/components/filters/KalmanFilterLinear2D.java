@@ -10,12 +10,12 @@ public class KalmanFilterLinear2D {
     private static final DenseMatrix64F x = new DenseMatrix64F(new double[][]{{0}, {0}, {0}, {0}});
 
     private static final DenseMatrix64F P = new DenseMatrix64F(
-            new double[][]{{20, 0, 0, 0}, {0, 20, 0, 0}, {0, 0, 20, 0}, {0, 0, 0, 20}});
+            new double[][]{{5, 0, 0, 0}, {0, 5, 0, 0}, {0, 0, 5, 0}, {0, 0, 0, 5}});
 
     private static final DenseMatrix64F F = new DenseMatrix64F(
             new double[][]{{1, 0, speed, 0}, {0, 1, 0, speed}, {0, 0, 1, 0}, {0, 0, 0, 1}});
 
-    private static final DenseMatrix64F R = new DenseMatrix64F(new double[][]{{20, 0}, {0, 20}});
+    private static final DenseMatrix64F R = new DenseMatrix64F(new double[][]{{5, 0}, {0, 5}});
 
     private static final DenseMatrix64F H = new DenseMatrix64F(new double[][]{{1, 0, 0, 0}, {0, 1, 0, 0}});
 

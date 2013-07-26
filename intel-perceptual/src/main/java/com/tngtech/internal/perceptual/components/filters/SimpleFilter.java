@@ -6,7 +6,7 @@ import com.tngtech.internal.perceptual.data.body.Coordinate;
 import java.util.Date;
 
 public class SimpleFilter implements Filter {
-    private static final long TIME_UNTIL_RESET = 4000;
+    private static final long TIME_UNTIL_RESET = 100000;
 
     private KalmanFilterLinear2D filter;
 
