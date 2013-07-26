@@ -8,17 +8,17 @@ import java.util.Date;
 import static com.tngtech.internal.perceptual.helpers.CoordinateHelper.add;
 import static com.tngtech.internal.perceptual.helpers.CoordinateHelper.divide;
 
-public class SlidingFilter {
-    private static final long SLIDE_WINDOW_TIME = 250;
+public class SlidingFilter implements Filter {
+    private static final long SLIDE_WINDOW_TIME = 4000;
 
-    private Filter activeFilter;
+    private KalmanFilterLinear2D activeFilter;
 
-    private Filter backgroundFilter;
+    private KalmanFilterLinear2D backgroundFilter;
 
     private long lastResetTimeStamp;
 
     @Inject
-    public SlidingFilter(Filter filter1, Filter filter2) {
+    public SlidingFilter(KalmanFilterLinear2D filter1, KalmanFilterLinear2D filter2) {
         activeFilter = filter1;
         backgroundFilter = filter2;
 
@@ -57,7 +57,7 @@ public class SlidingFilter {
     }
 
     private void swapFilters() {
-        Filter tempFilter = activeFilter;
+        KalmanFilterLinear2D tempFilter = activeFilter;
         activeFilter = backgroundFilter;
         backgroundFilter = tempFilter;
     }

@@ -116,9 +116,11 @@ public class SwingWindow implements PictureListener, DetectionListener<Hands> {
         //coordinates = Maps.newLinkedHashMap();
         if (handsDetectionData.getLeftHand().isActive()) {
             coordinates.put(Color.BLUE, handsDetectionData.getLeftHand().getCoordinate());
+            coordinates.put(Color.MAGENTA, handsDetectionData.getLeftHand().getUnsmoothedCoordinate());
         }
         if (handsDetectionData.getRightHand().isActive()) {
             coordinates.put(Color.RED, handsDetectionData.getRightHand().getCoordinate());
+            coordinates.put(Color.CYAN, handsDetectionData.getRightHand().getUnsmoothedCoordinate());
         }
 
         panel.setData(image, coordinates);

@@ -4,7 +4,8 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 import com.tngtech.internal.perceptual.PerceptualPipeline;
-import com.tngtech.internal.perceptual.components.filters.SlidingFilter;
+import com.tngtech.internal.perceptual.components.filters.Filter;
+import com.tngtech.internal.perceptual.components.filters.SimpleFilter;
 import com.tngtech.internal.perceptual.data.DetectionType;
 import com.tngtech.internal.perceptual.data.body.BodyPart;
 import com.tngtech.internal.perceptual.data.body.Coordinate;
@@ -19,16 +20,16 @@ import java.util.Set;
 
 public class DetectionComponent implements PerceptualQueryComponent {
 
-    private final SlidingFilter leftHandFilter;
+    private final Filter leftHandFilter;
 
-    private final SlidingFilter rightHandFilter;
+    private final Filter rightHandFilter;
 
     private Map<DetectionType<?>, Set<DetectionListener<?>>> detectionListeners;
     private PXCMGesture.GeoNode leftHandGeoNode;
     private PXCMGesture.GeoNode rightHandGeoNode;
 
     @Inject
-    public DetectionComponent(SlidingFilter leftHandFilter, SlidingFilter rightHandFilter) {
+    public DetectionComponent(SimpleFilter leftHandFilter, SimpleFilter rightHandFilter) {
         this.leftHandFilter = leftHandFilter;
         this.rightHandFilter = rightHandFilter;
 
@@ -46,8 +47,8 @@ public class DetectionComponent implements PerceptualQueryComponent {
 
     @Override
     public void processFeatures() {
-        Hand rightHand = new Hand(getSmoothedCoordinate(rightHandFilter, rightHandGeoNode), isActive(rightHandGeoNode));
-        Hand leftHand = new Hand(getSmoothedCoordinate(leftHandFilter, leftHandGeoNode), isActive(leftHandGeoNode));
+        Hand rightHand = new Hand(getSmoothedCoordinate(rightHandFilter, rightHandGeoNode), getCoordinate(rightHandGeoNode), isActive(rightHandGeoNode));
+        Hand leftHand = new Hand(getSmoothedCoordinate(leftHandFilter, leftHandGeoNode), getCoordinate(leftHandGeoNode), isActive(leftHandGeoNode));
 
         //Sometimes Hands are mixed up. Switch them in case that x-position of right hand is greater than left hands x-position
         if (rightHand.isActive() && leftHand.isActive()) {
@@ -61,7 +62,7 @@ public class DetectionComponent implements PerceptualQueryComponent {
         invokeDetectionListeners(DetectionType.HANDS, new HandsDetectionData(leftHand, rightHand));
     }
 
-    private Coordinate getSmoothedCoordinate(SlidingFilter filter, PXCMGesture.GeoNode handGeoNode) {
+    private Coordinate getSmoothedCoordinate(Filter filter, PXCMGesture.GeoNode handGeoNode) {
         return filter.getFilteredCoordinate(getCoordinate(handGeoNode));
     }
 
