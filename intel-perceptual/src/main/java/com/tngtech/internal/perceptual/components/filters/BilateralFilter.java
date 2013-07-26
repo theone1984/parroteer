@@ -7,8 +7,8 @@ import com.tngtech.internal.perceptual.data.body.Coordinate;
 import java.util.List;
 
 public class BilateralFilter implements Filter {
-    private static final int SIGMA_T = 5;
-    private static final double SIGMA_U = 0.03;
+    public static final int SIGMA_T = 5;
+    public static final double SIGMA_U = 0.03;
 
     private static final int HISTORY_SIZE = 3 * SIGMA_T;
 
