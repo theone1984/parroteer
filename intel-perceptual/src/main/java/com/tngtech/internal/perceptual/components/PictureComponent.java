@@ -81,13 +81,12 @@ public class PictureComponent implements PerceptualQueryComponent {
     }
 
     private BufferedImage getBufferedImage(int[] pictureBuffer) {
-        int[] bitMasks = new int[]{0xFF0000, 0xFF00, 0xFF, 0xFF000000};
-        SinglePixelPackedSampleModel sm = new SinglePixelPackedSampleModel(DataBuffer.TYPE_INT, pictureDimensions[0], pictureDimensions[1], bitMasks);
-        DataBufferInt db = new DataBufferInt(pictureBuffer, pictureBuffer.length);
-        WritableRaster wr = Raster.createWritableRaster(sm, db, new Point());
-        BufferedImage image = new BufferedImage(ColorModel.getRGBdefault(), wr, false, null);
-
-        return image;
+        WritableRaster raster = Raster.createPackedRaster(DataBuffer.TYPE_INT, pictureDimensions[0], pictureDimensions[1], 3, 8, null);
+        raster.setDataElements(0, 0, pictureDimensions[0], pictureDimensions[1], pictureBuffer);
+        BufferedImage img = new BufferedImage(pictureDimensions[0], pictureDimensions[1], BufferedImage.TYPE_INT_RGB);
+        img.setData(raster);
+        
+        return img;
     }
 
     public void addPictureListener(PictureListener pictureListener) {
