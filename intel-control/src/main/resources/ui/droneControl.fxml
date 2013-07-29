@@ -28,9 +28,9 @@
         <Label text="Roll" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
         <Label text="Pitch" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
         <Label text="Yaw" GridPane.columnIndex="2" GridPane.rowIndex="3"/>
-        <Slider fx:id="slideRoll" min="-1" max="1" value="0.5" GridPane.columnIndex="0" GridPane.rowIndex="4"/>
-        <Slider fx:id="slidePitch" min="-1" max="1" value="0.5" GridPane.columnIndex="1" GridPane.rowIndex="4"/>
-        <Slider fx:id="slideYaw" min="-1" max="1" value="0.5" GridPane.columnIndex="2" GridPane.rowIndex="4"/>
+        <Slider fx:id="slideRoll" min="-1" max="1" value="0" GridPane.columnIndex="0" GridPane.rowIndex="4"/>
+        <Slider fx:id="slidePitch" min="-1" max="1" value="0" GridPane.columnIndex="1" GridPane.rowIndex="4"/>
+        <Slider fx:id="slideYaw" min="-1" max="1" value="0" GridPane.columnIndex="2" GridPane.rowIndex="4"/>
     </GridPane>
     <GridPane alignment="center" hgap="1" vgap="1">
 		<ImageView fx:id="imageView" preserveRatio="true" VBox.vgrow="ALWAYS"/>

@@ -133,7 +133,6 @@ public class FxController implements VideoDataListener, NavDataListener,
 			@Override
 			public void run() {
 				setBatteryLabel(navData);
-				setControlSlides(navData);
 			}
 		});
 	}
@@ -147,12 +146,6 @@ public class FxController implements VideoDataListener, NavDataListener,
 		} else {
 			labelBattery.setTextFill(Paint.valueOf("white"));
 		}
-	}
-
-	private void setControlSlides(NavData navData) {
-		slideRoll.setValue(navData.getRoll());
-		slidePitch.setValue(navData.getPitch());
-		slideYaw.setValue(navData.getYaw());
 	}
 
 	@Override
@@ -193,6 +186,7 @@ public class FxController implements VideoDataListener, NavDataListener,
 		runOnFxThread(new Runnable() {
 			@Override
 			public void run() {
+				System.out.println(String.format("%.3f, %.3f, %.3f", roll, pitch, yaw));
 				slideRoll.setValue(roll);
 				slidePitch.setValue(pitch);
 				slideYaw.setValue(yaw);
