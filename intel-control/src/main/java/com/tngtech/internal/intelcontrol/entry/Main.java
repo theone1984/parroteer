@@ -2,6 +2,7 @@ package com.tngtech.internal.intelcontrol.entry;
 
 import com.google.inject.Inject;
 import com.tngtech.internal.droneapi.DroneController;
+import com.tngtech.internal.droneapi.data.Config;
 import com.tngtech.internal.droneapi.listeners.ErrorListener;
 import com.tngtech.internal.intelcontrol.control.DroneInputController;
 import com.tngtech.internal.intelcontrol.ui.FxController;
@@ -12,7 +13,9 @@ import com.tngtech.internal.intelcontrol.ui.listeners.UIActionListener;
 import com.tngtech.internal.perceptual.PerceptualController;
 import com.tngtech.internal.perceptual.data.DetectionType;
 import com.tngtech.internal.perceptual.helpers.CoordinateCalculator;
+
 import javafx.stage.Stage;
+
 import org.apache.log4j.Logger;
 
 public class Main implements ErrorListener, UIActionListener {
@@ -28,8 +31,6 @@ public class Main implements ErrorListener, UIActionListener {
 
     private final PerceptualController perceptualController;
 
-    private final DeviationPlotter deviationPlotter;
-
     private FxController fxController;
 
     private CoordinateCalculator coordinateCalculator;
@@ -37,14 +38,13 @@ public class Main implements ErrorListener, UIActionListener {
     @Inject
     public Main(FxWindow fxWindow, SwingWindow swingWindow, DroneController droneController,
                 DroneInputController droneInputController, PerceptualController perceptualController,
-                CoordinateCalculator coordinateCalculator, DeviationPlotter deviationPlotter) {
+                CoordinateCalculator coordinateCalculator) {
         this.fxWindow = fxWindow;
         this.swingWindow = swingWindow;
         this.droneController = droneController;
         this.droneInputController = droneInputController;
         this.perceptualController = perceptualController;
         this.coordinateCalculator = coordinateCalculator;
-        this.deviationPlotter = deviationPlotter;
     }
 
     public void start(Stage primaryStage) {
@@ -74,7 +74,6 @@ public class Main implements ErrorListener, UIActionListener {
         perceptualController.addDetectionListener(DetectionType.HANDS, swingWindow);
         perceptualController.addGestureListener(droneInputController);
         perceptualController.addDetectionListener(DetectionType.HANDS, droneInputController);
-        perceptualController.addDetectionListener(DetectionType.HANDS, deviationPlotter);
 
         fxController.addUIActionListener(droneInputController);
 
@@ -82,14 +81,13 @@ public class Main implements ErrorListener, UIActionListener {
     }
 
     private void startComponents() {
-        //droneController.startAsync(new Config("com.tngtech.internal.leap-drone", "myProfile", 2));
+        droneController.startAsync(new Config("com.tngtech.internal.leap-drone", "myProfile", 2));
         perceptualController.connect();
     }
 
     public void stop() {
-        //droneController.stop();
+        droneController.stop();
         perceptualController.disconnect();
-        deviationPlotter.dispose();
 
         System.exit(0);
     }

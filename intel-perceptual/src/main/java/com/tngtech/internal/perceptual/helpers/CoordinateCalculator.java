@@ -7,9 +7,13 @@ import com.tngtech.internal.perceptual.data.body.Coordinate;
 import com.tngtech.internal.perceptual.data.body.Hand;
 
 public class CoordinateCalculator {
-    public static final double MIN_YAW = 0.2;
+    private static final float MIN_ROLL = 0.2f;
+
+	public static final float MIN_YAW = 0.2f;
     
     private static final float MAX_HEIGHT = 1.0f;
+    
+    private static final float MIN_PITCH = 0.2f;
     
     private Coordinate leftHandReferenceCoordinate;
 	
@@ -81,6 +85,7 @@ public class CoordinateCalculator {
         	pitch = 0;
         }
         
+        pitch = pitch - Math.signum(pitch)*MIN_PITCH;
         //logger.debug(String.format("Pitch-Max: [%2.3f], Pitch-In: [%2.3f], Pitch-Out: [%2.3f]", maxPitch, tmp, pitch));
         
         this.pitch = pitch;
@@ -99,9 +104,11 @@ public class CoordinateCalculator {
         roll = roll / maxRoll;
         //roll = roll * Math.abs(roll);
 
-        if (Math.abs(roll) <= 0.2) {
+        if (Math.abs(roll) <= MIN_ROLL) {
             roll = 0;
         }
+        
+        roll = roll - Math.signum(roll)*MIN_ROLL;
         
         //logger.debug(String.format("Roll-Max: [%2.3f], Roll-In: [%2.3f], Roll-Out: [%2.3f]", maxRoll, tmp, roll));
 
@@ -124,6 +131,8 @@ public class CoordinateCalculator {
         	yaw = 0;
         }
 
+        yaw = yaw - Math.signum(yaw)*MIN_YAW;
+        
         //logger.debug(String.format("Yaw-Max: [%2.3f], Yaw-In: [%2.3f], Yaw-Out: [%2.3f]", maxYaw, tmp, yaw));
         
         this.yaw = yaw;

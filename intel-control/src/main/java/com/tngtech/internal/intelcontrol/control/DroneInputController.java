@@ -201,9 +201,7 @@ public class DroneInputController implements ReadyStateChangeListener, NavDataLi
             	coordinateCalculator.setLeftHandReferenceCoordinate(leftHand.getCoordinate());
             }
 
-            if (ready && flying || true) {
-            	
-            	
+            if (ready && flying) {
             	if ( !coordinateCalculator.hasHandReferences() ) {
             		coordinateCalculator.setRightHandReferenceCoordinate(rightHand.getCoordinate());
                 	coordinateCalculator.setLeftHandReferenceCoordinate(leftHand.getCoordinate());
