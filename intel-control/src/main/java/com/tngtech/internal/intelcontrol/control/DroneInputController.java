@@ -90,6 +90,8 @@ public class DroneInputController implements ReadyStateChangeListener, NavDataLi
         if (ready && !flying && coordinateCalculator.hasHandReferences()) {
             raceTimer.start();
             droneController.takeOff();
+        } else {
+            logger.warn("Cannot take off");
         }
     }
 
