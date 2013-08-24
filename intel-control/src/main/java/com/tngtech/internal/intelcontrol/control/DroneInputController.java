@@ -1,8 +1,5 @@
 package com.tngtech.internal.intelcontrol.control;
 
-import java.util.Collection;
-
-import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import com.tngtech.internal.droneapi.DroneController;
 import com.tngtech.internal.droneapi.data.NavData;
@@ -14,7 +11,6 @@ import com.tngtech.internal.droneapi.listeners.ReadyStateChangeListener;
 import com.tngtech.internal.intelcontrol.helpers.RaceTimer;
 import com.tngtech.internal.intelcontrol.ui.data.UIAction;
 import com.tngtech.internal.intelcontrol.ui.listeners.UIActionListener;
-import com.tngtech.internal.perceptual.data.body.Coordinate;
 import com.tngtech.internal.perceptual.data.body.Hand;
 import com.tngtech.internal.perceptual.data.body.Hands;
 import com.tngtech.internal.perceptual.data.events.DetectionData;
@@ -24,12 +20,11 @@ import com.tngtech.internal.perceptual.helpers.CoordinateCalculator;
 import com.tngtech.internal.perceptual.helpers.CoordinateListener;
 import com.tngtech.internal.perceptual.listeners.DetectionListener;
 import com.tngtech.internal.perceptual.listeners.GestureListener;
-
 import org.apache.log4j.Logger;
 
 public class DroneInputController implements ReadyStateChangeListener, NavDataListener, UIActionListener,
         DetectionListener<Hands>, GestureListener, CoordinateListener {
-	
+
     private static final float HEIGHT_THRESHOLD = 0.25f;
 
     private final Logger logger = Logger.getLogger(DroneInputController.class);
@@ -42,22 +37,8 @@ public class DroneInputController implements ReadyStateChangeListener, NavDataLi
 
     private boolean ready = false;
 
-    private float currentHeight;
-
-    private Coordinate leftHandReferenceCoordinates;
-
-    private Coordinate rightHandReferenceCoordinates;
-
     private long lastCommandTimestamp;
-    
-    private float securityScaleBuffer = 0.8f;
-    
-    private float maxRoll = 0.2f*securityScaleBuffer;
-    
-    private float maxPitch = 0.2f*securityScaleBuffer;
-    
-    private float maxYaw = 0.2f*securityScaleBuffer;
-    
+
     private CoordinateCalculator coordinateCalculator;
 
     @Inject
@@ -98,7 +79,7 @@ public class DroneInputController implements ReadyStateChangeListener, NavDataLi
     @Override
     public void onNavData(NavData navData) {
         flying = navData.getState().isFlying();
-        currentHeight = navData.getAltitude() < HEIGHT_THRESHOLD ? 0.0f : navData.getAltitude();
+        coordinateCalculator.setCurrentHeight(navData.getAltitude() < HEIGHT_THRESHOLD ? 0.0f : navData.getAltitude());
 
         if (navData.getState().isEmergency()) {
             raceTimer.stop();
@@ -185,38 +166,38 @@ public class DroneInputController implements ReadyStateChangeListener, NavDataLi
 
     @Override
     public void onDetection(DetectionData<Hands> handsDetectionData) {
-    	HandsDetectionData data = (HandsDetectionData) handsDetectionData;
+        HandsDetectionData data = (HandsDetectionData) handsDetectionData;
 
         Hand leftHand = data.getLeftHand();
         Hand rightHand = data.getRightHand();
-        
+
         if (leftHand.isActive() && rightHand.isActive()) {
             lastCommandTimestamp = System.currentTimeMillis();
-            
+
             // As long as the drone is not in the air save last coordinates as
             // reference
             // This will stop, when the THUMBS_UP gesture is recognized
             if (ready && !flying) {
-            	coordinateCalculator.setRightHandReferenceCoordinate(rightHand.getCoordinate());
-            	coordinateCalculator.setLeftHandReferenceCoordinate(leftHand.getCoordinate());
+                coordinateCalculator.setRightHandReferenceCoordinate(rightHand.getCoordinate());
+                coordinateCalculator.setLeftHandReferenceCoordinate(leftHand.getCoordinate());
             }
 
             if (ready && flying) {
-            	if ( !coordinateCalculator.hasHandReferences() ) {
-            		coordinateCalculator.setRightHandReferenceCoordinate(rightHand.getCoordinate());
-                	coordinateCalculator.setLeftHandReferenceCoordinate(leftHand.getCoordinate());
-            	}
-            	
-            	coordinateCalculator.calculateMoves(leftHand, rightHand);
+                if (!coordinateCalculator.hasHandReferences()) {
+                    coordinateCalculator.setRightHandReferenceCoordinate(rightHand.getCoordinate());
+                    coordinateCalculator.setLeftHandReferenceCoordinate(leftHand.getCoordinate());
+                }
+
+                coordinateCalculator.calculateMoves(leftHand, rightHand);
             }
         } else if ((System.currentTimeMillis() - lastCommandTimestamp) >= 50) {
             // Failsafe - If no information about hands is available don't move
             move(0, 0, 0, 0);
         }
     }
-    
-	@Override
-	public void onCoordinate(float roll, float pitch, float yaw, float heightDelta) {
+
+    @Override
+    public void onCoordinate(float roll, float pitch, float yaw, float heightDelta) {
         //When changing the yaw stop rolling and pitching
         if (Math.abs(coordinateCalculator.getYaw()) > CoordinateCalculator.MIN_YAW) {
             move(0, 0, coordinateCalculator.getYaw(), coordinateCalculator.getHeightDelta());
@@ -224,6 +205,6 @@ public class DroneInputController implements ReadyStateChangeListener, NavDataLi
             move(coordinateCalculator.getRoll(), coordinateCalculator.getPitch(), 0, coordinateCalculator.getHeightDelta());
         }
 
-        logger.debug(String.format("Roll: [%2.3f], Pitch: [%2.3f], Yaw: [%2.3f], Height: [%2.3f]", coordinateCalculator.getRoll(), coordinateCalculator.getPitch(), coordinateCalculator.getYaw(), coordinateCalculator.getHeightDelta()));	
-	}
+        logger.trace(String.format("Roll: [%2.3f], Pitch: [%2.3f], Yaw: [%2.3f], Height: [%2.3f]", coordinateCalculator.getRoll(), coordinateCalculator.getPitch(), coordinateCalculator.getYaw(), coordinateCalculator.getHeightDelta()));
+    }
 }

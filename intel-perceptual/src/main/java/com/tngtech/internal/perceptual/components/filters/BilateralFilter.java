@@ -10,7 +10,7 @@ public class BilateralFilter implements Filter {
     public static final int SIGMA_T = 5;
     public static final double SIGMA_U = 0.03;
 
-    private static final int HISTORY_SIZE = 3 * SIGMA_T;
+    private static final int HISTORY_SIZE = 5 * SIGMA_T;
 
     private final List<Coordinate> previousCoordinates;
 

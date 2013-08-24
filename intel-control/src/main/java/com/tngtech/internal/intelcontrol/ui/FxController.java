@@ -8,7 +8,6 @@ import com.tngtech.internal.intelcontrol.helpers.RaceTimer;
 import com.tngtech.internal.intelcontrol.ui.data.UIAction;
 import com.tngtech.internal.intelcontrol.ui.listeners.UIActionListener;
 import com.tngtech.internal.perceptual.helpers.CoordinateListener;
-
 import javafx.application.Platform;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.event.ActionEvent;
@@ -25,172 +24,173 @@ import javafx.scene.paint.Paint;
 import java.awt.image.BufferedImage;
 import java.util.Set;
 
+@SuppressWarnings({"UnusedParameters", "UnusedDeclaration"})
 public class FxController implements VideoDataListener, NavDataListener,
-		EventHandler<ActionEvent>, CoordinateListener {
-	private final Set<UIActionListener> uiActionListeners;
+        EventHandler<ActionEvent>, CoordinateListener {
+    private final Set<UIActionListener> uiActionListeners;
 
-	@FXML
-	private ImageView imageView;
+    @FXML
+    private ImageView imageView;
 
-	@FXML
-	private VBox vbox;
+    @FXML
+    private VBox vbox;
 
-	@FXML
-	private Label labelBattery;
+    @FXML
+    private Label labelBattery;
 
-	@FXML
-	private Label labelTimer;
-	
-	@FXML
-	private Slider slideRoll;
+    @FXML
+    private Label labelTimer;
 
-	@FXML
-	private Slider slidePitch;
-	
-	@FXML
-	private Slider slideYaw;
-	
-	private WritableImage image;
+    @FXML
+    private Slider slideRoll;
 
-	private RaceTimer raceTimer;
+    @FXML
+    private Slider slidePitch;
 
-	public FxController() {
-		uiActionListeners = Sets.newHashSet();
-	}
+    @FXML
+    private Slider slideYaw;
 
-	public void addUIActionListener(UIActionListener uiActionlistener) {
-		if (!uiActionListeners.contains(uiActionlistener)) {
-			uiActionListeners.add(uiActionlistener);
-		}
-	}
+    private WritableImage image;
 
-	public void removeUIActionListener(UIActionListener uiActionlistener) {
-		if (uiActionListeners.contains(uiActionlistener)) {
-			uiActionListeners.remove(uiActionlistener);
-		}
-	}
+    private RaceTimer raceTimer;
 
-	public void onApplicationClose() {
-		emitUIAction(UIAction.CLOSE_APPLICATION);
-	}
+    public FxController() {
+        uiActionListeners = Sets.newHashSet();
+    }
 
-	@FXML
-	protected void onButtonTakeOffAction(ActionEvent event) {
-		emitUIAction(UIAction.TAKE_OFF);
-	}
+    public void addUIActionListener(UIActionListener uiActionlistener) {
+        if (!uiActionListeners.contains(uiActionlistener)) {
+            uiActionListeners.add(uiActionlistener);
+        }
+    }
 
-	@FXML
-	public void onButtonLandAction(ActionEvent actionEvent) {
-		emitUIAction(UIAction.LAND);
-	}
+    @SuppressWarnings("UnusedDeclaration")
+    public void removeUIActionListener(UIActionListener uiActionlistener) {
+        if (uiActionListeners.contains(uiActionlistener)) {
+            uiActionListeners.remove(uiActionlistener);
+        }
+    }
 
-	@FXML
-	public void onButtonFlatTrimAction(ActionEvent actionEvent) {
-		emitUIAction(UIAction.FLAT_TRIM);
-	}
+    public void onApplicationClose() {
+        emitUIAction(UIAction.CLOSE_APPLICATION);
+    }
 
-	@FXML
-	public void onButtonEmergencyAction(ActionEvent actionEvent) {
-		emitUIAction(UIAction.EMERGENCY);
-	}
+    @FXML
+    protected void onButtonTakeOffAction(ActionEvent event) {
+        emitUIAction(UIAction.TAKE_OFF);
+    }
 
-	@FXML
-	public void onButtonSwitchCameraAction(ActionEvent actionEvent) {
-		emitUIAction(UIAction.SWITCH_CAMERA);
-	}
+    @FXML
+    public void onButtonLandAction(ActionEvent actionEvent) {
+        emitUIAction(UIAction.LAND);
+    }
 
-	@FXML
-	public void onButtonLedAnimationAction(ActionEvent actionEvent) {
-		emitUIAction(UIAction.PLAY_LED_ANIMATION);
-	}
+    @FXML
+    public void onButtonFlatTrimAction(ActionEvent actionEvent) {
+        emitUIAction(UIAction.FLAT_TRIM);
+    }
 
-	@FXML
-	public void onButtonFlightAnimationAction(ActionEvent actionEvent) {
-		emitUIAction(UIAction.PLAY_FLIGHT_ANIMATION);
-	}
+    @FXML
+    public void onButtonEmergencyAction(ActionEvent actionEvent) {
+        emitUIAction(UIAction.EMERGENCY);
+    }
 
-	@FXML
-	public void onCheckBoxExpertModeAction(ActionEvent actionEvent) {
-		CheckBox checkBox = (CheckBox) actionEvent.getSource();
+    @FXML
+    public void onButtonSwitchCameraAction(ActionEvent actionEvent) {
+        emitUIAction(UIAction.SWITCH_CAMERA);
+    }
 
-		emitUIAction(checkBox.isSelected() ? UIAction.ENABLE_EXPERT_MODE
-				: UIAction.DISABLE_EXPERT_MODE);
-	}
+    @FXML
+    public void onButtonLedAnimationAction(ActionEvent actionEvent) {
+        emitUIAction(UIAction.PLAY_LED_ANIMATION);
+    }
 
-	public void emitUIAction(UIAction action) {
-		for (UIActionListener listener : uiActionListeners) {
-			listener.onAction(action);
-		}
-	}
+    @FXML
+    public void onButtonFlightAnimationAction(ActionEvent actionEvent) {
+        emitUIAction(UIAction.PLAY_FLIGHT_ANIMATION);
+    }
 
-	private void runOnFxThread(Runnable runnable) {
-		Platform.runLater(runnable);
-	}
+    @FXML
+    public void onCheckBoxExpertModeAction(ActionEvent actionEvent) {
+        CheckBox checkBox = (CheckBox) actionEvent.getSource();
 
-	@Override
-	public void onNavData(final NavData navData) {
-		runOnFxThread(new Runnable() {
-			@Override
-			public void run() {
-				setBatteryLabel(navData);
-			}
-		});
-	}
+        emitUIAction(checkBox.isSelected() ? UIAction.ENABLE_EXPERT_MODE
+                : UIAction.DISABLE_EXPERT_MODE);
+    }
 
-	public void setBatteryLabel(NavData navData) {
-		String batteryLevelText = "Battery: " + navData.getBatteryLevel() + "%";
-		labelBattery.setText(batteryLevelText);
+    public void emitUIAction(UIAction action) {
+        for (UIActionListener listener : uiActionListeners) {
+            listener.onAction(action);
+        }
+    }
 
-		if (navData.getState().isBatteryTooLow()) {
-			labelBattery.setTextFill(Paint.valueOf("red"));
-		} else {
-			labelBattery.setTextFill(Paint.valueOf("white"));
-		}
-	}
+    private void runOnFxThread(Runnable runnable) {
+        Platform.runLater(runnable);
+    }
 
-	@Override
-	public void onVideoData(final BufferedImage droneImage) {
-		runOnFxThread(new Runnable() {
-			@Override
-			public void run() {
-				imageView.setFitWidth(vbox.getWidth() - 20);
-				imageView.setFitHeight(vbox.getHeight() - 100);
+    @Override
+    public void onNavData(final NavData navData) {
+        runOnFxThread(new Runnable() {
+            @Override
+            public void run() {
+                setBatteryLabel(navData);
+            }
+        });
+    }
 
-				image = SwingFXUtils.toFXImage(droneImage, image);
-				if (imageView.getImage() != image) {
-					imageView.setImage(image);
-				}
-			}
-		});
-	}
+    public void setBatteryLabel(NavData navData) {
+        String batteryLevelText = "Battery: " + navData.getBatteryLevel() + "%";
+        labelBattery.setText(batteryLevelText);
 
-	// Timer event
-	@Override
-	public void handle(ActionEvent actionEvent) {
-		if (raceTimer != null) {
-			long totalMillis = raceTimer.getElapsedTime();
-			long seconds = totalMillis / 1000;
-			long millis = totalMillis % 1000;
+        if (navData.getState().isBatteryTooLow()) {
+            labelBattery.setTextFill(Paint.valueOf("red"));
+        } else {
+            labelBattery.setTextFill(Paint.valueOf("white"));
+        }
+    }
 
-			labelTimer.setText(String.format("Time: %d,%03d", seconds, millis));
-		}
-	}
+    @Override
+    public void onVideoData(final BufferedImage droneImage) {
+        runOnFxThread(new Runnable() {
+            @Override
+            public void run() {
+                imageView.setFitWidth(vbox.getWidth() - 20);
+                imageView.setFitHeight(vbox.getHeight() - 100);
 
-	public void setRaceTimer(RaceTimer raceTimer) {
-		this.raceTimer = raceTimer;
-	}
+                image = SwingFXUtils.toFXImage(droneImage, image);
+                if (imageView.getImage() != image) {
+                    imageView.setImage(image);
+                }
+            }
+        });
+    }
 
-	@Override
-	public void onCoordinate(final float roll, final float pitch, final float yaw, float heightDelta) {
-		//Slider einstellen
-		runOnFxThread(new Runnable() {
-			@Override
-			public void run() {
-				System.out.println(String.format("%.3f, %.3f, %.3f", roll, pitch, yaw));
-				slideRoll.setValue(roll);
-				slidePitch.setValue(pitch);
-				slideYaw.setValue(yaw);
-			}
-		});
-	}
+    // Timer event
+    @Override
+    public void handle(ActionEvent actionEvent) {
+        if (raceTimer != null) {
+            long totalMillis = raceTimer.getElapsedTime();
+            long seconds = totalMillis / 1000;
+            long millis = totalMillis % 1000;
+
+            labelTimer.setText(String.format("Time: %d,%03d", seconds, millis));
+        }
+    }
+
+    public void setRaceTimer(RaceTimer raceTimer) {
+        this.raceTimer = raceTimer;
+    }
+
+    @Override
+    public void onCoordinate(final float roll, final float pitch, final float yaw, float heightDelta) {
+        //Slider einstellen
+        runOnFxThread(new Runnable() {
+            @Override
+            public void run() {
+                slideRoll.setValue(roll);
+                slidePitch.setValue(pitch);
+                slideYaw.setValue(yaw);
+            }
+        });
+    }
 }
