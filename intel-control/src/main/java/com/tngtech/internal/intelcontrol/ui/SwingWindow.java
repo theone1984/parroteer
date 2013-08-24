@@ -77,7 +77,7 @@ public class SwingWindow implements PictureListener, DetectionListener<Hands> {
             int x = this.getWidth() / 2 + (int) Math.round((Math.toDegrees(Math.atan(coordinate.getX() / coordinate.getZ())) / OPEN_FACTOR_X) * this.getWidth());
             int y = this.getHeight() / 2 - (int) Math.round((Math.toDegrees(Math.atan(coordinate.getY() / coordinate.getZ())) / OPEN_FACTOR_Y) * this.getHeight());
 
-            graphics.drawArc(x + CIRCLE_DIAMETER / 2, y + CIRCLE_DIAMETER / 2, CIRCLE_DIAMETER, CIRCLE_DIAMETER, 0, 360);
+            graphics.fillArc(x + CIRCLE_DIAMETER / 2, y + CIRCLE_DIAMETER / 2, CIRCLE_DIAMETER, CIRCLE_DIAMETER, 0, 360);
         }
     }
 
@@ -116,11 +116,11 @@ public class SwingWindow implements PictureListener, DetectionListener<Hands> {
         //coordinates = Maps.newLinkedHashMap();
         if (handsDetectionData.getLeftHand().isActive()) {
             coordinates.put(Color.BLUE, handsDetectionData.getLeftHand().getCoordinate());
-            coordinates.put(Color.MAGENTA, handsDetectionData.getLeftHand().getUnsmoothedCoordinate());
+            //coordinates.put(Color.MAGENTA, handsDetectionData.getLeftHand().getUnsmoothedCoordinate());
         }
         if (handsDetectionData.getRightHand().isActive()) {
             coordinates.put(Color.RED, handsDetectionData.getRightHand().getCoordinate());
-            coordinates.put(Color.CYAN, handsDetectionData.getRightHand().getUnsmoothedCoordinate());
+            //coordinates.put(Color.CYAN, handsDetectionData.getRightHand().getUnsmoothedCoordinate());
         }
 
         panel.setData(image, coordinates);
