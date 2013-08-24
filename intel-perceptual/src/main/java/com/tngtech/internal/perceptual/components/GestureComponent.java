@@ -14,9 +14,9 @@ import java.util.Map;
 import java.util.Set;
 
 public class GestureComponent implements PerceptualQueryComponent {
-    private static final int GESTURE_NUBMER_THRESHOLD = 5;
+    private static final int GESTURE_NUBMER_THRESHOLD = 2;
 
-    private static final int NUMBER_OF_GESTURE_SAMPLES = 15000;
+    private static final int NUMBER_OF_GESTURE_SAMPLES = 5;
 
     private Set<GestureListener> gestureListeners = Sets.newHashSet();
 
@@ -93,7 +93,6 @@ public class GestureComponent implements PerceptualQueryComponent {
                 maxCount = currentCount;
             }
         }
-
         return maxCount > GESTURE_NUBMER_THRESHOLD ? labelWithHighestEntryCount : PXCMGesture.Gesture.LABEL_ANY;
     }
 
