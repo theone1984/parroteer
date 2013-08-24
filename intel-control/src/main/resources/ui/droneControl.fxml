@@ -15,7 +15,7 @@
     </padding>
 
     <GridPane alignment="center" hgap="5" vgap="5">
-        <Button text="Take off" onAction="#onButtonTakeOffAction" maxWidth="Infinity" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+        <Button fx:id="takeOffButton" text="Take off" onAction="#onButtonTakeOffAction" maxWidth="Infinity" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
         <Button text="Land" onAction="#onButtonLandAction" maxWidth="Infinity" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
         <Button text="Flat trim" onAction="#onButtonFlatTrimAction" maxWidth="Infinity" GridPane.columnIndex="2" GridPane.rowIndex="0"/>
         <Button text="Emergency" onAction="#onButtonEmergencyAction" maxWidth="Infinity" GridPane.columnIndex="3" GridPane.rowIndex="0"/>

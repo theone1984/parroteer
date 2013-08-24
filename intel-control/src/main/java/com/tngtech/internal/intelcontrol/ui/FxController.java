@@ -13,6 +13,7 @@ import javafx.embed.swing.SwingFXUtils;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
@@ -28,6 +29,9 @@ import java.util.Set;
 public class FxController implements VideoDataListener, NavDataListener,
         EventHandler<ActionEvent>, CoordinateListener {
     private final Set<UIActionListener> uiActionListeners;
+
+    @FXML
+    private Button takeOffButton;
 
     @FXML
     private ImageView imageView;
@@ -56,6 +60,9 @@ public class FxController implements VideoDataListener, NavDataListener,
 
     public FxController() {
         uiActionListeners = Sets.newHashSet();
+    }
+
+    public void init() {
     }
 
     public void addUIActionListener(UIActionListener uiActionlistener) {
