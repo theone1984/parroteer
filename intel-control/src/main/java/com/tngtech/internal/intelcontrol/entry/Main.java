@@ -13,9 +13,7 @@ import com.tngtech.internal.intelcontrol.ui.listeners.UIActionListener;
 import com.tngtech.internal.perceptual.PerceptualController;
 import com.tngtech.internal.perceptual.data.DetectionType;
 import com.tngtech.internal.perceptual.helpers.CoordinateCalculator;
-
 import javafx.stage.Stage;
-
 import org.apache.log4j.Logger;
 
 public class Main implements ErrorListener, UIActionListener {
@@ -74,6 +72,7 @@ public class Main implements ErrorListener, UIActionListener {
         perceptualController.addDetectionListener(DetectionType.HANDS, swingWindow);
         perceptualController.addGestureListener(droneInputController);
         perceptualController.addDetectionListener(DetectionType.HANDS, droneInputController);
+        perceptualController.addDetectionListener(DetectionType.HANDS, fxController);
 
         fxController.addUIActionListener(droneInputController);
 

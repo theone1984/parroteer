@@ -7,7 +7,11 @@ import com.tngtech.internal.droneapi.listeners.VideoDataListener;
 import com.tngtech.internal.intelcontrol.helpers.RaceTimer;
 import com.tngtech.internal.intelcontrol.ui.data.UIAction;
 import com.tngtech.internal.intelcontrol.ui.listeners.UIActionListener;
+import com.tngtech.internal.perceptual.data.body.Hands;
+import com.tngtech.internal.perceptual.data.events.DetectionData;
+import com.tngtech.internal.perceptual.data.events.HandsDetectionData;
 import com.tngtech.internal.perceptual.helpers.CoordinateListener;
+import com.tngtech.internal.perceptual.listeners.DetectionListener;
 import javafx.application.Platform;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.event.ActionEvent;
@@ -19,6 +23,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.WritableImage;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Paint;
 
@@ -27,8 +32,10 @@ import java.util.Set;
 
 @SuppressWarnings({"UnusedParameters", "UnusedDeclaration"})
 public class FxController implements VideoDataListener, NavDataListener,
-        EventHandler<ActionEvent>, CoordinateListener {
+        EventHandler<ActionEvent>, DetectionListener<Hands>, CoordinateListener {
     private final Set<UIActionListener> uiActionListeners;
+
+    private boolean bothHandsVisible = false;
 
     @FXML
     private Button takeOffButton;
@@ -38,6 +45,9 @@ public class FxController implements VideoDataListener, NavDataListener,
 
     @FXML
     private VBox vbox;
+
+    @FXML
+    private GridPane imageContainer;
 
     @FXML
     private Label labelBattery;
@@ -188,6 +198,14 @@ public class FxController implements VideoDataListener, NavDataListener,
         this.raceTimer = raceTimer;
     }
 
+    public void setHandsDetected(HandsDetectionData data) {
+        bothHandsVisible = data.getLeftHand().isActive() && data.getRightHand().isActive();
+        takeOffButton.setDisable(!bothHandsVisible);
+
+        String borderColor = bothHandsVisible ? "green" : "red";
+        imageContainer.setStyle(String.format("-fx-border-color: %s;", borderColor));
+    }
+
     @Override
     public void onCoordinate(final float roll, final float pitch, final float yaw, float heightDelta) {
         //Slider einstellen
@@ -197,6 +215,17 @@ public class FxController implements VideoDataListener, NavDataListener,
                 slideRoll.setValue(roll);
                 slidePitch.setValue(pitch);
                 slideYaw.setValue(yaw);
+            }
+        });
+    }
+
+    @Override
+    public void onDetection(DetectionData<Hands> data) {
+        final HandsDetectionData handsDetectionData = (HandsDetectionData) data;
+        runOnFxThread(new Runnable() {
+            @Override
+            public void run() {
+                setHandsDetected(handsDetectionData);
             }
         });
     }

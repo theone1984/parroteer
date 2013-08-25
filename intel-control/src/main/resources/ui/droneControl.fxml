@@ -15,6 +15,10 @@
     </padding>
 
     <GridPane alignment="center" hgap="5" vgap="5">
+        <padding>
+            <Insets bottom="10" left="0" right="0" top="0"/>
+        </padding>
+
         <Button fx:id="takeOffButton" text="Take off" onAction="#onButtonTakeOffAction" maxWidth="Infinity" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
         <Button text="Land" onAction="#onButtonLandAction" maxWidth="Infinity" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
         <Button text="Flat trim" onAction="#onButtonFlatTrimAction" maxWidth="Infinity" GridPane.columnIndex="2" GridPane.rowIndex="0"/>
@@ -32,7 +36,7 @@
         <Slider fx:id="slidePitch" min="-1" max="1" value="0" GridPane.columnIndex="1" GridPane.rowIndex="4"/>
         <Slider fx:id="slideYaw" min="-1" max="1" value="0" GridPane.columnIndex="2" GridPane.rowIndex="4"/>
     </GridPane>
-    <GridPane alignment="center" hgap="1" vgap="1">
+    <GridPane fx:id="imageContainer" alignment="center" hgap="1" vgap="1" VBox.vgrow="ALWAYS">
 		<ImageView fx:id="imageView" preserveRatio="true" VBox.vgrow="ALWAYS"/>
     </GridPane>
 </VBox>
