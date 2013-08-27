@@ -43,6 +43,6 @@
 }
 
 #imageContainer {
-    -fx-border-width: 3;
+    -fx-border-width: 10;
     -fx-border-color: red;
 }

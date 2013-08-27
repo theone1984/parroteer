@@ -171,8 +171,8 @@ public class FxController implements VideoDataListener, NavDataListener,
         runOnFxThread(new Runnable() {
             @Override
             public void run() {
-                imageView.setFitWidth(vbox.getWidth() - 20);
-                imageView.setFitHeight(vbox.getHeight() - 100);
+                imageView.setFitWidth(vbox.getWidth() - 40);
+                imageView.setFitHeight(vbox.getHeight() - 220);
 
                 image = SwingFXUtils.toFXImage(droneImage, image);
                 if (imageView.getImage() != image) {
