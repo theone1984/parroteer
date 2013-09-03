@@ -3,7 +3,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.tngtech.internal</groupId>
+    <groupId>com.dronecontrol</groupId>
     <artifactId>leap-control</artifactId>
     <version>1.1-SNAPSHOT</version>
 
@@ -30,7 +30,7 @@
         </dependency>
 
         <dependency>
-            <groupId>com.tngtech.internal</groupId>
+            <groupId>com.dronecontrol</groupId>
             <artifactId>leap-java</artifactId>
             <version>1.0.8</version>
         </dependency>
@@ -52,7 +52,7 @@
         </dependency>
 
         <dependency>
-            <groupId>com.tngtech.internal</groupId>
+            <groupId>com.dronecontrol</groupId>
             <artifactId>drone-api</artifactId>
             <version>1.1-SNAPSHOT</version>
         </dependency>
@@ -122,7 +122,7 @@
                         <configuration>
                             <transformers>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <mainClass>com.tngtech.internal.leapcontrol.entry.FxMain</mainClass>
+                                    <mainClass>com.dronecontrol.leapcontrol.entry.FxMain</mainClass>
                                 </transformer>
                             </transformers>
 
