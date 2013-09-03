@@ -71,7 +71,7 @@ public class LeapMotionListener extends Listener
       processGestureEvent(gesture);
     }
 
-    if (frame.hands().empty())
+    if (frame.hands().isEmpty())
     {
       processNoDetectionEvent();
     } else
