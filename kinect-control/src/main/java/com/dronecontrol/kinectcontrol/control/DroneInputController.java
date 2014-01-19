@@ -1,8 +1,5 @@
 package com.dronecontrol.kinectcontrol.control;
 
-import com.dronecontrol.kinectcontrol.input.data.MovementData;
-import com.dronecontrol.kinectcontrol.input.events.MovementDataListener;
-import com.google.inject.Inject;
 import com.dronecontrol.droneapi.DroneController;
 import com.dronecontrol.droneapi.data.NavData;
 import com.dronecontrol.droneapi.data.enums.Camera;
@@ -11,12 +8,17 @@ import com.dronecontrol.droneapi.data.enums.LedAnimation;
 import com.dronecontrol.droneapi.listeners.NavDataListener;
 import com.dronecontrol.droneapi.listeners.ReadyStateChangeListener;
 import com.dronecontrol.kinectcontrol.helpers.RaceTimer;
+import com.dronecontrol.kinectcontrol.input.data.MovementData;
+import com.dronecontrol.kinectcontrol.input.data.PilotAction;
+import com.dronecontrol.kinectcontrol.input.events.MovementDataListener;
+import com.dronecontrol.kinectcontrol.input.events.PilotActionListener;
 import com.dronecontrol.kinectcontrol.ui.data.UIAction;
 import com.dronecontrol.kinectcontrol.ui.listeners.UIActionListener;
+import com.google.inject.Inject;
 import org.apache.log4j.Logger;
 
 
-public class DroneInputController implements ReadyStateChangeListener, NavDataListener, UIActionListener, MovementDataListener
+public class DroneInputController implements ReadyStateChangeListener, NavDataListener, UIActionListener, MovementDataListener, PilotActionListener
 {
   private static final float HEIGHT_THRESHOLD = 0.25f;
 
@@ -46,27 +48,39 @@ public class DroneInputController implements ReadyStateChangeListener, NavDataLi
   {
     switch (action)
     {
-        case TAKE_OFF:
-            takeOff();
-            break;
-        case LAND:
-            land();
-            break;
-        case FLAT_TRIM:
-            flatTrim();
-            break;
-        case EMERGENCY:
-            emergency();
-            break;
-        case SWITCH_CAMERA:
-            switchCamera();
-            break;
-        case PLAY_LED_ANIMATION:
-            playLedAnimation();
-            break;
-        case PLAY_FLIGHT_ANIMATION:
-            playFlightAnimation();
-            break;
+      case TAKE_OFF:
+        takeOff();
+        break;
+      case LAND:
+        land();
+        break;
+      case FLAT_TRIM:
+        flatTrim();
+        break;
+      case EMERGENCY:
+        emergency();
+        break;
+      case SWITCH_CAMERA:
+        switchCamera();
+        break;
+      case PLAY_LED_ANIMATION:
+        playLedAnimation();
+        break;
+      case PLAY_FLIGHT_ANIMATION:
+        playFlightAnimation();
+        break;
+    }
+  }
+
+  @Override
+  public void onPilotAction(PilotAction pilotAction)
+  {
+    switch (pilotAction)
+    {
+      case TAKE_OFF:
+        takeOff();
+      case LAND:
+        land();
     }
   }
 
@@ -148,8 +162,7 @@ public class DroneInputController implements ReadyStateChangeListener, NavDataLi
     if (movementData == null)
     {
       move(new MovementData(0, 0, 0, 0));
-    }
-    else
+    } else
     {
       move(movementData);
     }

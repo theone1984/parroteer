@@ -1,13 +1,17 @@
 package com.dronecontrol.kinectcontrol.input;
 
 import com.dronecontrol.kinectcontrol.input.data.MovementData;
+import com.dronecontrol.kinectcontrol.input.data.PilotAction;
+import com.dronecontrol.kinectcontrol.input.data.PilotData;
 import com.dronecontrol.kinectcontrol.input.events.MovementDataListener;
+import com.dronecontrol.kinectcontrol.input.events.PilotActionListener;
 import com.dronecontrol.kinectcontrol.input.socket.SocketClientDataListener;
 import com.google.common.collect.Sets;
 import org.codehaus.jackson.map.ObjectMapper;
 
 import javax.inject.Inject;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -34,6 +38,8 @@ public class KinectDataReceiver implements SocketClientDataListener
 
   private Set<MovementDataListener> movementDataListeners;
 
+  private Set<PilotActionListener> pilotActionListeners;
+
   private long lastCommandTimeStamp;
 
   @Inject
@@ -42,6 +48,8 @@ public class KinectDataReceiver implements SocketClientDataListener
     this.objectMapper = objectMapper;
 
     movementDataListeners = Sets.newCopyOnWriteArraySet();
+    pilotActionListeners = Sets.newCopyOnWriteArraySet();
+
     worker = Executors.newSingleThreadScheduledExecutor();
     lastCommandTimeStamp = getCurrentTimeStamp();
 
@@ -79,18 +87,19 @@ public class KinectDataReceiver implements SocketClientDataListener
   @Override
   public void OnData(String message)
   {
-    MovementData movementData = getMovementData(message);
-    if (movementData != null)
+    PilotData pilotData = getPilotData(message);
+    if (pilotData != null)
     {
-      emitMovementData(movementData);
+      emitMovementData(pilotData.getMovementData());
+      emitPilotActions(pilotData.getPilotActions());
     }
   }
 
-  private MovementData getMovementData(String message)
+  private PilotData getPilotData(String message)
   {
     try
     {
-      return objectMapper.readValue(message, MovementData.class);
+      return objectMapper.readValue(message, PilotData.class);
     } catch (IOException e)
     {
       logger.warn(String.format("Error while deserializing movement data '%s': %s", message, e.getMessage()));
@@ -112,8 +121,29 @@ public class KinectDataReceiver implements SocketClientDataListener
     }
   }
 
+  private void emitPilotActions(Collection<PilotAction> pilotActions)
+  {
+    for (PilotAction pilotAction : pilotActions)
+    {
+      invokePilotActionListeners(pilotAction);
+    }
+  }
+
+  private void invokePilotActionListeners(PilotAction pilotAction)
+  {
+    for (PilotActionListener listener : pilotActionListeners)
+    {
+      listener.onPilotAction(pilotAction);
+    }
+  }
+
   public synchronized void addMovementDataListener(MovementDataListener listener)
   {
     movementDataListeners.add(listener);
+  }
+
+  public synchronized void addPilotActionListener(PilotActionListener listener)
+  {
+    pilotActionListeners.add(listener);
   }
 }
