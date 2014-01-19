@@ -3,6 +3,8 @@ package com.dronecontrol.kinectcontrol.input.data;
 @SuppressWarnings("UnusedDeclaration")
 public class MovementData
 {
+  public static final MovementData NO_MOVEMENT = new MovementData(0, 0, 0, 0);
+
   private float roll;
 
   private float pitch;

@@ -20,6 +20,8 @@ public class KinectController
   {
     this.socketClient = socketClient;
     this.kinectDataReceiver = kinectDataReceiver;
+
+
   }
 
   public void addMovementDataListener(MovementDataListener droneInputController)
@@ -29,13 +31,15 @@ public class KinectController
 
   public void start()
   {
-    socketClient.start(HOST_NAME, HOST_PORT);
+    socketClient.connect(HOST_NAME, HOST_PORT);
     socketClient.addDataListener(kinectDataReceiver);
   }
 
   public void stop()
   {
     socketClient.removeDataListener(kinectDataReceiver);
-    socketClient.close();
+    socketClient.disconnect();
+
+    kinectDataReceiver.dispose();
   }
 }
