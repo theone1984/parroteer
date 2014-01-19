@@ -28,7 +28,7 @@ public class MovementData
     return roll;
   }
 
-  public void setRoll(int roll)
+  public void setRoll(float roll)
   {
     this.roll = roll;
   }
@@ -38,7 +38,7 @@ public class MovementData
     return pitch;
   }
 
-  public void setPitch(int pitch)
+  public void setPitch(float pitch)
   {
     this.pitch = pitch;
   }
@@ -48,7 +48,7 @@ public class MovementData
     return yaw;
   }
 
-  public void setYaw(int yaw)
+  public void setYaw(float yaw)
   {
     this.yaw = yaw;
   }
@@ -58,7 +58,7 @@ public class MovementData
     return gaz;
   }
 
-  public void setGaz(int gaz)
+  public void setGaz(float gaz)
   {
     this.gaz = gaz;
   }
