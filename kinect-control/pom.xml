@@ -9,11 +9,11 @@
         <version>1.1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>leap-control</artifactId>
+    <artifactId>kinect-control</artifactId>
     <version>1.1-SNAPSHOT</version>
 
     <properties>
-        <exec.mainClass>com.dronecontrol.leapcontrol.entry.FxMain</exec.mainClass>
+        <exec.mainClass>com.dronecontrol.kinectcontrol.entry.FxMain</exec.mainClass>
     </properties>
 
     <dependencies>
@@ -29,33 +29,11 @@
         </dependency>
 
         <dependency>
-            <groupId>com.dronecontrol</groupId>
-            <artifactId>leap-java</artifactId>
-            <version>1.0.8</version>
-        </dependency>
-
-        <dependency>
             <groupId>javafx</groupId>
             <artifactId>jfxrt</artifactId>
             <version>${javafx.min.version}</version>
             <scope>system</scope>
             <systemPath>${javafx.runtime.lib.jar}</systemPath>
-        </dependency>
-
-        <dependency>
-            <groupId>net.cmusphinx</groupId>
-            <artifactId>jsapi</artifactId>
-            <version>1.0</version>
-        </dependency>
-        <dependency>
-            <groupId>net.cmusphinx</groupId>
-            <artifactId>sphinx4</artifactId>
-            <version>1.0</version>
-        </dependency>
-        <dependency>
-            <groupId>net.cmusphinx</groupId>
-            <artifactId>wsj-6800hz</artifactId>
-            <version>1.0</version>
         </dependency>
 
         <dependency>
@@ -81,12 +59,6 @@
             <artifactId>mockito-all</artifactId>
             <version>${mockito.version}</version>
             <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>xuggle</groupId>
-            <artifactId>xuggle-xuggler</artifactId>
-            <version>${xuggler.version}</version>
         </dependency>
 
     </dependencies>

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<VBox fx:id="vbox" fx:controller="com.dronecontrol.kinectcontrol.ui.FxController" xmlns:fx="http://javafx.com/fxml">
+    <padding>
+        <Insets bottom="10" left="10" right="10" top="10"/>
+    </padding>
+
+    <GridPane alignment="center" hgap="5" vgap="5">
+        <Button text="Take off" onAction="#onButtonTakeOffAction" maxWidth="Infinity" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+        <Button text="Land" onAction="#onButtonLandAction" maxWidth="Infinity" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+        <Button text="Flat trim" onAction="#onButtonFlatTrimAction" maxWidth="Infinity" GridPane.columnIndex="2" GridPane.rowIndex="0"/>
+        <Button text="Emergency" onAction="#onButtonEmergencyAction" maxWidth="Infinity" GridPane.columnIndex="3" GridPane.rowIndex="0"/>
+        <Button text="Switch camera" onAction="#onButtonSwitchCameraAction" maxWidth="Infinity" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+        <Button text="LED animation" onAction="#onButtonLedAnimationAction" maxWidth="Infinity" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+        <Button text="Flight animation" onAction="#onButtonFlightAnimationAction" maxWidth="Infinity" GridPane.columnIndex="2" GridPane.rowIndex="1"/>
+
+        <Label fx:id="labelTimer" GridPane.columnIndex="1" GridPane.rowIndex="2" text="Time: 00:00:00"/>
+        <Label fx:id="labelBattery" text="Battery: N/A %" GridPane.columnIndex="3" GridPane.rowIndex="2"/>
+    </GridPane>
+    <GridPane alignment="center" hgap="1" vgap="1">
+		<ImageView fx:id="imageView" preserveRatio="true" VBox.vgrow="ALWAYS"/>
+    </GridPane>
+</VBox>

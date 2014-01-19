@@ -14,5 +14,43 @@
         <module>leap-control</module>
         <module>intel-control</module>
         <module>intel-perceptual</module>
+        <module>kinect-control</module>
     </modules>
+
+    <properties>
+        <spring.version>3.1.4.RELEASE</spring.version>
+        <javafx.min.version>2.2</javafx.min.version>
+        <xuggler.version>5.4.1</xuggler.version>
+        <guice.version>3.0</guice.version>
+        <guava.version>14.0.1</guava.version>
+        <log4j.version>1.2.17</log4j.version>
+
+        <junit.version>4.11</junit.version>
+        <mockito.version>1.9.5</mockito.version>
+
+        <jdk.home>C:\Program Files\Java\jdk1.7.0_51</jdk.home>
+        <javafx.runtime.lib.jar>${jdk.home}/jre/lib/jfxrt.jar</javafx.runtime.lib.jar>
+        <javafx.tools.ant.jar>${jdk.home}/lib/ant-javafx.jar</javafx.tools.ant.jar>
+    </properties>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>2.5</version>
+                <configuration>
+                    <source>1.7</source>
+                    <target>1.7</target>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <repositories>
+        <repository>
+            <id>mozquitobytes</id>
+            <url>http://www.mozquitobytes.com:8081/nexus/content/repositories/thirdparty</url>
+        </repository>
+    </repositories>
 </project>
