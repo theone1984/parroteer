@@ -57,7 +57,7 @@ public class KinectDataReceiver implements SocketClientDataListener
     }
   }
 
-  public synchronized void addMotionListener(MovementDataListener listener)
+  public synchronized void addMovementDataListener(MovementDataListener listener)
   {
     movementDataListeners.add(listener);
   }

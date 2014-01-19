@@ -1,6 +1,6 @@
 package com.dronecontrol.kinectcontrol.input;
 
-import com.dronecontrol.kinectcontrol.control.DroneInputController;
+import com.dronecontrol.kinectcontrol.input.events.MovementDataListener;
 import com.dronecontrol.kinectcontrol.input.socket.SocketClient;
 
 import javax.inject.Inject;
@@ -22,9 +22,9 @@ public class KinectController
     this.kinectDataReceiver = kinectDataReceiver;
   }
 
-  public void addMotionListener(DroneInputController droneInputController)
+  public void addMovementDataListener(MovementDataListener droneInputController)
   {
-    kinectDataReceiver.addMotionListener(droneInputController);
+    kinectDataReceiver.addMovementDataListener(droneInputController);
   }
 
   public void start()

@@ -4,6 +4,7 @@
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.CheckBox?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Slider?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.StackPane?>
@@ -14,6 +15,10 @@
     </padding>
 
     <GridPane alignment="center" hgap="5" vgap="5">
+        <padding>
+            <Insets bottom="10" left="0" right="0" top="0"/>
+        </padding>
+
         <Button text="Take off" onAction="#onButtonTakeOffAction" maxWidth="Infinity" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
         <Button text="Land" onAction="#onButtonLandAction" maxWidth="Infinity" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
         <Button text="Flat trim" onAction="#onButtonFlatTrimAction" maxWidth="Infinity" GridPane.columnIndex="2" GridPane.rowIndex="0"/>
@@ -21,11 +26,16 @@
         <Button text="Switch camera" onAction="#onButtonSwitchCameraAction" maxWidth="Infinity" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
         <Button text="LED animation" onAction="#onButtonLedAnimationAction" maxWidth="Infinity" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
         <Button text="Flight animation" onAction="#onButtonFlightAnimationAction" maxWidth="Infinity" GridPane.columnIndex="2" GridPane.rowIndex="1"/>
-
         <Label fx:id="labelTimer" GridPane.columnIndex="1" GridPane.rowIndex="2" text="Time: 00:00:00"/>
         <Label fx:id="labelBattery" text="Battery: N/A %" GridPane.columnIndex="3" GridPane.rowIndex="2"/>
+        <Label text="Roll" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
+        <Label text="Pitch" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+        <Label text="Yaw" GridPane.columnIndex="2" GridPane.rowIndex="3"/>
+        <Slider fx:id="slideRoll" min="-1" max="1" value="0" GridPane.columnIndex="0" GridPane.rowIndex="4"/>
+        <Slider fx:id="slidePitch" min="-1" max="1" value="0" GridPane.columnIndex="1" GridPane.rowIndex="4"/>
+        <Slider fx:id="slideYaw" min="-1" max="1" value="0" GridPane.columnIndex="2" GridPane.rowIndex="4"/>
     </GridPane>
-    <GridPane alignment="center" hgap="1" vgap="1">
-		<ImageView fx:id="imageView" preserveRatio="true" VBox.vgrow="ALWAYS"/>
+    <GridPane alignment="center" hgap="1" vgap="1" VBox.vgrow="ALWAYS">
+        <ImageView fx:id="imageView" preserveRatio="true" VBox.vgrow="ALWAYS"/>
     </GridPane>
 </VBox>

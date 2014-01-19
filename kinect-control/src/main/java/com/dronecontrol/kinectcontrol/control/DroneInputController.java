@@ -151,7 +151,6 @@ public class DroneInputController implements ReadyStateChangeListener, NavDataLi
     }
     else
     {
-      System.out.println(movementData);
       move(movementData);
     }
   }

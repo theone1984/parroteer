@@ -59,7 +59,9 @@ public class Main implements ErrorListener, UIActionListener
 
     droneController.addNavDataListener(droneInputController);
     droneController.addReadyStateChangeListener(droneInputController);
-    kinectController.addMotionListener(droneInputController);
+    kinectController.addMovementDataListener(droneInputController);
+    kinectController.addMovementDataListener(fxController);
+
     fxController.addUIActionListener(droneInputController);
   }
 

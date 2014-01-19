@@ -1,5 +1,7 @@
 package com.dronecontrol.kinectcontrol.ui;
 
+import com.dronecontrol.kinectcontrol.input.data.MovementData;
+import com.dronecontrol.kinectcontrol.input.events.MovementDataListener;
 import com.google.common.collect.Sets;
 import com.dronecontrol.droneapi.data.NavData;
 import com.dronecontrol.droneapi.listeners.NavDataListener;
@@ -13,6 +15,7 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
+import javafx.scene.control.Slider;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.WritableImage;
 import javafx.scene.layout.VBox;
@@ -21,7 +24,7 @@ import javafx.scene.paint.Paint;
 import java.awt.image.BufferedImage;
 import java.util.Set;
 
-public class FxController implements VideoDataListener, NavDataListener, EventHandler<ActionEvent>
+public class FxController implements VideoDataListener, NavDataListener, EventHandler<ActionEvent>, MovementDataListener
 {
   private final Set<UIActionListener> uiActionListeners;
 
@@ -36,6 +39,15 @@ public class FxController implements VideoDataListener, NavDataListener, EventHa
 
   @FXML
   private Label labelTimer;
+
+  @FXML
+  private Slider slideRoll;
+
+  @FXML
+  private Slider slidePitch;
+
+  @FXML
+  private Slider slideYaw;
 
   private WritableImage image;
 
@@ -188,5 +200,16 @@ public class FxController implements VideoDataListener, NavDataListener, EventHa
     this.raceTimer = raceTimer;
   }
 
-
+  @Override
+  public void onMovementData(final MovementData movementData)
+  {
+    runOnFxThread(new Runnable() {
+      @Override
+      public void run() {
+        slideRoll.setValue(movementData.getRoll());
+        slidePitch.setValue(movementData.getPitch());
+        slideYaw.setValue(movementData.getYaw());
+      }
+    });
+  }
 }
