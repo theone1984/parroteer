@@ -1,6 +1,7 @@
 package com.dronecontrol.kinectcontrol.injection;
 
 import com.dronecontrol.kinectcontrol.input.KinectController;
+import com.dronecontrol.kinectcontrol.input.KinectDataReceiver;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -41,6 +42,8 @@ public class Context extends AbstractModule
     bind(DroneController.class).toProvider(DroneControllerProvider.class);
 
     bind(KinectController.class).in(Singleton.class);
+    bind(KinectDataReceiver.class).in(Singleton.class);
+
     bind(RaceTimer.class).in(Singleton.class);
   }
 }

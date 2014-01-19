@@ -1,5 +1,7 @@
 package com.dronecontrol.kinectcontrol.control;
 
+import com.dronecontrol.kinectcontrol.input.data.MovementData;
+import com.dronecontrol.kinectcontrol.input.events.MovementDataListener;
 import com.google.inject.Inject;
 import com.dronecontrol.droneapi.DroneController;
 import com.dronecontrol.droneapi.data.NavData;
@@ -14,7 +16,7 @@ import com.dronecontrol.kinectcontrol.ui.listeners.UIActionListener;
 import org.apache.log4j.Logger;
 
 
-public class DroneInputController implements ReadyStateChangeListener, NavDataListener, UIActionListener
+public class DroneInputController implements ReadyStateChangeListener, NavDataListener, UIActionListener, MovementDataListener
 {
   private static final float HEIGHT_THRESHOLD = 0.25f;
 
@@ -140,11 +142,25 @@ public class DroneInputController implements ReadyStateChangeListener, NavDataLi
     }
   }
 
-  private void move(float roll, float pitch, float yaw, float gaz)
+  @Override
+  public void onMovementData(MovementData movementData)
+  {
+    if (movementData == null)
+    {
+      move(new MovementData(0, 0, 0, 0));
+    }
+    else
+    {
+      System.out.println(movementData);
+      move(movementData);
+    }
+  }
+
+  private void move(MovementData movementData)
   {
     if (ready)
     {
-      droneController.move(roll, pitch, yaw, gaz);
+      droneController.move(movementData.getRoll(), movementData.getPitch(), movementData.getYaw(), movementData.getGaz());
     }
   }
 
