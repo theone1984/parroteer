@@ -58,6 +58,11 @@
             <artifactId>log4j</artifactId>
             <version>${log4j.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.tngtech.java</groupId>
+            <artifactId>config-builder</artifactId>
+            <version>${configbuilder.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>junit</groupId>
