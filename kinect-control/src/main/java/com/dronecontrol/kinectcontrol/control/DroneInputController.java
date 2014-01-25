@@ -15,22 +15,13 @@ import com.dronecontrol.kinectcontrol.input.events.PilotActionListener;
 import com.dronecontrol.kinectcontrol.ui.data.UIAction;
 import com.dronecontrol.kinectcontrol.ui.listeners.UIActionListener;
 import com.google.inject.Inject;
-import org.apache.log4j.Logger;
 
 
 public class DroneInputController implements ReadyStateChangeListener, NavDataListener, UIActionListener, MovementDataListener, PilotActionListener
 {
-  private static final float HEIGHT_THRESHOLD = 0.25f;
-
-  private final Logger logger = Logger.getLogger(DroneInputController.class);
-
   private final DroneController droneController;
 
   private final RaceTimer raceTimer;
-
-  private boolean navDataReceived = false;
-
-  private float currentHeight;
 
   private boolean flying = false;
 
@@ -77,21 +68,21 @@ public class DroneInputController implements ReadyStateChangeListener, NavDataLi
   {
     switch (pilotAction)
     {
-      case TAKE_OFF:
-        takeOff();
-      case LAND:
-        land();
+      case TAKE_OFF_LAND:
+        if (!flying)
+        {
+          takeOff();
+        } else
+        {
+          land();
+        }
     }
   }
 
   @Override
   public void onNavData(NavData navData)
   {
-    navDataReceived = true;
-    currentHeight = navData.getAltitude() < HEIGHT_THRESHOLD ? 0.0f
-            : navData.getAltitude();
     flying = navData.getState().isFlying();
-
     if (navData.getState().isEmergency())
     {
       raceTimer.stop();
