@@ -10,5 +10,6 @@ leap-control/target
 drone-api/target
 intel-control/target
 intel-perceptual/target
+kinect-control/target
 final
 media

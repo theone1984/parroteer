@@ -163,7 +163,7 @@ public class DroneInputController implements ReadyStateChangeListener, NavDataLi
   {
     if (ready)
     {
-      droneController.move(movementData.getRoll(), movementData.getPitch(), movementData.getYaw(), movementData.getGaz());
+      droneController.move(movementData.getRoll(), -movementData.getPitch(), movementData.getYaw(), movementData.getGaz());
     }
   }
 

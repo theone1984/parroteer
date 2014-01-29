@@ -1,6 +1,7 @@
 package com.dronecontrol.kinectcontrol.entry;
 
 import com.dronecontrol.droneapi.DroneController;
+import com.dronecontrol.droneapi.data.Config;
 import com.dronecontrol.droneapi.listeners.ErrorListener;
 import com.dronecontrol.kinectcontrol.control.DroneInputController;
 import com.dronecontrol.kinectcontrol.input.KinectController;
@@ -68,13 +69,13 @@ public class Main implements ErrorListener, UIActionListener
 
   private void startComponents()
   {
-    //droneController.startAsync(new Config("com.dronecontrol.leap-drone", "myProfile", 2));
+    droneController.startAsync(new Config("com.dronecontrol.leap-drone", "myProfile", 2));
     kinectController.start();
   }
 
   public void stop()
   {
-    //droneController.stop();
+    droneController.stop();
     kinectController.stop();
 
     System.exit(0);
