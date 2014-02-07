@@ -176,4 +176,9 @@ public class SocketClient implements IConnectHandler, IDisconnectHandler, IDataH
   {
     dataListeners.remove(callback);
   }
+
+  public boolean isConnected()
+  {
+    return connected;
+  }
 }

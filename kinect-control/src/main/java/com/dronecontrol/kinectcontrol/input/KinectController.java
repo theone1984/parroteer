@@ -1,5 +1,7 @@
 package com.dronecontrol.kinectcontrol.input;
 
+import com.dronecontrol.droneapi.data.NavData;
+import com.dronecontrol.droneapi.listeners.NavDataListener;
 import com.dronecontrol.kinectcontrol.config.Config;
 import com.dronecontrol.kinectcontrol.input.events.MovementDataListener;
 import com.dronecontrol.kinectcontrol.input.events.PilotActionListener;
@@ -7,21 +9,24 @@ import com.dronecontrol.kinectcontrol.input.socket.SocketClient;
 
 import javax.inject.Inject;
 
-public class KinectController
+public class KinectController implements NavDataListener
 {
   private final SocketClient socketClient;
 
   private final KinectDataReceiver kinectDataReceiver;
+
+  private final KinectDataSender kinectDataSender;
 
   private final String hostName;
 
   private final Integer port;
 
   @Inject
-  public KinectController(Config config, SocketClient socketClient, KinectDataReceiver kinectDataReceiver)
+  public KinectController(Config config, SocketClient socketClient, KinectDataReceiver kinectDataReceiver, KinectDataSender kinectDataSender)
   {
     this.socketClient = socketClient;
     this.kinectDataReceiver = kinectDataReceiver;
+    this.kinectDataSender = kinectDataSender;
 
     hostName = config.getHostName();
     port = config.getPort();
@@ -49,5 +54,12 @@ public class KinectController
     socketClient.disconnect();
 
     kinectDataReceiver.dispose();
+  }
+
+
+  @Override
+  public void onNavData(NavData navData)
+  {
+    kinectDataSender.onNavData(navData);
   }
 }
