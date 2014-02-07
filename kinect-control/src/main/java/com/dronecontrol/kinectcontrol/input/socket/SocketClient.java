@@ -145,7 +145,7 @@ public class SocketClient implements IConnectHandler, IDisconnectHandler, IDataH
   {
     try
     {
-      socketConnection.write(content);
+      socketConnection.write(content + LINE_TERMINATION_STRING);
     } catch (IOException e)
     {
       logger.warn(String.format("Sending data failed: %s", e.getMessage()));
