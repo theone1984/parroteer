@@ -76,6 +76,13 @@ public class DroneInputController implements ReadyStateChangeListener, NavDataLi
         {
           land();
         }
+        break;
+      case TAKE_OFF:
+        takeOff();
+        break;
+      case LAND:
+        land();
+        break;
     }
   }
 
