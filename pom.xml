@@ -14,7 +14,7 @@
         <module>leap-control</module>
         <module>intel-control</module>
         <module>intel-perceptual</module>
-        <module>kinect-control</module>
+        <module>socket-control</module>
     </modules>
 
     <properties>
