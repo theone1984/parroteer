@@ -134,7 +134,7 @@ public class DroneInputController implements ReadyStateChangeListener, NavDataLi
 
     private void move(float roll, float pitch, float yaw, float heightDelta) {
         if (ready) {
-            droneController.move(roll, pitch, yaw, heightDelta);
+            droneController.move(2 * roll, 2 * pitch, 2 * yaw, heightDelta);
         }
     }
 
