@@ -1,6 +1,5 @@
 package com.dronecontrol.droneapi;
 
-import com.google.inject.Inject;
 import com.dronecontrol.droneapi.components.AddressComponent;
 import com.dronecontrol.droneapi.components.ErrorListenerComponent;
 import com.dronecontrol.droneapi.components.ReadyStateListenerComponent;
@@ -9,6 +8,7 @@ import com.dronecontrol.droneapi.components.ThreadComponent;
 import com.dronecontrol.droneapi.listeners.ImageListener;
 import com.dronecontrol.droneapi.listeners.VideoDataListener;
 import com.dronecontrol.droneapi.video.H264VideoDecoder;
+import com.google.inject.Inject;
 import org.apache.log4j.Logger;
 
 import java.awt.image.BufferedImage;
@@ -49,7 +49,7 @@ public class VideoRetrieverH264 extends VideoRetrieverAbstract implements ImageL
 
     while (!isStopped())
     {
-      videoDecoder.startDecoding(tcpComponent, this);
+      tryDecoding();
       if (!isStopped())
       {
         reconnectVideoPort();
@@ -57,6 +57,17 @@ public class VideoRetrieverH264 extends VideoRetrieverAbstract implements ImageL
     }
 
     disconnectFromVideoDataPort();
+  }
+
+  private void tryDecoding()
+  {
+    try
+    {
+      videoDecoder.startDecoding(tcpComponent, this);
+    } catch (Exception e)
+    {
+      logger.warn("Exception while decoding video stream: " + e.getMessage());
+    }
   }
 
   private void reconnectVideoPort()

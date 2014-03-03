@@ -1,7 +1,5 @@
 package com.dronecontrol.droneapi;
 
-import com.google.common.collect.Lists;
-import com.google.inject.Inject;
 import com.dronecontrol.droneapi.commands.ATCommand;
 import com.dronecontrol.droneapi.commands.Command;
 import com.dronecontrol.droneapi.commands.simple.WatchDogCommand;
@@ -11,6 +9,8 @@ import com.dronecontrol.droneapi.components.ReadyStateListenerComponent;
 import com.dronecontrol.droneapi.components.ThreadComponent;
 import com.dronecontrol.droneapi.components.UdpComponent;
 import com.dronecontrol.droneapi.listeners.ReadyStateChangeListener;
+import com.google.common.collect.Lists;
+import com.google.inject.Inject;
 import org.apache.log4j.Logger;
 
 import java.net.DatagramPacket;
@@ -115,11 +115,23 @@ public class CommandSender implements Runnable
 
     while (!threadComponent.isStopped())
     {
-      count = sendPendingCommands(count);
+      count = trySending(count);
       changeReadyState();
     }
 
     disconnectFromCommandSenderPort();
+  }
+
+  private int trySending(int count)
+  {
+    try
+    {
+      count = sendPendingCommands(count);
+    } catch (Exception e)
+    {
+      logger.warn("Exception while trying to send data: " + e.getMessage());
+    }
+    return count;
   }
 
   private void connectToCommandSenderPort()
