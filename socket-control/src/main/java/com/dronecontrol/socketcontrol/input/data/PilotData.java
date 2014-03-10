@@ -5,12 +5,24 @@ import java.util.Collection;
 @SuppressWarnings("UnusedDeclaration")
 public class PilotData
 {
+  private String type;
+
   private MovementData movementData;
 
   private Collection<PilotAction> pilotActions;
 
   public PilotData()
   {
+  }
+
+  public String getType()
+  {
+    return type;
+  }
+
+  public void setType(String type)
+  {
+    this.type = type;
   }
 
   public PilotData(MovementData movementData, Collection<PilotAction> pilotActions)
