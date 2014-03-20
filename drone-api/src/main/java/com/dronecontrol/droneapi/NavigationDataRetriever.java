@@ -137,7 +137,7 @@ public class NavigationDataRetriever implements Runnable
         processData();
 
         udpComponent.sendKeepAlivePacket();
-      } catch (RuntimeException e)
+      } catch (Throwable e)
       {
         udpComponent.sendKeepAlivePacket();
         logger.error(e.getMessage(), e);

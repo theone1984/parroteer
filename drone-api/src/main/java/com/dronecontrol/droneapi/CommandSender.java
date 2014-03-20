@@ -127,7 +127,7 @@ public class CommandSender implements Runnable
     try
     {
       count = sendPendingCommands(count);
-    } catch (Exception e)
+    } catch (Throwable e)
     {
       logger.warn("Exception while trying to send data: " + e.getMessage());
     }

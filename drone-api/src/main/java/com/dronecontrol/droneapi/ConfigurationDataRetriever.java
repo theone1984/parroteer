@@ -118,7 +118,7 @@ public class ConfigurationDataRetriever implements Runnable
       try
       {
         processData(readLines());
-      } catch (RuntimeException e)
+      } catch (Throwable e)
       {
         logger.error("Error processing the config control data", e);
       }
