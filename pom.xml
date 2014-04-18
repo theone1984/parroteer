@@ -33,7 +33,7 @@
         <junit.version>4.11</junit.version>
         <mockito.version>1.9.5</mockito.version>
 
-        <jdk.home>C:\Program Files\Java\jdk1.7.0_51</jdk.home>
+        <jdk.home>C:\Program Files\Java\jdk1.7.0_55</jdk.home>
         <javafx.runtime.lib.jar>${jdk.home}/jre/lib/jfxrt.jar</javafx.runtime.lib.jar>
         <javafx.tools.ant.jar>${jdk.home}/lib/ant-javafx.jar</javafx.tools.ant.jar>
     </properties>
@@ -55,7 +55,8 @@
     <repositories>
         <repository>
             <id>mozquitobytes</id>
-            <url>http://www.mozquitobytes.com:8081/nexus/content/repositories/thirdparty</url>
+            <url>http://nexus.mozquitobytes.com/content/repositories/thirdparty</url>
         </repository>
     </repositories>
+
 </project>
