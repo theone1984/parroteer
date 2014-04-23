@@ -91,10 +91,6 @@ public class CoordinateCalculator {
         float pitch = ((leftHand.getCoordinate().getZ() - leftHandReferenceCoordinate.getZ()) +
                 (rightHand.getCoordinate().getZ() - rightHandReferenceCoordinate.z)) / 2;
 
-        if (Math.abs(pitch) >= Math.abs(maxPitch)) {
-            maxPitch = Math.abs(pitch);
-        }
-
         //Scale pitch using maxPitch
         pitch = pitch / maxPitch;
         //pitch = pitch * Math.abs(pitch);
@@ -134,20 +130,16 @@ public class CoordinateCalculator {
     private void calculateYaw(Hand leftHand, Hand rightHand) {
         float yaw = rightHand.getCoordinate().getZ() - leftHand.getCoordinate().getZ();
 
-        if (Math.abs(yaw) >= Math.abs(maxYaw)) {
-            maxYaw = Math.abs(yaw);
-        }
-
         //Scale pitch using maxPitch
         yaw = yaw / maxYaw;
 
         if (Math.abs(yaw) <= MIN_YAW) {
             yaw = 0;
+        } else {
+            yaw = yaw - Math.signum(yaw) * MIN_YAW;
         }
 
-        yaw = yaw - Math.signum(yaw) * MIN_YAW;
-
-        //logger.debug(String.format("Yaw-Max: [%2.3f], Yaw-In: [%2.3f], Yaw-Out: [%2.3f]", maxYaw, tmp, yaw));
+        System.out.println(String.format("Yaw-Max: [%2.3f], Yaw-Out: [%2.3f]", maxYaw, yaw));
 
         this.yaw = yaw;
     }
