@@ -38,8 +38,8 @@ public class DetectionComponent implements PerceptualQueryComponent {
     public void processFeatures() {
         Vector leftHandDirection = getLeftHandDirection();
         Vector rightHandDirection = getRightHandDirection();
-        Hand rightHand = new Hand(GeoNode.LEFT_HAND.getCoordinate(), leftHandDirection, getLeftHandNormal(leftHandDirection), GeoNode.LEFT_HAND.isActive());
-        Hand leftHand = new Hand(GeoNode.RIGHT_HAND.getCoordinate(), rightHandDirection, getRightHandNormal(rightHandDirection), GeoNode.RIGHT_HAND.isActive());
+        Hand leftHand = new Hand(GeoNode.LEFT_HAND.getCoordinate(), leftHandDirection, getLeftHandNormal(leftHandDirection), GeoNode.LEFT_HAND.isActive());
+        Hand rightHand = new Hand(GeoNode.RIGHT_HAND.getCoordinate(), rightHandDirection, getRightHandNormal(rightHandDirection), GeoNode.RIGHT_HAND.isActive());
 
         //Sometimes Hands are mixed up. Switch them in case that x-position of right hand is greater than left hands x-position
         if (rightHand.isActive() && leftHand.isActive()) {

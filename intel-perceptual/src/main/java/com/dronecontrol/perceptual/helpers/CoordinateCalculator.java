@@ -1,43 +1,26 @@
 package com.dronecontrol.perceptual.helpers;
 
-import com.google.common.collect.Lists;
 import com.dronecontrol.perceptual.data.body.Coordinate;
 import com.dronecontrol.perceptual.data.body.Hand;
+import com.dronecontrol.perceptual.data.body.Vector;
+import com.google.common.collect.Lists;
 
 import java.util.Collection;
 
 public class CoordinateCalculator {
-    private static final float MIN_ROLL = 0.2f;
+    private static final float MAX_PITCH = 40;
+    public static final float MAX_YAW = 40;
+    public static final float MAX_ROLL = 40;
 
-    private static final float MIN_PITCH = 0.2f;
-
-    public static final float MIN_YAW = 0.2f;
-
-    private static final float MIN_HEIGHT = 0.2f;
-
-    private static final float MAX_HEIGHT = 2.0f;
-
-    private static final float MAX_ANGLE_DIFFERENCE = 35;
-
-    private static final float ANGLE_LOWER_VALUE = -10;
-
-    private Coordinate leftHandReferenceCoordinate;
-
-    private Coordinate rightHandReferenceCoordinate;
+    private static final float MIN_HEIGHT = 0.25f;
+    private static final float MAX_HEIGHT = 1.5f;
+    public static final float MIN_VALUE = 0.2f;
 
     private float yaw;
 
-    private float securityScaleBuffer = 0.8f;
-
-    private float maxYaw = 0.2f * securityScaleBuffer;
-
     private float roll;
 
-    private float maxRoll = 0.2f * securityScaleBuffer;
-
     private float pitch;
-
-    private float maxPitch = 0.2f * securityScaleBuffer;
 
     private float currentHeight;
 
@@ -45,103 +28,75 @@ public class CoordinateCalculator {
 
     private Collection<CoordinateListener> coordinateListeners = Lists.newArrayList();
 
-    public void setLeftHandReferenceCoordinate(Coordinate leftHandReferenceCoordinate) {
-        this.leftHandReferenceCoordinate = leftHandReferenceCoordinate;
-    }
-
-    public void setRightHandReferenceCoordinate(Coordinate rightHandReferenceCoordinate) {
-        this.rightHandReferenceCoordinate = rightHandReferenceCoordinate;
-    }
-
     public void setCurrentHeight(float currentHeight) {
         this.currentHeight = currentHeight;
     }
 
-    public void calculateMoves(Hand leftHand, Hand rightHand) {
-        calculateYaw(leftHand, rightHand);
-        calculateRoll(leftHand, rightHand);
-        calculatePitch(leftHand, rightHand);
-        calculateDesiredHeight(leftHand, rightHand);
+    public void calculateMoves(Hand hand) {
+        calculateMove(hand);
+        invokeCoordinateListeners();
+    }
 
+    private void invokeCoordinateListeners() {
         for (CoordinateListener coordinateListener : coordinateListeners) {
             coordinateListener.onCoordinate(roll, pitch, yaw, heightDelta);
         }
     }
 
-    private void calculateDesiredHeight(Hand leftHand, Hand rightHand) {
-        double currentAngle = getAngle(leftHand.getCoordinate(), rightHand.getCoordinate());
-        double initialAngle = getAngle(leftHandReferenceCoordinate, rightHandReferenceCoordinate);
-        double angleDifference = (currentAngle - initialAngle);
+    private void calculateMove(Hand hand) {
+        Coordinate coordinate = hand.getCoordinate();
+        Vector direction = hand.getDirection();
+        Vector normal = hand.getNormal();
 
-        float desiredHeight = (float) ((angleDifference - ANGLE_LOWER_VALUE) / MAX_ANGLE_DIFFERENCE) * MAX_HEIGHT;
-        desiredHeight = Math.max(MIN_HEIGHT, desiredHeight);
-        desiredHeight = Math.min(MAX_HEIGHT, desiredHeight);
-
-        this.heightDelta = (desiredHeight - currentHeight) / MAX_HEIGHT;
+        roll = trim(getDegrees(getRoll(normal)) / MAX_ROLL);
+        pitch = trim(getDegrees(getPitch(direction)) / MAX_PITCH);
+        yaw = trim(getDegrees(getYaw(direction)) / MAX_YAW);
+        heightDelta = trim(getDesiredHeight(coordinate) - currentHeight);
     }
 
-    private double getAngle(Coordinate leftHandCoordinate, Coordinate rightHandCoordinate) {
-        float y = (leftHandCoordinate.getY() + rightHandCoordinate.getY()) / 2;
-        float z = (leftHandCoordinate.getZ() + rightHandCoordinate.getZ()) / 2;
-
-        return Math.toDegrees(Math.atan(y / z));
+    public void resetMove() {
+        resetCoordinates();
+        invokeCoordinateListeners();
     }
 
-    private void calculatePitch(Hand leftHand, Hand rightHand) {
-        float pitch = ((leftHand.getCoordinate().getZ() - leftHandReferenceCoordinate.getZ()) +
-                (rightHand.getCoordinate().getZ() - rightHandReferenceCoordinate.z)) / 2;
+    private void resetCoordinates() {
+        roll = 0;
+        pitch = 0;
+        yaw = 0;
+        heightDelta = 0;
+    }
 
-        //Scale pitch using maxPitch
-        pitch = pitch / maxPitch;
-        //pitch = pitch * Math.abs(pitch);
+    private float getDesiredHeight(Coordinate coordinate) {
+        return Math.min(MAX_HEIGHT, Math.max(MIN_HEIGHT, coordinate.getZ() * 2.5f));
+    }
 
-        if (Math.abs(pitch) <= 0.2) {
-            pitch = 0;
+    private float getRoll(Vector normal) {
+        return -(float) Math.atan(normal.getX() / normal.getZ());
+    }
+
+    private float getPitch(Vector direction) {
+        return -(float) (direction.getZ() / Math.atan(Math.sqrt(direction.getX() * direction.getX() + direction.getY() * direction.getY())));
+    }
+
+    private float getYaw(Vector direction) {
+        return (float) Math.atan(direction.getX() / -direction.getY());
+    }
+
+    public float getDegrees(float radians) {
+        return (float) (180 * radians / Math.PI);
+    }
+
+    private float trim(float value) {
+        if (Math.abs(value) < MIN_VALUE) {
+            return 0;
         }
+        value = Math.signum(value) * (1 + MIN_VALUE) * (Math.abs(value) - MIN_VALUE);
 
-        pitch = pitch - Math.signum(pitch) * MIN_PITCH;
-        //logger.debug(String.format("Pitch-Max: [%2.3f], Pitch-In: [%2.3f], Pitch-Out: [%2.3f]", maxPitch, tmp, pitch));
-
-        this.pitch = pitch;
-    }
-
-    private void calculateRoll(Hand leftHand, Hand rightHand) {
-        float roll = leftHand.getCoordinate().getY() - rightHand.getCoordinate().getY();
-
-        if (Math.abs(roll) >= Math.abs(maxRoll)) {
-            maxRoll = Math.abs(roll);
-        }
-
-        //Scale roll using maxRoll
-        roll = roll / maxRoll;
-        //roll = roll * Math.abs(roll);
-
-        if (Math.abs(roll) <= MIN_ROLL) {
-            roll = 0;
-        }
-
-        roll = roll - Math.signum(roll) * MIN_ROLL;
-
-        //logger.debug(String.format("Roll-Max: [%2.3f], Roll-In: [%2.3f], Roll-Out: [%2.3f]", maxRoll, tmp, roll));
-
-        this.roll = roll;
-    }
-
-    private void calculateYaw(Hand leftHand, Hand rightHand) {
-        float yaw = rightHand.getCoordinate().getZ() - leftHand.getCoordinate().getZ();
-
-        //Scale pitch using maxPitch
-        yaw = yaw / maxYaw;
-
-        if (Math.abs(yaw) <= MIN_YAW) {
-            yaw = 0;
+        if (Math.abs(value) > 1) {
+            return Math.signum(value) * 1;
         } else {
-            yaw = yaw - Math.signum(yaw) * MIN_YAW;
+            return value;
         }
-
-        System.out.println(String.format("Yaw-Max: [%2.3f], Yaw-Out: [%2.3f]", maxYaw, yaw));
-
-        this.yaw = yaw;
     }
 
     public float getYaw() {
@@ -162,9 +117,5 @@ public class CoordinateCalculator {
 
     public void addCoordinateListener(CoordinateListener coordinateListener) {
         coordinateListeners.add(coordinateListener);
-    }
-
-    public boolean hasHandReferences() {
-        return (rightHandReferenceCoordinate != null) && (leftHandReferenceCoordinate != null);
     }
 }

@@ -1,11 +1,7 @@
 package com.dronecontrol.intelcontrol.control;
 
-import com.google.inject.Inject;
 import com.dronecontrol.droneapi.DroneController;
 import com.dronecontrol.droneapi.data.NavData;
-import com.dronecontrol.droneapi.data.enums.Camera;
-import com.dronecontrol.droneapi.data.enums.FlightAnimation;
-import com.dronecontrol.droneapi.data.enums.LedAnimation;
 import com.dronecontrol.droneapi.listeners.NavDataListener;
 import com.dronecontrol.droneapi.listeners.ReadyStateChangeListener;
 import com.dronecontrol.intelcontrol.helpers.RaceTimer;
@@ -20,6 +16,7 @@ import com.dronecontrol.perceptual.helpers.CoordinateCalculator;
 import com.dronecontrol.perceptual.helpers.CoordinateListener;
 import com.dronecontrol.perceptual.listeners.DetectionListener;
 import com.dronecontrol.perceptual.listeners.GestureListener;
+import com.google.inject.Inject;
 import org.apache.log4j.Logger;
 
 public class DroneInputController implements ReadyStateChangeListener, NavDataListener, UIActionListener,
@@ -47,6 +44,8 @@ public class DroneInputController implements ReadyStateChangeListener, NavDataLi
         this.raceTimer = raceTimer;
         this.coordinateCalculator = coordinateCalculator;
         coordinateCalculator.addCoordinateListener(this);
+
+        ready = true;
     }
 
     @Override
@@ -87,9 +86,10 @@ public class DroneInputController implements ReadyStateChangeListener, NavDataLi
     }
 
     private void takeOff() {
-        if (ready && !flying && coordinateCalculator.hasHandReferences()) {
+        if (ready && !flying) {
             raceTimer.start();
-            droneController.takeOff();
+            //droneController.takeOff();
+            flying = true;
         } else {
             logger.warn("Cannot take off");
         }
@@ -98,43 +98,44 @@ public class DroneInputController implements ReadyStateChangeListener, NavDataLi
     private void land() {
         if (ready && flying) {
             raceTimer.stop();
-            droneController.land();
+            //droneController.land();
+            flying = false;
         }
     }
 
     private void flatTrim() {
         if (ready) {
-            droneController.flatTrim();
+        //    droneController.flatTrim();
         }
     }
 
     private void emergency() {
         if (ready) {
-            droneController.emergency();
+        //    droneController.emergency();
         }
     }
 
     private void switchCamera() {
         if (ready) {
-            droneController.switchCamera(Camera.NEXT);
+        //    droneController.switchCamera(Camera.NEXT);
         }
     }
 
     private void playLedAnimation() {
         if (ready) {
-            droneController.playLedAnimation(LedAnimation.RED_SNAKE, 2.0f, 3);
+        //    droneController.playLedAnimation(LedAnimation.RED_SNAKE, 2.0f, 3);
         }
     }
 
     private void playFlightAnimation() {
         if (ready) {
-            droneController.playFlightAnimation(FlightAnimation.FLIP_LEFT);
+        //    droneController.playFlightAnimation(FlightAnimation.FLIP_LEFT);
         }
     }
 
     private void move(float roll, float pitch, float yaw, float heightDelta) {
         if (ready) {
-            droneController.move(2 * roll, 2 * pitch, 2 * yaw, heightDelta);
+        //    droneController.move(2 * roll, 2 * pitch, 2 * yaw, heightDelta);
         }
     }
 
@@ -150,18 +151,9 @@ public class DroneInputController implements ReadyStateChangeListener, NavDataLi
     @Override
     public void onGesture(GestureData gestureData) {
         switch (gestureData.getGestureType()) {
-            case THUMBS_UP:
-                logger.info("Thumbs up detected.");
+            case CIRCLE:
+                logger.info("Circle detected.");
                 takeOff();
-                break;
-            case THUMBS_DOWN:
-                logger.info("Thumbs down detected.");
-                land();
-                break;
-            case BIG_FIVE:
-                logger.info("Big Five detected.");
-                emergency();
-                flatTrim();
                 break;
         }
     }
@@ -169,44 +161,30 @@ public class DroneInputController implements ReadyStateChangeListener, NavDataLi
     @Override
     public void onDetection(DetectionData<Hands> handsDetectionData) {
         HandsDetectionData data = (HandsDetectionData) handsDetectionData;
-
-        Hand leftHand = data.getLeftHand();
-        Hand rightHand = data.getRightHand();
-
-        if (leftHand.isActive() && rightHand.isActive()) {
+        if (data.getLeftHand().isActive() || data.getRightHand().isActive()) {
+            Hand firstHand = data.getLeftHand().isActive() ? data.getLeftHand() : data.getRightHand();
             lastCommandTimestamp = System.currentTimeMillis();
 
-            // As long as the drone is not in the air save last coordinates as
-            // reference
-            // This will stop, when the THUMBS_UP gesture is recognized
-            if (ready && !flying) {
-                coordinateCalculator.setRightHandReferenceCoordinate(rightHand.getCoordinate());
-                coordinateCalculator.setLeftHandReferenceCoordinate(leftHand.getCoordinate());
-            }
-
             if (ready && flying) {
-                if (!coordinateCalculator.hasHandReferences()) {
-                    coordinateCalculator.setRightHandReferenceCoordinate(rightHand.getCoordinate());
-                    coordinateCalculator.setLeftHandReferenceCoordinate(leftHand.getCoordinate());
-                }
-
-                coordinateCalculator.calculateMoves(leftHand, rightHand);
+                landIfHandIsTooCloseToCamera(firstHand);
+                coordinateCalculator.calculateMoves(firstHand);
             }
         } else if ((System.currentTimeMillis() - lastCommandTimestamp) >= 50) {
             // Failsafe - If no information about hands is available don't move
-            move(0, 0, 0, 0);
+            coordinateCalculator.resetMove();
+        }
+    }
+
+    private void landIfHandIsTooCloseToCamera(Hand hand) {
+        if (ready && flying && hand.getCoordinate().getZ() < HEIGHT_THRESHOLD) {
+            land();
+            coordinateCalculator.resetMove();
         }
     }
 
     @Override
     public void onCoordinate(float roll, float pitch, float yaw, float heightDelta) {
         //When changing the yaw stop rolling and pitching
-        if (Math.abs(coordinateCalculator.getYaw()) > CoordinateCalculator.MIN_YAW) {
-            move(0, 0, coordinateCalculator.getYaw(), coordinateCalculator.getHeightDelta());
-        } else {
-            move(coordinateCalculator.getRoll(), coordinateCalculator.getPitch(), 0, coordinateCalculator.getHeightDelta());
-        }
-
-        logger.trace(String.format("Roll: [%2.3f], Pitch: [%2.3f], Yaw: [%2.3f], Height: [%2.3f]", coordinateCalculator.getRoll(), coordinateCalculator.getPitch(), coordinateCalculator.getYaw(), coordinateCalculator.getHeightDelta()));
+        move(coordinateCalculator.getRoll(), coordinateCalculator.getPitch(), 0, coordinateCalculator.getHeightDelta());
     }
 }

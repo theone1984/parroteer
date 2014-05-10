@@ -68,6 +68,6 @@ public class Vector {
 
     @Override
     public String toString() {
-        return String.format("X: [%s], Y:[%s], Z:[%s]", getX(), getY(), getZ());
+        return String.format("X: [%.2f], Y:[%.2f], Z:[%.2f]", getX(), getY(), getZ());
     }
 }

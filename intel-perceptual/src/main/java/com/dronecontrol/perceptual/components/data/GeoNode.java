@@ -21,8 +21,12 @@ public enum GeoNode {
     RIGHT_HAND_PINKY(PXCMGesture.GeoNode.LABEL_BODY_HAND_RIGHT | PXCMGesture.GeoNode.LABEL_FINGER_PINKY);
 
     private final int geoNodeIndex;
-    private final PXCMGesture.GeoNode geoNode;
+    private PXCMGesture.GeoNode geoNode;
+
     private Filter filter;
+
+    private boolean recalculate = false;
+    private Coordinate currentCoordinate;
 
     GeoNode(int geoNodeIndex) {
         this.geoNodeIndex = geoNodeIndex;
@@ -36,6 +40,8 @@ public enum GeoNode {
     }
 
     public PXCMGesture.GeoNode getGeoNode() {
+        recalculate = true;
+        geoNode = new PXCMGesture.GeoNode();
         return geoNode;
     }
 
@@ -44,13 +50,17 @@ public enum GeoNode {
     }
 
     public Coordinate getCoordinate() {
-        Coordinate coordinate = filter.getFilteredCoordinate(getUnsmoothedCoordinate(geoNode));
-        return coordinate == null ? Coordinate.NO_COORDINATE : coordinate;
+        if (recalculate) {
+            recalculate = false;
+            currentCoordinate = getUnsmoothedCoordinate(geoNode);
+        }
+
+        return currentCoordinate == null ? filter.getFilteredCoordinate(Coordinate.NO_COORDINATE) : currentCoordinate;
     }
 
-    private Coordinate getUnsmoothedCoordinate(PXCMGesture.GeoNode handGeoNode) {
-        if (handGeoNode.positionWorld != null) {
-            return new Coordinate(handGeoNode.positionWorld.x, handGeoNode.positionWorld.z, handGeoNode.positionWorld.y);
+    private Coordinate getUnsmoothedCoordinate(PXCMGesture.GeoNode geoNode) {
+        if (geoNode.positionWorld != null) {
+            return new Coordinate(geoNode.positionWorld.x, geoNode.positionWorld.z, geoNode.positionWorld.y);
         } else {
             return null;
         }

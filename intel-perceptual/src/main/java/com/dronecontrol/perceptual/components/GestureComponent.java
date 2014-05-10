@@ -14,7 +14,7 @@ import java.util.Map;
 import java.util.Set;
 
 public class GestureComponent implements PerceptualQueryComponent {
-    private static final int GESTURE_NUBMER_THRESHOLD = 2;
+    private static final int GESTURE_NUBMER_THRESHOLD = 1;
 
     private static final int NUMBER_OF_GESTURE_SAMPLES = 5;
 
@@ -31,6 +31,7 @@ public class GestureComponent implements PerceptualQueryComponent {
         put(PXCMGesture.Gesture.LABEL_POSE_THUMB_UP, GestureData.GestureType.THUMBS_UP);
         put(PXCMGesture.Gesture.LABEL_POSE_THUMB_DOWN, GestureData.GestureType.THUMBS_DOWN);
         put(PXCMGesture.Gesture.LABEL_POSE_BIG5, GestureData.GestureType.BIG_FIVE);
+        put(PXCMGesture.Gesture.LABEL_POSE_PEACE, GestureData.GestureType.CIRCLE);
     }};
 
     public GestureComponent() {
