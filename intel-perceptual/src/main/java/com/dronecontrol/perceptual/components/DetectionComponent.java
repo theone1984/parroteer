@@ -1,54 +1,42 @@
 package com.dronecontrol.perceptual.components;
 
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
-import com.google.inject.Inject;
 import com.dronecontrol.perceptual.PerceptualPipeline;
-import com.dronecontrol.perceptual.components.filters.BilateralFilter;
-import com.dronecontrol.perceptual.components.filters.Filter;
+import com.dronecontrol.perceptual.components.data.GeoNode;
 import com.dronecontrol.perceptual.data.DetectionType;
 import com.dronecontrol.perceptual.data.body.BodyPart;
-import com.dronecontrol.perceptual.data.body.Coordinate;
 import com.dronecontrol.perceptual.data.body.Hand;
 import com.dronecontrol.perceptual.data.events.DetectionData;
 import com.dronecontrol.perceptual.data.events.HandsDetectionData;
 import com.dronecontrol.perceptual.listeners.DetectionListener;
-import intel.pcsdk.PXCMGesture;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 
+import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
 public class DetectionComponent implements PerceptualQueryComponent {
 
-    private final Filter leftHandFilter;
-
-    private final Filter rightHandFilter;
-
     private Map<DetectionType<?>, Set<DetectionListener<?>>> detectionListeners;
-    private PXCMGesture.GeoNode leftHandGeoNode;
-    private PXCMGesture.GeoNode rightHandGeoNode;
 
-    @Inject
-    public DetectionComponent(BilateralFilter leftHandFilter, BilateralFilter rightHandFilter) {
-        this.leftHandFilter = leftHandFilter;
-        this.rightHandFilter = rightHandFilter;
+    private static final Collection<GeoNode> geoNodes = Lists.newArrayList(GeoNode.values());
 
+    public DetectionComponent() {
         detectionListeners = Maps.newHashMap();
     }
 
     @Override
     public void queryFeatures(PerceptualPipeline pipeline) {
-        leftHandGeoNode = new PXCMGesture.GeoNode();
-        rightHandGeoNode = new PXCMGesture.GeoNode();
-
-        pipeline.QueryGeoNode(PXCMGesture.GeoNode.LABEL_BODY_HAND_RIGHT, leftHandGeoNode);
-        pipeline.QueryGeoNode(PXCMGesture.GeoNode.LABEL_BODY_HAND_LEFT, rightHandGeoNode);
+        for (GeoNode geoNode : geoNodes) {
+            pipeline.QueryGeoNode(geoNode.getGeoNodeIndex(), geoNode.getGeoNode());
+        }
     }
 
     @Override
     public void processFeatures() {
-        Hand rightHand = new Hand(getSmoothedCoordinate(rightHandFilter, rightHandGeoNode), getCoordinate(rightHandGeoNode), isActive(rightHandGeoNode));
-        Hand leftHand = new Hand(getSmoothedCoordinate(leftHandFilter, leftHandGeoNode), getCoordinate(leftHandGeoNode), isActive(leftHandGeoNode));
+        Hand rightHand = new Hand(GeoNode.LEFT_HAND.getCoordinate(), GeoNode.LEFT_HAND.isActive());
+        Hand leftHand = new Hand(GeoNode.RIGHT_HAND.getCoordinate(), GeoNode.RIGHT_HAND.isActive());
 
         //Sometimes Hands are mixed up. Switch them in case that x-position of right hand is greater than left hands x-position
         if (rightHand.isActive() && leftHand.isActive()) {
@@ -60,22 +48,6 @@ public class DetectionComponent implements PerceptualQueryComponent {
         }
 
         invokeDetectionListeners(DetectionType.HANDS, new HandsDetectionData(leftHand, rightHand));
-    }
-
-    private Coordinate getSmoothedCoordinate(Filter filter, PXCMGesture.GeoNode handGeoNode) {
-        return filter.getFilteredCoordinate(getCoordinate(handGeoNode));
-    }
-
-    private Coordinate getCoordinate(PXCMGesture.GeoNode handGeoNode) {
-        if (handGeoNode.positionWorld != null) {
-            return new Coordinate(handGeoNode.positionWorld.x, handGeoNode.positionWorld.z, handGeoNode.positionWorld.y);
-        } else {
-            return null;
-        }
-    }
-
-    private boolean isActive(PXCMGesture.GeoNode handGeoNode) {
-        return handGeoNode.positionWorld != null;
     }
 
     public <T extends BodyPart> void addDetectionListener(DetectionType<T> detectionType, DetectionListener<T> listener) {
