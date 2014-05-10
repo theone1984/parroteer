@@ -7,7 +7,18 @@ import intel.pcsdk.PXCMGesture;
 
 public enum GeoNode {
     LEFT_HAND(PXCMGesture.GeoNode.LABEL_BODY_HAND_LEFT),
-    RIGHT_HAND(PXCMGesture.GeoNode.LABEL_BODY_HAND_RIGHT);
+    LEFT_HAND_THUMB(PXCMGesture.GeoNode.LABEL_BODY_HAND_LEFT | PXCMGesture.GeoNode.LABEL_FINGER_THUMB),
+    LEFT_HAND_INDEX(PXCMGesture.GeoNode.LABEL_BODY_HAND_LEFT | PXCMGesture.GeoNode.LABEL_FINGER_INDEX),
+    LEFT_HAND_MIDDLE(PXCMGesture.GeoNode.LABEL_BODY_HAND_LEFT | PXCMGesture.GeoNode.LABEL_FINGER_MIDDLE),
+    LEFT_HAND_RING(PXCMGesture.GeoNode.LABEL_BODY_HAND_LEFT | PXCMGesture.GeoNode.LABEL_FINGER_RING),
+    LEFT_HAND_PINKY(PXCMGesture.GeoNode.LABEL_BODY_HAND_LEFT | PXCMGesture.GeoNode.LABEL_FINGER_PINKY),
+
+    RIGHT_HAND(PXCMGesture.GeoNode.LABEL_BODY_HAND_RIGHT),
+    RIGHT_HAND_THUMB(PXCMGesture.GeoNode.LABEL_BODY_HAND_RIGHT | PXCMGesture.GeoNode.LABEL_FINGER_THUMB),
+    RIGHT_HAND_INDEX(PXCMGesture.GeoNode.LABEL_BODY_HAND_RIGHT | PXCMGesture.GeoNode.LABEL_FINGER_INDEX),
+    RIGHT_HAND_MIDDLE(PXCMGesture.GeoNode.LABEL_BODY_HAND_RIGHT | PXCMGesture.GeoNode.LABEL_FINGER_MIDDLE),
+    RIGHT_HAND_RING(PXCMGesture.GeoNode.LABEL_BODY_HAND_RIGHT | PXCMGesture.GeoNode.LABEL_FINGER_RING),
+    RIGHT_HAND_PINKY(PXCMGesture.GeoNode.LABEL_BODY_HAND_RIGHT | PXCMGesture.GeoNode.LABEL_FINGER_PINKY);
 
     private final int geoNodeIndex;
     private final PXCMGesture.GeoNode geoNode;
@@ -33,7 +44,8 @@ public enum GeoNode {
     }
 
     public Coordinate getCoordinate() {
-        return filter.getFilteredCoordinate(getUnsmoothedCoordinate(geoNode));
+        Coordinate coordinate = filter.getFilteredCoordinate(getUnsmoothedCoordinate(geoNode));
+        return coordinate == null ? Coordinate.NO_COORDINATE : coordinate;
     }
 
     private Coordinate getUnsmoothedCoordinate(PXCMGesture.GeoNode handGeoNode) {

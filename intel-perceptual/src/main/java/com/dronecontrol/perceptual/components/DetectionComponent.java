@@ -5,6 +5,7 @@ import com.dronecontrol.perceptual.components.data.GeoNode;
 import com.dronecontrol.perceptual.data.DetectionType;
 import com.dronecontrol.perceptual.data.body.BodyPart;
 import com.dronecontrol.perceptual.data.body.Hand;
+import com.dronecontrol.perceptual.data.body.Vector;
 import com.dronecontrol.perceptual.data.events.DetectionData;
 import com.dronecontrol.perceptual.data.events.HandsDetectionData;
 import com.dronecontrol.perceptual.listeners.DetectionListener;
@@ -35,8 +36,8 @@ public class DetectionComponent implements PerceptualQueryComponent {
 
     @Override
     public void processFeatures() {
-        Hand rightHand = new Hand(GeoNode.LEFT_HAND.getCoordinate(), GeoNode.LEFT_HAND.isActive());
-        Hand leftHand = new Hand(GeoNode.RIGHT_HAND.getCoordinate(), GeoNode.RIGHT_HAND.isActive());
+        Hand rightHand = new Hand(GeoNode.LEFT_HAND.getCoordinate(), getLeftHandDirection(), GeoNode.LEFT_HAND.isActive());
+        Hand leftHand = new Hand(GeoNode.RIGHT_HAND.getCoordinate(), getRightHandDirection(), GeoNode.RIGHT_HAND.isActive());
 
         //Sometimes Hands are mixed up. Switch them in case that x-position of right hand is greater than left hands x-position
         if (rightHand.isActive() && leftHand.isActive()) {
@@ -48,6 +49,30 @@ public class DetectionComponent implements PerceptualQueryComponent {
         }
 
         invokeDetectionListeners(DetectionType.HANDS, new HandsDetectionData(leftHand, rightHand));
+    }
+
+    private Vector getLeftHandDirection() {
+        Vector combined = GeoNode.LEFT_HAND_THUMB.getCoordinate().minus(GeoNode.LEFT_HAND.getCoordinate()).plus(
+                GeoNode.LEFT_HAND_INDEX.getCoordinate().minus(GeoNode.LEFT_HAND.getCoordinate()).plus(
+                        GeoNode.LEFT_HAND_MIDDLE.getCoordinate().minus(GeoNode.LEFT_HAND.getCoordinate()).plus(
+                                GeoNode.LEFT_HAND_RING.getCoordinate().minus(GeoNode.LEFT_HAND.getCoordinate()).plus(
+                                        GeoNode.LEFT_HAND_PINKY.getCoordinate().minus(GeoNode.LEFT_HAND.getCoordinate()))
+                        )
+                )
+        );
+        return combined.normalize();
+    }
+
+    private Vector getRightHandDirection() {
+        Vector combined = GeoNode.RIGHT_HAND_THUMB.getCoordinate().minus(GeoNode.RIGHT_HAND.getCoordinate()).plus(
+                GeoNode.RIGHT_HAND_INDEX.getCoordinate().minus(GeoNode.RIGHT_HAND.getCoordinate()).plus(
+                        GeoNode.RIGHT_HAND_MIDDLE.getCoordinate().minus(GeoNode.RIGHT_HAND.getCoordinate()).plus(
+                                GeoNode.RIGHT_HAND_RING.getCoordinate().minus(GeoNode.RIGHT_HAND.getCoordinate()).plus(
+                                        GeoNode.RIGHT_HAND_PINKY.getCoordinate().minus(GeoNode.RIGHT_HAND.getCoordinate()))
+                        )
+                )
+        );
+        return combined.normalize();
     }
 
     public <T extends BodyPart> void addDetectionListener(DetectionType<T> detectionType, DetectionListener<T> listener) {

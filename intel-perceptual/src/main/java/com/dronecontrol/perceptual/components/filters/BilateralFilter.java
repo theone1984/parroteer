@@ -1,8 +1,8 @@
 package com.dronecontrol.perceptual.components.filters;
 
+import com.dronecontrol.perceptual.data.body.Coordinate;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
-import com.dronecontrol.perceptual.data.body.Coordinate;
 
 import java.util.List;
 
@@ -21,10 +21,17 @@ public class BilateralFilter implements Filter {
     @Override
     public Coordinate getFilteredCoordinate(Coordinate coordinate) {
         if (coordinate == null) {
+            removeLastCoordinate();
             return calculateSmoothedCoordinate();
         }
         addCoordinateToActiveCoordinates(coordinate);
         return calculateSmoothedCoordinate();
+    }
+
+    private void removeLastCoordinate() {
+        if (previousCoordinates.size() > 0) {
+            previousCoordinates.remove(0);
+        }
     }
 
     private Coordinate calculateSmoothedCoordinate() {
