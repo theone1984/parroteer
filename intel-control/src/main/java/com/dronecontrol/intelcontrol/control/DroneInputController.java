@@ -2,6 +2,9 @@ package com.dronecontrol.intelcontrol.control;
 
 import com.dronecontrol.droneapi.DroneController;
 import com.dronecontrol.droneapi.data.NavData;
+import com.dronecontrol.droneapi.data.enums.Camera;
+import com.dronecontrol.droneapi.data.enums.FlightAnimation;
+import com.dronecontrol.droneapi.data.enums.LedAnimation;
 import com.dronecontrol.droneapi.listeners.NavDataListener;
 import com.dronecontrol.droneapi.listeners.ReadyStateChangeListener;
 import com.dronecontrol.intelcontrol.helpers.RaceTimer;
@@ -44,8 +47,6 @@ public class DroneInputController implements ReadyStateChangeListener, NavDataLi
         this.raceTimer = raceTimer;
         this.coordinateCalculator = coordinateCalculator;
         coordinateCalculator.addCoordinateListener(this);
-
-        ready = true;
     }
 
     @Override
@@ -88,8 +89,7 @@ public class DroneInputController implements ReadyStateChangeListener, NavDataLi
     private void takeOff() {
         if (ready && !flying) {
             raceTimer.start();
-            //droneController.takeOff();
-            flying = true;
+            droneController.takeOff();
         } else {
             logger.warn("Cannot take off");
         }
@@ -98,44 +98,43 @@ public class DroneInputController implements ReadyStateChangeListener, NavDataLi
     private void land() {
         if (ready && flying) {
             raceTimer.stop();
-            //droneController.land();
-            flying = false;
+            droneController.land();
         }
     }
 
     private void flatTrim() {
         if (ready) {
-        //    droneController.flatTrim();
+            droneController.flatTrim();
         }
     }
 
     private void emergency() {
         if (ready) {
-        //    droneController.emergency();
+            droneController.emergency();
         }
     }
 
     private void switchCamera() {
         if (ready) {
-        //    droneController.switchCamera(Camera.NEXT);
+            droneController.switchCamera(Camera.NEXT);
         }
     }
 
     private void playLedAnimation() {
         if (ready) {
-        //    droneController.playLedAnimation(LedAnimation.RED_SNAKE, 2.0f, 3);
+            droneController.playLedAnimation(LedAnimation.RED_SNAKE, 2.0f, 3);
         }
     }
 
     private void playFlightAnimation() {
         if (ready) {
-        //    droneController.playFlightAnimation(FlightAnimation.FLIP_LEFT);
+            droneController.playFlightAnimation(FlightAnimation.FLIP_LEFT);
         }
     }
 
     private void move(float roll, float pitch, float yaw, float heightDelta) {
         if (ready) {
-        //    droneController.move(2 * roll, 2 * pitch, 2 * yaw, heightDelta);
+            droneController.move(2 * roll, 2 * pitch, 2 * yaw, heightDelta);
         }
     }
 
@@ -151,8 +150,8 @@ public class DroneInputController implements ReadyStateChangeListener, NavDataLi
     @Override
     public void onGesture(GestureData gestureData) {
         switch (gestureData.getGestureType()) {
-            case CIRCLE:
-                logger.info("Circle detected.");
+            case THUMBS_UP:
+                logger.info("Thumbs up detected.");
                 takeOff();
                 break;
         }
