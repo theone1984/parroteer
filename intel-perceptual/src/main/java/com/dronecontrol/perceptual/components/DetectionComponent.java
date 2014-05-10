@@ -36,8 +36,10 @@ public class DetectionComponent implements PerceptualQueryComponent {
 
     @Override
     public void processFeatures() {
-        Hand rightHand = new Hand(GeoNode.LEFT_HAND.getCoordinate(), getLeftHandDirection(), GeoNode.LEFT_HAND.isActive());
-        Hand leftHand = new Hand(GeoNode.RIGHT_HAND.getCoordinate(), getRightHandDirection(), GeoNode.RIGHT_HAND.isActive());
+        Vector leftHandDirection = getLeftHandDirection();
+        Vector rightHandDirection = getRightHandDirection();
+        Hand rightHand = new Hand(GeoNode.LEFT_HAND.getCoordinate(), leftHandDirection, getLeftHandNormal(leftHandDirection), GeoNode.LEFT_HAND.isActive());
+        Hand leftHand = new Hand(GeoNode.RIGHT_HAND.getCoordinate(), rightHandDirection, getRightHandNormal(rightHandDirection), GeoNode.RIGHT_HAND.isActive());
 
         //Sometimes Hands are mixed up. Switch them in case that x-position of right hand is greater than left hands x-position
         if (rightHand.isActive() && leftHand.isActive()) {
@@ -52,27 +54,63 @@ public class DetectionComponent implements PerceptualQueryComponent {
     }
 
     private Vector getLeftHandDirection() {
-        Vector combined = GeoNode.LEFT_HAND_THUMB.getCoordinate().minus(GeoNode.LEFT_HAND.getCoordinate()).plus(
-                GeoNode.LEFT_HAND_INDEX.getCoordinate().minus(GeoNode.LEFT_HAND.getCoordinate()).plus(
-                        GeoNode.LEFT_HAND_MIDDLE.getCoordinate().minus(GeoNode.LEFT_HAND.getCoordinate()).plus(
-                                GeoNode.LEFT_HAND_RING.getCoordinate().minus(GeoNode.LEFT_HAND.getCoordinate()).plus(
-                                        GeoNode.LEFT_HAND_PINKY.getCoordinate().minus(GeoNode.LEFT_HAND.getCoordinate()))
-                        )
-                )
-        );
-        return combined.normalize();
+        return getHandDirection(GeoNode.LEFT_HAND, GeoNode.LEFT_HAND_THUMB, GeoNode.LEFT_HAND_INDEX,
+                GeoNode.LEFT_HAND_MIDDLE, GeoNode.LEFT_HAND_RING, GeoNode.LEFT_HAND_PINKY);
+    }
+
+    private Vector getLeftHandNormal(Vector handDirection) {
+        return getHandNormal(handDirection, true, GeoNode.LEFT_HAND, GeoNode.LEFT_HAND_THUMB,
+                GeoNode.LEFT_HAND_INDEX, GeoNode.LEFT_HAND_RING, GeoNode.LEFT_HAND_PINKY);
     }
 
     private Vector getRightHandDirection() {
-        Vector combined = GeoNode.RIGHT_HAND_THUMB.getCoordinate().minus(GeoNode.RIGHT_HAND.getCoordinate()).plus(
-                GeoNode.RIGHT_HAND_INDEX.getCoordinate().minus(GeoNode.RIGHT_HAND.getCoordinate()).plus(
-                        GeoNode.RIGHT_HAND_MIDDLE.getCoordinate().minus(GeoNode.RIGHT_HAND.getCoordinate()).plus(
-                                GeoNode.RIGHT_HAND_RING.getCoordinate().minus(GeoNode.RIGHT_HAND.getCoordinate()).plus(
-                                        GeoNode.RIGHT_HAND_PINKY.getCoordinate().minus(GeoNode.RIGHT_HAND.getCoordinate()))
-                        )
-                )
-        );
-        return combined.normalize();
+        return getHandDirection(GeoNode.RIGHT_HAND, GeoNode.RIGHT_HAND_THUMB, GeoNode.RIGHT_HAND_INDEX,
+                GeoNode.RIGHT_HAND_MIDDLE, GeoNode.RIGHT_HAND_RING, GeoNode.RIGHT_HAND_PINKY);
+    }
+
+    private Vector getRightHandNormal(Vector handDirection) {
+        return getHandNormal(handDirection, false, GeoNode.RIGHT_HAND, GeoNode.RIGHT_HAND_THUMB,
+                GeoNode.RIGHT_HAND_INDEX, GeoNode.RIGHT_HAND_RING, GeoNode.RIGHT_HAND_PINKY);
+    }
+
+    private Vector getHandDirection(GeoNode hand, GeoNode thumb, GeoNode indexFinger,
+                                    GeoNode middleFinger, GeoNode ringFinger, GeoNode pinkyFinger) {
+        return plus(
+                vectorBetween(thumb, hand),
+                vectorBetween(indexFinger, hand),
+                vectorBetween(middleFinger, hand),
+                vectorBetween(ringFinger, hand),
+                vectorBetween(pinkyFinger, hand)
+        ).normalize();
+    }
+
+    private Vector getHandNormal(Vector direction, boolean invert, GeoNode hand, GeoNode thumb, GeoNode indexFinger,
+                                 GeoNode ringFinger, GeoNode pinkyFinger) {
+        Vector perpendicularVector = plus(
+                vectorBetween(thumb, hand),
+                vectorBetween(indexFinger, hand),
+                vectorBetween(ringFinger, hand).invert(),
+                vectorBetween(pinkyFinger, hand).invert()
+        ).normalize().minus(direction).normalize();
+
+        Vector normal = perpendicularVector.crossProduct(direction);
+        if (invert) {
+            normal = normal.invert();
+        }
+
+        return normal;
+    }
+
+    public Vector vectorBetween(GeoNode geoNode1, GeoNode geoNode2) {
+        return geoNode1.getCoordinate().minus(geoNode2.getCoordinate());
+    }
+
+    public Vector plus(Vector firstVector, Vector... otherVectors) {
+        Vector currentVector = firstVector;
+        for (Vector vector : otherVectors) {
+            currentVector = firstVector.plus(vector);
+        }
+        return currentVector;
     }
 
     public <T extends BodyPart> void addDetectionListener(DetectionType<T> detectionType, DetectionListener<T> listener) {
